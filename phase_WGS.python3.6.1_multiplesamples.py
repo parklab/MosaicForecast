@@ -5,7 +5,6 @@ arguments=sys.argv[1:]
 count=len(arguments)
 if count !=6:
 	print ("Usage: python phase_WGS.py bam_dir data_dir ref_fasta n_jobs input_positions(file format:sample chr pos ref alt, sep=\\t) min_dp_inforSNPs(int)")
-#1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
 elif count==6:
 	#sample=sys.argv[1]
