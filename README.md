@@ -5,6 +5,6 @@ A mosaicSNV detecting software based on phasing and random forest
 
 ## Feature extraction:
 
-## Traing:
+## Training:
 
 ## Prediction:
