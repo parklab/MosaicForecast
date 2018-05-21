@@ -7,7 +7,7 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=4:
-	print ("Usage: python(v3.6.1) feature_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta sequencing_type(PE or SE)     Note: 1. name of bam files are \"sample.bam\" by default. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa) 3. we did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants.")
+	print ("Usage: python(v3.6.1) feature_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta  Note: 1. name of bam files are \"sample.bam\" by default. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa) 3. we did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants.")
 	sys.exit(1)
 elif count==4:
 	program_name = sys.argv[0]
