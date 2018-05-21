@@ -7,7 +7,7 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=4:
-	print ("Usage: python(v3.6.1) feature_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta      Note: 1. name of bam files are \"sample.bam\" by default. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa) 3. we did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants")
+	print ("Usage: python(v3.6.1) feature_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta sequencing_type(PE or SE)     Note: 1. name of bam files are \"sample.bam\" by default. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa) 3. we did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants.")
 	sys.exit(1)
 elif count==4:
 	program_name = sys.argv[0]
@@ -15,16 +15,14 @@ elif count==4:
 	output=sys.argv[2]
 	bam_dir_tmp=sys.argv[3]
 	reference_fasta=sys.argv[4]
+	#sequencing_type=sys.argv[5]
 
 import numpy as np
 import regex as re
 from collections import defaultdict
-#sys.path.append("/n/data1/hms/dbmi/park/yanmei/tools/python2.7/lib/python2.7/site-packages/")
-#sys.path.append("/n/data1/hms/dbmi/park/yanmei/tools/python2.7/")
 from pyfaidx import Fasta
 import pysam
 from scipy.stats import mannwhitneyu
-#import pandas as pd
 base=dict()
 base['A']='T'
 base['T']='A'
@@ -37,7 +35,6 @@ if bam_dir_tmp.endswith('/'):
 else:
 	bam_dir=bam_dir_tmp
 
-#reference = Fasta('/home/yd65/tools/MosaicHunter/resources/human_g1k_v37_decoy.fasta')
 reference = Fasta(reference_fasta)
 reference_fai =reference_fasta+".fai"
 genome=reference_fai
@@ -53,14 +50,10 @@ major_read1=dict()
 major_read2=dict()
 baseq_major_near1b=defaultdict(list)
 seqpos_major=defaultdict(list)
-context_reference_forward=dict()
-context_reference_reverse=dict()
-context_antireference_forward=dict()
-context_antireference_reverse=dict()
-context_reference_forward_count=dict()
-context_reference_reverse_count=dict()
-context_antireference_forward_count=dict() 
-context_antireference_reverse_count=dict() 
+context1=dict()
+context2=dict()
+context1_count=dict()
+context2_count=dict()
 querypos_minor=defaultdict(list)
 dp_far=defaultdict(list)
 dp_near=defaultdict(list)
@@ -85,7 +78,6 @@ for line in file0:
 file0.close()
 
 file=open(input_pos)
-#1       1015256 1015257 A       G       Walsh
 #1       1072410 1072411 C       A       Walsh
 for line in file:
 	line=line.rstrip()
@@ -96,13 +88,8 @@ for line in file:
 	pos1=max(0,int(pos)-1)
 	pos2=min(int(chr_sizes[chr]),int(pos)+1)
 	major_allele=fields[3]
-# phasing=fields[11]
-	#phasing="UNKNOWN"
-# major_count=fields[7]
 	minor_allele=fields[4]
-# minor_count=fields[9]
 	name=str(sample)+'_'+str(chr)+'_'+str(pos)+"_"+str(major_allele)+"_"+str(minor_allele)
-	#input_bam=bam_dir+"/"+str(sample)+".simulated.bam"
 	input_bam=bam_dir+"/"+str(sample)+".bam"
 	a=pysam.AlignmentFile(input_bam, "rb")
 	chrom=str(chr)
@@ -116,14 +103,12 @@ for line in file:
 	minor_read1[name]=0
 	major_read2[name]=0
 	minor_read2[name]=0
-	context_reference_forward_count[name]=context_reference_forward_count.get(name,0)
-	context_reference_reverse_count[name]=context_reference_reverse_count.get(name,0)
-	context_antireference_forward_count[name]=context_antireference_forward_count.get(name,0)
-	context_antireference_reverse_count[name]=context_antireference_reverse_count.get(name,0)
+	context1_count[name]=context1_count.get(name,0)
+	context2_count[name]=context2_count.get(name,0)
 	mismatches_major[name]=list()
 	mismatches_minor[name]=list()
-# baseq_major_near1b[name].append("initial")
-# baseq_minor_near1b[name].append("initial")
+	context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
+	context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
 
 	for pileupcolumn in a.pileup(chrom, start, end):
 		for pileupread in pileupcolumn.pileups:
@@ -131,85 +116,95 @@ for line in file:
 				continue
 			try:
 				querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-				if pileupcolumn.pos==pos-1 and querybase==major_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
-					context_reference_forward[name]=reference[chrom][pileupcolumn.pos-1:pileupcolumn.pos+2]
-					context_reference_reverse[name]=base[str(reference[chrom][pileupcolumn.pos-1:pileupcolumn.pos])]+base[str(reference[chrom][pileupcolumn.pos:pileupcolumn.pos+1])]+base[str(reference[chrom][pileupcolumn.pos+1:pileupcolumn.pos+2])]
-					context_antireference_forward[name]=(reference[chrom][pileupcolumn.pos-1:pileupcolumn.pos+2])[::-1]
-					context_antireference_reverse[name]=(base[str(reference[chrom][pileupcolumn.pos-1:pileupcolumn.pos])]+base[str(reference[chrom][pileupcolumn.pos:pileupcolumn.pos+1])]+base[str(reference[chrom][pileupcolumn.pos+1:pileupcolumn.pos+2])])[::-1]
-					#print pileupcolumn.pos
-					querypos_major[name].append(pileupread.query_position)
-					#print querypos_major[name]
-					mapq_major[name].append(pileupread.alignment.mapping_quality)
-					baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
-					leftpos_major[name].append(pileupread.alignment.reference_start)
-					#mismatches_major[name].append(filterPick(pileupread.alignment.tags,'NM'))
-					mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
-					#print mismatches_major[name]
-					#print mismatches_major[name]
-					if not pileupread.alignment.is_reverse:
-						major_plus[name]=major_plus.get(name,0)+1
-					elif pileupread.alignment.is_reverse:
-						major_minus[name]=major_minus.get(name,0)+1
-
-					if pileupread.alignment.flag & 64:
-						major_read1[name]=major_read1.get(name,0)+1
-					elif pileupread.alignment.flag &128:
-						major_read2[name]=major_read2.get(name,0)+1
-					
-					if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-						seqpos_major[name].append(pileupread.query_position)
-						#print seqpos_major[name]
-						if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-							baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-#       baseq_major_near1b[name].append("end")
-					elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-						seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-						if pileupread.query_position >=1 :
-							baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
-							#print baseq_major_near1b[name]
-#      elif pileupread.query_position <1:
-#       baseq_major_near1b[name].append("end")
-
-			
-				elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
-					querypos_minor[name].append(pileupread.query_position)
-					mapq_minor[name].append(pileupread.alignment.mapping_quality)
-					baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
-					leftpos_minor[name].append(pileupread.alignment.reference_start)
-					#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
-					mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
-					if not pileupread.alignment.is_reverse:
-						minor_plus[name]=minor_plus.get(name,0)+1
-					elif pileupread.alignment.is_reverse:
-						minor_minus[name]=minor_minus.get(name,0)+1
-					
-					if pileupread.alignment.flag & 64:
-						minor_read1[name]=major_read1.get(name,0)+1
-					elif pileupread.alignment.flag &128:
-						minor_read2[name]=major_read2.get(name,0)+1
-					
-					if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-						seqpos_minor[name].append(pileupread.query_position)
-						if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-							baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-#       baseq_minor_near1b[name].append("end")
-					elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-						seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-						if pileupread.query_position >=1 :
-							baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
-#      elif pileupread.query_position <1:
-#       baseq_minor_near1b[name].append("end")
+				if pileupcolumn.pos==pos-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+					#if sequencing_type="PE":
 					if pileupread.alignment.is_proper_pair:
-						if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0 and (not pileupread.alignment.is_reverse):
-							context_reference_forward_count[name]=context_reference_forward_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0 and pileupread.alignment.is_reverse:
-							context_reference_reverse_count[name]=context_reference_reverse_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0 and (not pileupread.alignment.is_reverse):
-							context_antireference_forward_count[name]=context_antireference_forward_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0 and  pileupread.alignment.is_reverse:
-							context_antireference_reverse_count[name]=context_antireference_reverse_count.get(name,int(0))+int(1)
+					##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
+						if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
+							context1_count[name]=context1_count.get(name,int(0))+int(1)
+						elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
+							context2_count[name]=context2_count.get(name,int(0))+int(1)
+						elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
+							context2_count[name]=context2_count.get(name,int(0))+int(1)
+						elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
+							context1_count[name]=context1_count.get(name,int(0))+int(1)
+					#print pileupcolumn.pos
+					if querybase==major_allele:
+						querypos_major[name].append(pileupread.query_position)
+						#print querypos_major[name]
+						mapq_major[name].append(pileupread.alignment.mapping_quality)
+						baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
+						leftpos_major[name].append(pileupread.alignment.reference_start)
+						#mismatches_major[name].append(filterPick(pileupread.alignment.tags,'NM'))
+						mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+						#print mismatches_major[name]
+						#print mismatches_major[name]
+						if not pileupread.alignment.is_reverse:
+							major_plus[name]=major_plus.get(name,0)+1
+						elif pileupread.alignment.is_reverse:
+							major_minus[name]=major_minus.get(name,0)+1
+	
+						if pileupread.alignment.flag & 64:
+							major_read1[name]=major_read1.get(name,0)+1
+						elif pileupread.alignment.flag &128:
+							major_read2[name]=major_read2.get(name,0)+1
+					
+						
+						if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+						##if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+							seqpos_major[name].append(pileupread.query_position)
+							#print seqpos_major[name]
+							if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+								baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
+							#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+							#	baseq_major_near1b[name].append("end")
+						elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+						##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+							seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
+							if pileupread.query_position >=1 :
+								baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
+								#print baseq_major_near1b[name]
+						if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
+							context1_count[name]=context1_count.get(name,int(0))+int(1)
+						elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
+							context2_count[name]=context2_count.get(name,int(0))+int(1)
+						elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
+							context2_count[name]=context2_count.get(name,int(0))+int(1)
+						elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
+							context1_count[name]=context1_count.get(name,int(0))+int(1)
+			
+				##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+					elif querybase==minor_allele:
+						querypos_minor[name].append(pileupread.query_position)
+						mapq_minor[name].append(pileupread.alignment.mapping_quality)
+						baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
+						leftpos_minor[name].append(pileupread.alignment.reference_start)
+						#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
+						mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+						if not pileupread.alignment.is_reverse:
+							minor_plus[name]=minor_plus.get(name,0)+1
+						elif pileupread.alignment.is_reverse:
+							minor_minus[name]=minor_minus.get(name,0)+1
+						
+						if pileupread.alignment.flag & 64:
+							minor_read1[name]=major_read1.get(name,0)+1
+						elif pileupread.alignment.flag &128:
+							minor_read2[name]=major_read2.get(name,0)+1
+						
+						#if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+						if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+							seqpos_minor[name].append(pileupread.query_position)
+							if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+								baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
+	#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+	#       baseq_minor_near1b[name].append("end")
+						#elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+						elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+							seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
+							if pileupread.query_position >=1 :
+								baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
+#      elif pileupread.query_position <1:
+#       baseq_minor_near1b[name].append("end")
 			except:
 				continue   
 			
@@ -248,12 +243,20 @@ for line in file:
 			
 fo=open(output,"w")
 
-header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor+near1b major_plus major_minus minor_plus minor_minus context_reference_forward context_reference_reverse context_antireference_forward context_antireference_reverse context_reference_forward_count context_reference_reverse_count context_antireference_forward_count context_antireference_reverse_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p'.split()
+#header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor+near1b major_plus major_minus minor_plus minor_minus context_reference_forward context_reference_reverse context_antireference_forward context_antireference_reverse context_reference_forward_count context_reference_reverse_count context_antireference_forward_count context_antireference_reverse_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p'.split()
+#print (' '.join(header),file=fo)
+##print >>fo,'\t'.join(header)
+#for k,v in sorted(querypos_major.items()):
+#	u, p_value = mannwhitneyu(dp_far[k], dp_near[k])
+#	print (k,','.join(str(x) for x in v)+",",  ','.join(str(x) for x in querypos_minor[k])+",",  ','.join(str(x) for x in leftpos_major[k])+",",  ','.join(str(x) for x in leftpos_minor[k])+",",  ','.join(str(x) for x in seqpos_major[k])+",",  ','.join(str(x) for x in seqpos_minor[k])+",",  ','.join(str(x) for x in mapq_major[k])+",",  ','.join(str(x) for x in mapq_minor[k])+",", ','.join(str(x) for x in baseq_major[k])+",",  ','.join(str(x) for x in baseq_minor[k])+",",  ','.join(str(x) for x in baseq_major_near1b[k])+",", ','.join(str(x) for x in baseq_minor_near1b[k])+",", major_plus[k],major_minus[k],minor_plus[k],minor_minus[k],context_reference_forward[k],context_reference_reverse[k],context_antireference_forward[k],context_antireference_reverse[k],context_reference_forward_count[k],context_reference_reverse_count[k],context_antireference_forward_count[k],context_antireference_reverse_count[k],','.join(str(x) for x in mismatches_major[k])+",",','.join(str(x) for x in mismatches_minor[k])+",", major_read1[k],major_read2[k],minor_read1[k],minor_read2[k],np.mean(dp_near[k]),np.mean(dp_far[k]),p_value,file=fo)
+#fo.close()
+
+header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p'.split()
 print (' '.join(header),file=fo)
 #print >>fo,'\t'.join(header)
 for k,v in sorted(querypos_major.items()):
 	u, p_value = mannwhitneyu(dp_far[k], dp_near[k])
-	print (k,','.join(str(x) for x in v)+",",  ','.join(str(x) for x in querypos_minor[k])+",",  ','.join(str(x) for x in leftpos_major[k])+",",  ','.join(str(x) for x in leftpos_minor[k])+",",  ','.join(str(x) for x in seqpos_major[k])+",",  ','.join(str(x) for x in seqpos_minor[k])+",",  ','.join(str(x) for x in mapq_major[k])+",",  ','.join(str(x) for x in mapq_minor[k])+",", ','.join(str(x) for x in baseq_major[k])+",",  ','.join(str(x) for x in baseq_minor[k])+",",  ','.join(str(x) for x in baseq_major_near1b[k])+",", ','.join(str(x) for x in baseq_minor_near1b[k])+",", major_plus[k],major_minus[k],minor_plus[k],minor_minus[k],context_reference_forward[k],context_reference_reverse[k],context_antireference_forward[k],context_antireference_reverse[k],context_reference_forward_count[k],context_reference_reverse_count[k],context_antireference_forward_count[k],context_antireference_reverse_count[k],','.join(str(x) for x in mismatches_major[k])+",",','.join(str(x) for x in mismatches_minor[k])+",", major_read1[k],major_read2[k],minor_read1[k],minor_read2[k],np.mean(dp_near[k]),np.mean(dp_far[k]),p_value,file=fo)
+	print (k,','.join(str(x) for x in v)+",",  ','.join(str(x) for x in querypos_minor[k])+",",  ','.join(str(x) for x in leftpos_major[k])+",",  ','.join(str(x) for x in leftpos_minor[k])+",",  ','.join(str(x) for x in seqpos_major[k])+",",  ','.join(str(x) for x in seqpos_minor[k])+",",  ','.join(str(x) for x in mapq_major[k])+",",  ','.join(str(x) for x in mapq_minor[k])+",", ','.join(str(x) for x in baseq_major[k])+",",  ','.join(str(x) for x in baseq_minor[k])+",",  ','.join(str(x) for x in baseq_major_near1b[k])+",", ','.join(str(x) for x in baseq_minor_near1b[k])+",", major_plus[k],major_minus[k],minor_plus[k],minor_minus[k], context1[k], context2[k], context1_count[k],context2_count[k],','.join(str(x) for x in mismatches_major[k])+",",','.join(str(x) for x in mismatches_minor[k])+",", major_read1[k],major_read2[k],minor_read1[k],minor_read2[k],np.mean(dp_near[k]),np.mean(dp_far[k]),p_value,file=fo)
 
 fo.close()
 
