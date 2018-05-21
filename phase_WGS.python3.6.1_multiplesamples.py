@@ -434,8 +434,7 @@ for k,v in sorted(phasing_2by2.items()):
 	if k in MT2_phasing_num:
 		if MT2_phasing_num[k]=="wrong":
 			phasing_2by2[k]="hap>3"
-	print (k,v,conflict_mosaic[k], file=fo4)
-#	print (' '.join(str(x) for x in k.split(";")), v, conflict_mosaic[k], file=fo4)
+	print (' '.join(k.split(';')), v, conflict_mosaic[k], file=fo4)
 fo4.close()
 
 
