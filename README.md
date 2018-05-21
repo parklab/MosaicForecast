@@ -7,24 +7,24 @@ R version 3.4.1
 
 # Packages need to be installed:
 ## Python packages need to import or install:
-os
-sys
-collections
-itertools
-subprocess
-multiprocessing
-regex (2017.9.23)
-numpy (1.12.1)
-pyfaidx (0.5.3.1)
-pysam (0.11.2.2)
-pysamstats (1.0.1)
-scipy (0.19.0)
-pandas (0.20.1)
+os\
+sys\
+collections\
+itertools\
+subprocess\
+multiprocessing\
+regex (2017.9.23)\
+numpy (1.12.1)\
+pyfaidx (0.5.3.1)\
+pysam (0.11.2.2)\
+pysamstats (1.0.1)\
+scipy (0.19.0)\
+pandas (0.20.1)\
 ## R packages need to import or install:
-caret
-e1071
-glmnet
-nnet
+caret\
+e1071\
+glmnet\
+nnet\
 
 # Usage:
 ## Phasing:
