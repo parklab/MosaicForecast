@@ -7,7 +7,7 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=4:
-	print ("Usage: python(v3.6.1) feature_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta  Note: 1. name of bam files are \"sample.bam\" by default. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa) 3. we did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants.")
+	print ("Usage: python(v3.6.1) feature_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Note: 1. name of bam files are \"sample.bam\" by default. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa) 3. we did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants")
 	sys.exit(1)
 elif count==4:
 	program_name = sys.argv[0]
@@ -118,16 +118,6 @@ for line in file:
 				querybase=pileupread.alignment.query_sequence[pileupread.query_position]
 				if pileupcolumn.pos==pos-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
 					#if sequencing_type="PE":
-					if pileupread.alignment.is_proper_pair:
-					##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
-						if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
-							context1_count[name]=context1_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
-							context2_count[name]=context2_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
-							context2_count[name]=context2_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
-							context1_count[name]=context1_count.get(name,int(0))+int(1)
 					#print pileupcolumn.pos
 					if querybase==major_allele:
 						querypos_major[name].append(pileupread.query_position)
@@ -164,14 +154,6 @@ for line in file:
 							if pileupread.query_position >=1 :
 								baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
 								#print baseq_major_near1b[name]
-						if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
-							context1_count[name]=context1_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
-							context2_count[name]=context2_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
-							context2_count[name]=context2_count.get(name,int(0))+int(1)
-						elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
-							context1_count[name]=context1_count.get(name,int(0))+int(1)
 			
 				##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
 					elif querybase==minor_allele:
@@ -203,6 +185,17 @@ for line in file:
 							seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
 							if pileupread.query_position >=1 :
 								baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
+
+						if pileupread.alignment.is_proper_pair:
+						##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
+							if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
+								context1_count[name]=context1_count.get(name,int(0))+int(1)
+							elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
+								context2_count[name]=context2_count.get(name,int(0))+int(1)
+							elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
+								context2_count[name]=context2_count.get(name,int(0))+int(1)
+							elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
+								context1_count[name]=context1_count.get(name,int(0))+int(1)
 #      elif pileupread.query_position <1:
 #       baseq_minor_near1b[name].append("end")
 			except:
@@ -242,6 +235,14 @@ for line in file:
 			dp_near[name].append(pileupcolumn.n)
 			
 fo=open(output,"w")
+
+#header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor+near1b major_plus major_minus minor_plus minor_minus context_reference_forward context_reference_reverse context_antireference_forward context_antireference_reverse context_reference_forward_count context_reference_reverse_count context_antireference_forward_count context_antireference_reverse_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p'.split()
+#print (' '.join(header),file=fo)
+##print >>fo,'\t'.join(header)
+#for k,v in sorted(querypos_major.items()):
+#	u, p_value = mannwhitneyu(dp_far[k], dp_near[k])
+#	print (k,','.join(str(x) for x in v)+",",  ','.join(str(x) for x in querypos_minor[k])+",",  ','.join(str(x) for x in leftpos_major[k])+",",  ','.join(str(x) for x in leftpos_minor[k])+",",  ','.join(str(x) for x in seqpos_major[k])+",",  ','.join(str(x) for x in seqpos_minor[k])+",",  ','.join(str(x) for x in mapq_major[k])+",",  ','.join(str(x) for x in mapq_minor[k])+",", ','.join(str(x) for x in baseq_major[k])+",",  ','.join(str(x) for x in baseq_minor[k])+",",  ','.join(str(x) for x in baseq_major_near1b[k])+",", ','.join(str(x) for x in baseq_minor_near1b[k])+",", major_plus[k],major_minus[k],minor_plus[k],minor_minus[k],context_reference_forward[k],context_reference_reverse[k],context_antireference_forward[k],context_antireference_reverse[k],context_reference_forward_count[k],context_reference_reverse_count[k],context_antireference_forward_count[k],context_antireference_reverse_count[k],','.join(str(x) for x in mismatches_major[k])+",",','.join(str(x) for x in mismatches_minor[k])+",", major_read1[k],major_read2[k],minor_read1[k],minor_read2[k],np.mean(dp_near[k]),np.mean(dp_far[k]),p_value,file=fo)
+#fo.close()
 
 header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p'.split()
 print (' '.join(header),file=fo)
