@@ -19,12 +19,12 @@ pyfaidx (0.5.3.1)\
 pysam (0.11.2.2)\
 pysamstats (1.0.1)\
 scipy (0.19.0)\
-pandas (0.20.1)\
+pandas (0.20.1)
 ## R packages need to import or install:
 caret\
 e1071\
 glmnet\
-nnet\
+nnet
 
 # Usage:
 ## Phasing:
