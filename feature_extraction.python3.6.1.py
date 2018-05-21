@@ -243,14 +243,6 @@ for line in file:
 			
 fo=open(output,"w")
 
-#header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor+near1b major_plus major_minus minor_plus minor_minus context_reference_forward context_reference_reverse context_antireference_forward context_antireference_reverse context_reference_forward_count context_reference_reverse_count context_antireference_forward_count context_antireference_reverse_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p'.split()
-#print (' '.join(header),file=fo)
-##print >>fo,'\t'.join(header)
-#for k,v in sorted(querypos_major.items()):
-#	u, p_value = mannwhitneyu(dp_far[k], dp_near[k])
-#	print (k,','.join(str(x) for x in v)+",",  ','.join(str(x) for x in querypos_minor[k])+",",  ','.join(str(x) for x in leftpos_major[k])+",",  ','.join(str(x) for x in leftpos_minor[k])+",",  ','.join(str(x) for x in seqpos_major[k])+",",  ','.join(str(x) for x in seqpos_minor[k])+",",  ','.join(str(x) for x in mapq_major[k])+",",  ','.join(str(x) for x in mapq_minor[k])+",", ','.join(str(x) for x in baseq_major[k])+",",  ','.join(str(x) for x in baseq_minor[k])+",",  ','.join(str(x) for x in baseq_major_near1b[k])+",", ','.join(str(x) for x in baseq_minor_near1b[k])+",", major_plus[k],major_minus[k],minor_plus[k],minor_minus[k],context_reference_forward[k],context_reference_reverse[k],context_antireference_forward[k],context_antireference_reverse[k],context_reference_forward_count[k],context_reference_reverse_count[k],context_antireference_forward_count[k],context_antireference_reverse_count[k],','.join(str(x) for x in mismatches_major[k])+",",','.join(str(x) for x in mismatches_minor[k])+",", major_read1[k],major_read2[k],minor_read1[k],minor_read2[k],np.mean(dp_near[k]),np.mean(dp_far[k]),p_value,file=fo)
-#fo.close()
-
 header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p'.split()
 print (' '.join(header),file=fo)
 #print >>fo,'\t'.join(header)
