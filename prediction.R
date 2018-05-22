@@ -25,6 +25,8 @@ input$mapq_p[is.na(input$mapq_p)]<-1
 
 output<- input
 output$prediction <- predict(M,input)
+prediction_probs <- predict(M,input,type="prob")
+output <- cbind(output, prediction_probs)
 
 write.table(output,row.names=FALSE, col.names=TRUE,sep="\t",file=output_file,quote=FALSE)
 
