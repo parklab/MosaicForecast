@@ -53,11 +53,11 @@ hap>3: cnv/repeat
 2nd step:\
 
 ## You can also use our models trained with WGS PE data (different read depths):
-100x\_rf\_PCAandPhase\_30mtry.rds
+50x\_rf\_PCAandPhase\_30mtry.rds\
+100x\_rf\_PCAandPhase\_30mtry.rds\
 150x\_rf\_PCAandPhase\_30mtry.rds\
 200x\_rf\_PCAandPhase\_30mtry.rds\
-250x\_rf\_PCAandPhase\_30mtry.rds\
-50x\_rf\_PCAandPhase\_30mtry.rds
+250x\_rf\_PCAandPhase\_30mtry.rds
 
 ## Prediction:
 Rscript prediction.R\
