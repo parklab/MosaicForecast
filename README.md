@@ -37,7 +37,7 @@ Note: 1. Name of bam files should be "sample.bam" under the bam\_dir. 2. there s
 python feature\_extraction.python3.6.1.py\
 Usage: python(v3.6.1) feature\_extraction.py input\_bed(file\_format: chr pos-1 pos ref alt sample, sep="\t") output\_features bam\_dir reference\_fasta
 
-Note: 1. Name of bam files should be "sample.bam" under the bam\_dir. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa). 3. We did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants.
+Note: 1. Name of bam files should be "sample.bam" under the bam\_dir. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa). 3. We did not use dbSNP AF as an feature because we only focus on ultra-rare mosaic mutations, but you can use it to train your model if you have interest in common variants.
 ### 2nd step:
 Rscript feature\_extraction.R\
 Usage: Rscript feature\_extraction.R input\_file(feature\_list\_frompython) output\_file(feature\_list\_R)
