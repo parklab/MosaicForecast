@@ -15,7 +15,7 @@ elif count==6:
 	n_jobs=sys.argv[4]
 	input_pos=sys.argv[5]
 	min_dp_inforSNPs=int(sys.argv[6])
-	log_file='/multiple_inforSNPs.log'
+	log_file='multiple_inforSNPs.log'
 
 import regex as re
 import pysam
@@ -151,7 +151,7 @@ pool.map(run_cmd,cmd_list2,1)
 pool.close()
 pool.join()
 
-##2nd step: extract candidate nearby inforSNPs (germline het):
+#2nd step: extract candidate nearby inforSNPs (germline het):
 file=open(output_dir+"/all_candidates")
 merged_inforSNPs=open(output_dir+"/all.merged.inforSNPs.pos","w")
 conflict_mosaic=dict()
@@ -433,7 +433,7 @@ fo4=open(output_dir+"/all.phasing","w")
 print ("sample","chr","pos","ref","alt","phasing","conflicting_reads",file=fo4)
 for k,v in sorted(phasing_2by2.items()):
 	if k in MT2_phasing_num:
-		if MT2_phasing_num[k]=="wrong":
+		if max(MT2_phasing_num[k], key=MT2_phasing_num[k].get)=="wrong":
 			phasing_2by2[k]="hap>3"
 	print (' '.join(k.split(';')), v, conflict_mosaic[k], file=fo4)
 fo4.close()
