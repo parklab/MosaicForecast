@@ -15,7 +15,6 @@ elif count==6:
 	n_jobs=sys.argv[4]
 	input_pos=sys.argv[5]
 	min_dp_inforSNPs=int(sys.argv[6])
-	log_file='multiple_inforSNPs.log'
 
 import regex as re
 import pysam
@@ -45,6 +44,8 @@ else:
 
 output_dir=data_dir+'/phasing'
 os.system("mkdir -p "+output_dir)
+
+log_file=output_dir+'/multiple_inforSNPs.log'
 
 
 reference = Fasta(ref_fasta)
@@ -259,7 +260,7 @@ fo2.close()
 ##last step: assign phasing state to each site
 phase=defaultdict(dict)
 inforSNPs=defaultdict(list)
-input_file="all_2x2table"
+input_file=output_dir+"/all_2x2table"
 #12878-250x 10 100022092 A G 100021983 G A 0 21 19 0 6
 input_table =open(input_file)
 for line in input_table:
