@@ -42,6 +42,18 @@ Note: 1. Name of bam files should be "sample.bam" under the bam\_dir. 2.there sh
 Rscript feature\_extraction.R\
 Usage: Rscript feature\_extraction.R input\_file(feature\_list\_frompython) output\_file(feature\_list\_R)
 
+## Prediction:
+Rscript prediction.R\
+Usage: Rscript prediction.R input\_file(feature\_list) model\_trained output\_file(predictions)
+
+### You can also use our models trained with WGS PE data (different read depths):
+50x\_rf\_PCAandPhase\_30mtry.rds\
+100x\_rf\_PCAandPhase\_30mtry.rds\
+150x\_rf\_PCAandPhase\_30mtry.rds\
+200x\_rf\_PCAandPhase\_30mtry.rds\
+250x\_rf\_PCAandPhase\_30mtry.rds
+
+
 ## Training:
 ### Method1. train based on phasable sites:\
 hap=2: het\
@@ -51,15 +63,4 @@ hap>3: cnv/repeat
 1st step:\
 
 2nd step:\
-
-## You can also use our models trained with WGS PE data (different read depths):
-50x\_rf\_PCAandPhase\_30mtry.rds\
-100x\_rf\_PCAandPhase\_30mtry.rds\
-150x\_rf\_PCAandPhase\_30mtry.rds\
-200x\_rf\_PCAandPhase\_30mtry.rds\
-250x\_rf\_PCAandPhase\_30mtry.rds
-
-## Prediction:
-Rscript prediction.R\
-Usage: Rscript prediction.R input\_file(feature\_list) model\_trained output\_file(predictions)
 
