@@ -68,193 +68,193 @@ cmd_list2=list()
 
 ##1st step: generate seperate bams supporting ref allale and alt alleles:
 file=open(input_pos)
-#fo1=open(output_dir+"/all_candidates","w")
-#for line in file:
-#	line=line.rstrip()
-#	fields=line.split('\t')
-#	sample=fields[0]
-#	chr=fields[1]
-#	chrom=str(chr)
-#	pos=int(fields[2])
-#	major_allele=fields[3]
-#	minor_allele=fields[4]
-#	input_bam=bam_dir+"/"+sample+".bam"
-#	a=pysam.AlignmentFile(input_bam, "rb")
-#	f1=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
-#	f2=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
-#	f3=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
-#	name=sample+'_'+chr+'_'+str(pos)
-#	major_ids=list()
-#	minor_ids=list()
-#	start=int(pos)-1
-#	end=int(pos)
-#	major_num=int(0)
-#	minor_num=int(0)
-#
-#	for pileupcolumn in a.pileup(chrom, start, end):
-#		for pileupread in pileupcolumn.pileups:
-#			if pileupread.indel!=0:
-#				continue
-#			try:
-#				querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-#				if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
-#					major_ids.append(pileupread.alignment.query_name)
-#					major_num+=1
-#				elif int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele): #and pileupread.alignment.mapping_quality>=10:
-#					minor_ids.append(pileupread.alignment.query_name)
-#					minor_num+=1
-#			except:
-#				continue
-#
-#	start=int(pos)-1000
-#	end=int(pos)+1000
-#	conflictnum=0
-#	if len(major_ids)>=2 and len(minor_ids)>=2:
-#		conflict_reads=set(major_ids) & set(minor_ids)
-#		conflictnum=len(conflict_reads)
-#			
-#		for read in a.fetch(chrom, start, end):
-#			if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
-#				f3.write(read)
-#			if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
-#				f1.write(read)
-#			if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
-#				f2.write(read)
-#	f1.close()
-#	f2.close() 
-#	f3.close()
-#
-#	f1_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
-#	f2_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
-#	f3_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
-#	
-#	f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-#	f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
-#	f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
-#	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
-#	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
-#	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
-#	cmd_list2.append("samtools index "+f1_sorted_name)
-#	cmd_list2.append("samtools index "+f2_sorted_name)
-#	cmd_list2.append("samtools index "+f3_sorted_name)
-#	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
-#file.close()
-#fo1.close()
-#	
-#pool=Pool(processes=int(n_jobs))
-#pool.map(run_cmd,cmd_list1,1)
-#pool.close()
-#pool.join()
-#
-#pool=Pool(processes=int(n_jobs))
-#pool.map(run_cmd,cmd_list2,1)
-#pool.close()
-#pool.join()
-#
-###2nd step: extract candidate nearby inforSNPs (germline het):
-#file=open(output_dir+"/all_candidates")
-#merged_inforSNPs=open(output_dir+"/all.merged.inforSNPs.pos","w")
-#conflict_mosaic=dict()
-##==> /n/data1/hms/dbmi/park/yanmei/simulated_bams_na12878/12878-50x.merged.inforSNPs.pos <==
-##1 18089 G T 1 17385 G A 0
-#for line in file:
-#	line=line.rstrip()
-#	fields=line.split(' ')
-#	sample=fields[0]
-#	chr=fields[1]
-#	chrom=str(chr)
-#	pos=int(fields[2])
-#	major_allele=fields[3]
-#	minor_allele=fields[4]
-#	major_num=int(fields[5])
-#	minor_num=int(fields[6])
-#	conflictnum=int(fields[7])
-#	mosaic_name=sample+';'+chr+';'+str(pos)+";"+major_allele+";"+minor_allele
-#	conflict_mosaic[mosaic_name]=conflictnum
-#	start=int(pos)-1
-#	end=int(pos)
-#	f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
-#
-#	if major_num>=3 and minor_num>=3:
-#		##print (chr,pos, major_num, minor_num)
-#		##print (f3_sorted_name)
-#		f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rb')
-#		for rec in pysamstats.stat_variation(f3_alignment_file, fafile=ref_fasta, min_mapq=0, min_baseq=0):
-#			if  ([rec['A'],rec['C'],rec['G'],rec['T']].count(0)<=2) and (rec['reads_pp']>10):
-#				bases=['A','C','G','T']
-#				counts=[rec['A'],rec['C'],rec['G'],rec['T']]
-#				max_index=counts.index(max(counts))
-#				max_base=bases[max_index]
-#				max_num=int(rec[max_base])
-#				subset=list(set(['A','C','G','T'])-set(max_base))
-#				counts=[rec[subset[0]],rec[subset[1]],rec[subset[2]]]
-#				max_index_2nd = counts.index(max(counts))
-#				alt_base=subset[max_index_2nd]
-#				alt_num=int(rec[alt_base])
-#				#print (max_base, max_num, alt_base, alt_num)
-#				if alt_num>=int(3) and max_num>=int(3) and max_num+alt_num>=int(min_dp_inforSNPs) and scipy.stats.binom_test(alt_num, max_num+alt_num)>0.05 and rec['pos']!=int(pos):
-#					print (sample,chr,pos,major_allele,minor_allele,chr,int(rec['pos'])+1,max_base,alt_base,conflictnum, file=merged_inforSNPs)
-#		
-#file.close()
-#merged_inforSNPs.close()
-#
-#
-#
-###3rd step: generate the 2X2 table:
-#n_major_het1=dict()
-#n_major_het2=dict()
-#n_minor_het1=dict()
-#n_minor_het2=dict()
-#
-#input_pos=output_dir+"/all.merged.inforSNPs.pos"
-##1 1661246 T C 1 1660812 A G 0
-##1 2585130 C G 1 2584706 A G 4
-#file=open(input_pos)
-#for line in file:
-#	line=line.rstrip()
-#	fields=line.split(' ')
-#	sample=fields[0]
-#	chr=fields[1]
-#	chrom=str(chr)
-#	pos=fields[2]
-#	major_allele=fields[3]
-#	minor_allele=fields[4]
-#	inforSNP_pos=fields[6]
-#	inforSNP_ref=fields[7]
-#	inforSNP_alt=fields[8]
-#	conflict=fields[9]
-#	if pos != inforSNP_pos:
-#		f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-#		f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
-#		a1=pysam.AlignmentFile(f1_sorted_name,"rb")
-#		a2=pysam.AlignmentFile(f2_sorted_name,"rb")
-#		start_pos=max(int(inforSNP_pos)-1000,0)
-#		end_pos=min(int(inforSNP_pos)+1000,int(chr_sizes[chrom]))
-#	
-#		name=sample+";"+chr+';'+str(pos)+';'+major_allele+";"+minor_allele+";"+str(inforSNP_pos)+";"+str(inforSNP_ref)+";"+str(inforSNP_alt)+";"+str(conflict)
-#		n_major_het1[name]=0
-#		n_major_het2[name]=0
-#		n_minor_het1[name]=0
-#		n_minor_het2[name]=0
-#	
-#		for rec in pysamstats.stat_variation(a1,fafile=ref_fasta,chrom=chr,start=start_pos,end=end_pos):
-#			if rec['pos']==int(inforSNP_pos)-1:
-#				n_major_het1[name]=rec[inforSNP_ref]
-#				n_major_het2[name]=rec[inforSNP_alt]
-#		for rec in pysamstats.stat_variation(a2,fafile=ref_fasta,chrom=chr,start=start_pos,end=end_pos):
-#			if rec['pos']==int(inforSNP_pos)-1:
-#				n_minor_het1[name]=rec[inforSNP_ref]
-#				n_minor_het2[name]=rec[inforSNP_alt]
-#file.close()
-#
-#fo2=open(output_dir+"/all_2x2table","w")
-#print ("sample","chr","pos","ref","alt","pos_inforSNP","het1","het2","conflicted_reads","ref_het1_count","ref_het2_count","alt_het1_count","alt_het2_count",file=fo2)
-##12878-200x 10_10002280_A_G_10002816_G_A_0 14 0 0 8
-#
-#for k,v in sorted(n_major_het1.items()):
-#	#print >>fo, sample,k,n_major_het1[k],n_major_het2[k],n_minor_het1[k],n_minor_het2[k]
-#	print (' '.join(str(x) for x in k.split(";")), n_major_het1[k],n_major_het2[k],n_minor_het1[k],n_minor_het2[k],file=fo2)
-#fo2.close()
+fo1=open(output_dir+"/all_candidates","w")
+for line in file:
+	line=line.rstrip()
+	fields=line.split('\t')
+	sample=fields[0]
+	chr=fields[1]
+	chrom=str(chr)
+	pos=int(fields[2])
+	major_allele=fields[3]
+	minor_allele=fields[4]
+	input_bam=bam_dir+"/"+sample+".bam"
+	a=pysam.AlignmentFile(input_bam, "rb")
+	f1=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
+	f2=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
+	f3=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
+	name=sample+'_'+chr+'_'+str(pos)
+	major_ids=list()
+	minor_ids=list()
+	start=int(pos)-1
+	end=int(pos)
+	major_num=int(0)
+	minor_num=int(0)
+
+	for pileupcolumn in a.pileup(chrom, start, end):
+		for pileupread in pileupcolumn.pileups:
+			if pileupread.indel!=0:
+				continue
+			try:
+				querybase=pileupread.alignment.query_sequence[pileupread.query_position]
+				if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
+					major_ids.append(pileupread.alignment.query_name)
+					major_num+=1
+				elif int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele): #and pileupread.alignment.mapping_quality>=10:
+					minor_ids.append(pileupread.alignment.query_name)
+					minor_num+=1
+			except:
+				continue
+
+	start=int(pos)-1000
+	end=int(pos)+1000
+	conflictnum=0
+	if len(major_ids)>=2 and len(minor_ids)>=2:
+		conflict_reads=set(major_ids) & set(minor_ids)
+		conflictnum=len(conflict_reads)
+			
+		for read in a.fetch(chrom, start, end):
+			if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
+				f3.write(read)
+			if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
+				f1.write(read)
+			if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
+				f2.write(read)
+	f1.close()
+	f2.close() 
+	f3.close()
+
+	f1_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
+	f2_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
+	f3_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+	
+	f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+	f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+	f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
+	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
+	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
+	cmd_list2.append("samtools index "+f1_sorted_name)
+	cmd_list2.append("samtools index "+f2_sorted_name)
+	cmd_list2.append("samtools index "+f3_sorted_name)
+	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
+file.close()
+fo1.close()
+	
+pool=Pool(processes=int(n_jobs))
+pool.map(run_cmd,cmd_list1,1)
+pool.close()
+pool.join()
+
+pool=Pool(processes=int(n_jobs))
+pool.map(run_cmd,cmd_list2,1)
+pool.close()
+pool.join()
+
+##2nd step: extract candidate nearby inforSNPs (germline het):
+file=open(output_dir+"/all_candidates")
+merged_inforSNPs=open(output_dir+"/all.merged.inforSNPs.pos","w")
+conflict_mosaic=dict()
+#==> /n/data1/hms/dbmi/park/yanmei/simulated_bams_na12878/12878-50x.merged.inforSNPs.pos <==
+#1 18089 G T 1 17385 G A 0
+for line in file:
+	line=line.rstrip()
+	fields=line.split(' ')
+	sample=fields[0]
+	chr=fields[1]
+	chrom=str(chr)
+	pos=int(fields[2])
+	major_allele=fields[3]
+	minor_allele=fields[4]
+	major_num=int(fields[5])
+	minor_num=int(fields[6])
+	conflictnum=int(fields[7])
+	mosaic_name=sample+';'+chr+';'+str(pos)+";"+major_allele+";"+minor_allele
+	conflict_mosaic[mosaic_name]=conflictnum
+	start=int(pos)-1
+	end=int(pos)
+	f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+
+	if major_num>=3 and minor_num>=3:
+		##print (chr,pos, major_num, minor_num)
+		##print (f3_sorted_name)
+		f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rb')
+		for rec in pysamstats.stat_variation(f3_alignment_file, fafile=ref_fasta, min_mapq=0, min_baseq=0):
+			if  ([rec['A'],rec['C'],rec['G'],rec['T']].count(0)<=2) and (rec['reads_pp']>10):
+				bases=['A','C','G','T']
+				counts=[rec['A'],rec['C'],rec['G'],rec['T']]
+				max_index=counts.index(max(counts))
+				max_base=bases[max_index]
+				max_num=int(rec[max_base])
+				subset=list(set(['A','C','G','T'])-set(max_base))
+				counts=[rec[subset[0]],rec[subset[1]],rec[subset[2]]]
+				max_index_2nd = counts.index(max(counts))
+				alt_base=subset[max_index_2nd]
+				alt_num=int(rec[alt_base])
+				#print (max_base, max_num, alt_base, alt_num)
+				if alt_num>=int(3) and max_num>=int(3) and max_num+alt_num>=int(min_dp_inforSNPs) and scipy.stats.binom_test(alt_num, max_num+alt_num)>0.05 and rec['pos']!=int(pos):
+					print (sample,chr,pos,major_allele,minor_allele,chr,int(rec['pos'])+1,max_base,alt_base,conflictnum, file=merged_inforSNPs)
+		
+file.close()
+merged_inforSNPs.close()
+
+
+
+##3rd step: generate the 2X2 table:
+n_major_het1=dict()
+n_major_het2=dict()
+n_minor_het1=dict()
+n_minor_het2=dict()
+
+input_pos=output_dir+"/all.merged.inforSNPs.pos"
+#1 1661246 T C 1 1660812 A G 0
+#1 2585130 C G 1 2584706 A G 4
+file=open(input_pos)
+for line in file:
+	line=line.rstrip()
+	fields=line.split(' ')
+	sample=fields[0]
+	chr=fields[1]
+	chrom=str(chr)
+	pos=fields[2]
+	major_allele=fields[3]
+	minor_allele=fields[4]
+	inforSNP_pos=fields[6]
+	inforSNP_ref=fields[7]
+	inforSNP_alt=fields[8]
+	conflict=fields[9]
+	if pos != inforSNP_pos:
+		f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+		f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+		a1=pysam.AlignmentFile(f1_sorted_name,"rb")
+		a2=pysam.AlignmentFile(f2_sorted_name,"rb")
+		start_pos=max(int(inforSNP_pos)-1000,0)
+		end_pos=min(int(inforSNP_pos)+1000,int(chr_sizes[chrom]))
+	
+		name=sample+";"+chr+';'+str(pos)+';'+major_allele+";"+minor_allele+";"+str(inforSNP_pos)+";"+str(inforSNP_ref)+";"+str(inforSNP_alt)+";"+str(conflict)
+		n_major_het1[name]=0
+		n_major_het2[name]=0
+		n_minor_het1[name]=0
+		n_minor_het2[name]=0
+	
+		for rec in pysamstats.stat_variation(a1,fafile=ref_fasta,chrom=chr,start=start_pos,end=end_pos):
+			if rec['pos']==int(inforSNP_pos)-1:
+				n_major_het1[name]=rec[inforSNP_ref]
+				n_major_het2[name]=rec[inforSNP_alt]
+		for rec in pysamstats.stat_variation(a2,fafile=ref_fasta,chrom=chr,start=start_pos,end=end_pos):
+			if rec['pos']==int(inforSNP_pos)-1:
+				n_minor_het1[name]=rec[inforSNP_ref]
+				n_minor_het2[name]=rec[inforSNP_alt]
+file.close()
+
+fo2=open(output_dir+"/all_2x2table","w")
+print ("sample","chr","pos","ref","alt","pos_inforSNP","het1","het2","conflicted_reads","ref_het1_count","ref_het2_count","alt_het1_count","alt_het2_count",file=fo2)
+#12878-200x 10_10002280_A_G_10002816_G_A_0 14 0 0 8
+
+for k,v in sorted(n_major_het1.items()):
+	#print >>fo, sample,k,n_major_het1[k],n_major_het2[k],n_minor_het1[k],n_minor_het2[k]
+	print (' '.join(str(x) for x in k.split(";")), n_major_het1[k],n_major_het2[k],n_minor_het1[k],n_minor_het2[k],file=fo2)
+fo2.close()
 
 
 ##last step: assign phasing state to each site
