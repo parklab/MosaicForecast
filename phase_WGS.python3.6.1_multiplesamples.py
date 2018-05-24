@@ -433,7 +433,8 @@ fo4=open(output_dir+"/all.phasing","w")
 print ("sample","chr","pos","ref","alt","phasing","conflicting_reads",file=fo4)
 for k,v in sorted(phasing_2by2.items()):
 	if k in MT2_phasing_num:
-		if max(MT2_phasing_num[k], key=MT2_phasing_num[k].get)=="wrong":
+		if MT2_phasing_num[k]['wrong']>=MT2_phasing_num[k]['correct']:
+#		if max(MT2_phasing_num[k], key=MT2_phasing_num[k].get)=="wrong":
 			v="hap>3"
 	print (' '.join(k.split(';')), v, conflict_mosaic[k], file=fo4)
 fo4.close()
