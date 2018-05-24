@@ -179,7 +179,7 @@ for line in file:
 		##print (chr,pos, major_num, minor_num)
 		##print (f3_sorted_name)
 		f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rb')
-		for rec in pysamstats.stat_variation(f3_alignment_file, fafile=ref_fasta, min_mapq=0, min_baseq=0):
+		for rec in pysamstats.stat_variation(f3_alignment_file, fafile=ref_fasta, min_mapq=20, min_baseq=20):
 			if  ([rec['A'],rec['C'],rec['G'],rec['T']].count(0)<=2) and (rec['reads_pp']>10):
 				bases=['A','C','G','T']
 				counts=[rec['A'],rec['C'],rec['G'],rec['T']]
