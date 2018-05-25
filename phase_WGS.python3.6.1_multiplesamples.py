@@ -287,12 +287,14 @@ for line in input_table:
 		phase[name]['hap=3']=phase[name].get("hap=3",0)+0
 		phase[name]['hap>3']=phase[name].get("hap>3",0)+0
 		if C1+C2+C3+C4>=10:
-			if ((((C2==float(0) or C1>C2*float(10) ) and ( C3==float(0) or C4>C3*float(10) )) or ((C1==float(0) or C2>C1*float(10)) and (C4==float(0) or C3>C4*float(10)))) and (C1+C2>float(3) and C3+C4>float(3))):
-				phase[name]['hap=2']=phase[name].get("hap=2",0)+1
-			elif (C1*C2==float(0) and C1+C2>=float(3) and C3*C4>float(0) and (C3>C4/float(10) or C3<C4*float(10))) or (C3*C4==float(0) and C3+C4>=float(3) and C1*C2>float(0) and (C1>C2/float(10) or C1<C2*float(10))):
-				phase[name]['hap=3']=phase[name].get("hap=3",0)+1
-			elif C1*C2>float(0) and C3*C4>float(0):
+			#UMB1349 18 30348609 C T 30348301 G A 0 34 29 0 2
+
+			if not ( ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)) or (((C1>C2/10) and (C1<C2*10)) and (C3<C4/10 or C4<C3/10))  ):
 				phase[name]['hap>3']=phase[name].get("hap>3",0)+1
+			elif (((C1>C2/10) and (C1<C2*10)) and (C3<C4/10 or C4<C3/10)):
+				phase[name]['hap=3']=phase[name].get("hap=3",0)+1
+			elif ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)):
+				phase[name]['hap=2']=phase[name].get("hap=2",0)+1
 
 phasing_2by2 = dict()
 fo=open(output_dir+"/all.phasing_2by2","w")
