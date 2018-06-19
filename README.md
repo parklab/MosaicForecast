@@ -6,7 +6,7 @@ Python version 3.6.1\
 R version 3.4.1
 
 # Packages need to be installed:
-## Python packages need to import or install:
+## Python packages:
 os\
 sys\
 collections\
@@ -20,7 +20,7 @@ pysam (0.11.2.2)\
 pysamstats (1.0.1)\
 scipy (0.19.0)\
 pandas (0.20.1)
-## R packages need to import or install:
+## R packages:
 caret\
 e1071\
 glmnet\
