@@ -38,13 +38,23 @@ python feature\_extraction.python3.6.1.py\
 Usage: python(v3.6.1) feature\_extraction.py input\_bed(file\_format: chr pos-1 pos ref alt sample, sep="\t") output\_features bam\_dir reference\_fasta
 
 Note: 1. Name of bam files should be "sample.bam" under the bam\_dir. 2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa). 3. We did not use dbSNP AF as an feature because we only focus on ultra-rare mosaic mutations, but you can use it to train your model if you have interest in common variants.
+
+Demo:\
+python feature\_extraction.python3.6.1.py demo/test.input demo/test.features demo ${reference\_dir}/human\_g1k\_v37\_decoy.fasta
+
 ### 2nd step:
 Rscript feature\_extraction.R\
 Usage: Rscript feature\_extraction.R input\_file(feature\_list\_frompython) output\_file(feature\_list\_R)
 
+Demo:\
+Rscript feature\_extraction.R demo/test.features demo/test\_feature\_list\_R
+
 ## Prediction:
 Rscript prediction.R\
 Usage: Rscript prediction.R input\_file(feature\_list) model\_trained output\_file(predictions)
+
+Demo:\
+Rscript prediction.R demo/test\_feature\_list\_R models\_trained/250x\_rf\_PCAandPhase\_30mtry.rds demo/test\_predictions
 
 ### You can also use our models trained with WGS PE data (different read depths):
 50x\_rf\_PCAandPhase\_30mtry.rds\
