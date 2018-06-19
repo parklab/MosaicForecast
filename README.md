@@ -29,7 +29,7 @@ nnet
 # Usage:
 ## Phasing:
 python phase\_WGS.python3.6.1\_multiplesamples.py\
-Usage: python phase\_WGS.py bam\_dir data\_dir ref\_fasta n\_jobs input\_positions(file format:sample chr pos ref alt, sep=\t) min\_dp\_inforSNPs(int, can be set to 20)
+Usage: python phase_WGS.python3.6.1\_multiplesamples.py bam\_dir output\_dir ref\_fasta n\_jobs input\_positions(file format:chr pos-1 pos ref alt sample, sep=\t) min\_dp\_inforSNPs(int, can be set to 20)
 
 Note: 1. Name of bam files should be "sample.bam" under the bam\_dir. 2. there should be a fai file under the same dir of the fasta file (samtools faidx input.fa). 3. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs.
 ## Feature extraction:
