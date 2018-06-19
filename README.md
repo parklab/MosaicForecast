@@ -81,7 +81,7 @@ Demo:\
 Rscript train\_on\_phasing.R demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation models\_trained/model\_phasingcorrection.rds
 
 ### Method2. correct genotypes from phasing and train models based on corrected phasable sites:
-1st step, correct genotype labels of phasable sites using experimentally validated sites:\
+#### 1st step: correct genotype labels of phasable sites using experimentally validated sites:\
 Rscript phasing\_correction\_train.R\
 Usage: Rscript training\_phasing\_correction.R trainset prediction\_model\_phasingcorrection output\_file\_phasingcorrected
 
@@ -89,5 +89,5 @@ Demo:\
 Rscript phasing\_correction\_train.R demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation demo/prediction\_model\_phasingcorrection.rds demo/test\_phasingcorrected
 
 
-2nd step, train based on corrected phasable sites:\
+#### 2nd step: train based on corrected phasable sites:\
 
