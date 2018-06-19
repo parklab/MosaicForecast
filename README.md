@@ -57,7 +57,8 @@ Usage: Rscript prediction.R input\_file(feature\_list) model\_trained output\_fi
 ## Training:
 ### Method1. train based on phasable sites:\
 Rscript train\_on\_phasing.R\
-Usage: Rscript train\_on\_phasing.R trainset(demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation) prediction\_model\
+Usage: Rscript train\_on\_phasing.R trainset(demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation) prediction\_model
+
 Note:
 hap=2: het\
 hap=3: mosaic\
