@@ -59,7 +59,7 @@ Usage: Rscript prediction.R input\_file(feature\_list) model\_trained output\_fi
 Rscript train\_on\_phasing.R\
 Usage: Rscript train\_on\_phasing.R trainset(demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation) prediction\_model
 
-Note:
+Note:\
 hap=2: het\
 hap=3: mosaic\
 hap>3: cnv/repeat
