@@ -32,6 +32,10 @@ python phase\_WGS.python3.6.1\_multiplesamples.py\
 Usage: python phase_WGS.python3.6.1\_multiplesamples.py bam\_dir output\_dir ref\_fasta n\_jobs input\_positions(file format:chr pos-1 pos ref alt sample, sep=\t) min\_dp\_inforSNPs(int, can be set to 20)
 
 Note: 1. Name of bam files should be "sample.bam" under the bam\_dir. 2. there should be a fai file under the same dir of the fasta file (samtools faidx input.fa). 3. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs.
+
+Demo:\
+python phase\_WGS.python3.6.1\_multiplesamples.py demo demo/phasing ${reference\_dir}/human\_g1k\_v37\_decoy.fasta 1 demo/test.input 20
+
 ## Feature extraction:
 ### 1st step:
 python feature\_extraction.python3.6.1.py\
@@ -64,7 +68,7 @@ Rscript prediction.R demo/test\_feature\_list\_R models\_trained/250x\_rf\_PCAan
 250x\_rf\_PCAandPhase\_30mtry.rds
 
 
-## Training:
+## You could also train models using your own data:
 ### Method1. train based on phasable sites:\
 Rscript train\_on\_phasing.R\
 Usage: Rscript train\_on\_phasing.R trainset(demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation) prediction\_model
@@ -74,7 +78,7 @@ hap=2: het\
 hap=3: mosaic\
 hap>3: cnv/repeat
 ### Method2. train based on validated and phasable sites:
-1st step, correct phasing of phasable sites using experimentally validated sites:\
+1st step, correct genotype labels of phasable sites using experimentally validated sites:\
 
 
 
