@@ -4,10 +4,10 @@
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)<2) {
-	stop("Rscript training_on_phasing.R trainset(demo/all_putative_mosaics_feature.list.features_addphasing_addvalidation) output_model", call.=FALSE)
+	stop("Rscript training_on_phasing.R trainset(demo/all_putative_mosaics_feature.list.features_addphasing_addvalidation) prediction_model", call.=FALSE)
 } else if (length(args)==2) {
 	input_file <- args[1]
-	output_model <- args[2]
+	prediction_model <- args[2]
 }
 
 library(caret)
@@ -25,7 +25,7 @@ control <- trainControl(method="repeatedcv", number=10, repeats=3, search="grid"
 tunegrid <- expand.grid(.mtry=30)
 metric <- "Accuracy"
 rf_gridsearch <- train(phase~., data=all_train.2, method="rf", metric=metric,tuneGrid=tunegrid, trControl=control)
-saveRDS(rf_gridsearch,file=output_model)
+saveRDS(rf_gridsearch,file=prediction_model)
 
 #input$prediction_phasing <- predict(rf_gridsearch, input)
 #write.table(input, "test.prediction",sep="\t",quote=FALSE,row.names=FALSE, col.names=TRUE)
