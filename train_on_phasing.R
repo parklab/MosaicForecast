@@ -4,7 +4,7 @@
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)<2) {
-	stop("Rscript training_on_phasing.R trainset output_model", call.=FALSE)
+	stop("Rscript training_on_phasing.R trainset(demo/all_putative_mosaics_feature.list.features_addphasing_addvalidation) output_model", call.=FALSE)
 } else if (length(args)==2) {
 	input_file <- args[1]
 	output_model <- args[2]
