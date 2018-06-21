@@ -21,11 +21,11 @@ pysamstats (1.0.1)\
 scipy (0.19.0)\
 pandas (0.20.1)
 ## R packages:
-caret\
-e1071\
-glmnet\
-nnet\
-ggbiplot
+caret (6.0-78)\
+e1071 (1.6-8)\
+glmnet (2.0-13)\
+nnet (7.3-12)\
+ggbiplot (0.55)
 
 # Usage:
 ## Phasing:
