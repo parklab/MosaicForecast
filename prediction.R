@@ -19,8 +19,9 @@ library(e1071)
 M <- readRDS(model)
 input<-read.delim(input_file,header=TRUE,sep="\t")
 input <- input[!is.na(input$mosaic_likelihood),]
+input <- input[!is.na(input$baseq_t),]
 input$mapq_p[is.na(input$mapq_p)]<-1
-#input[is.na(input)]<-1
+input[is.na(input)]<-0
 
 
 output<- input
