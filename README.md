@@ -74,6 +74,7 @@ Rscript prediction.R demo/test\_feature\_list\_R models\_trained/250x\_rf\_PCAan
 
 ## You could also train models using your own data:
 ### Method1. train models only based on phasable sites:
+### (When you don't have experimental validated sites)
 Rscript train\_on\_phasing.R\
 Usage: Rscript train\_on\_phasing.R trainset prediction\_model
 
@@ -81,6 +82,8 @@ Demo:\
 Rscript train\_on\_phasing.R demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation demo/test.rds 
 
 ### Method2. correct genotypes from phasing and train models based on corrected phasable sites:
+### (Recommened when you have >=150 sites validated orthogonally)
+
 #### 1st step: correct genotype labels of phasable sites using experimentally validated sites:
 Rscript phasing\_correction\_train.R\
 Usage: Rscript training\_phasing\_correction.R trainset prediction\_model\_phasingcorrection output\_file\_phasingcorrected
