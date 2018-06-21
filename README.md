@@ -65,7 +65,7 @@ Usage: Rscript prediction.R input\_file(feature\_list) model\_trained output\_fi
 Demo:\
 Rscript prediction.R demo/test\_feature\_list\_R models\_trained/250x\_rf\_PCAandPhase\_30mtry.rds demo/test\_predictions
 
-### You may use our models trained with WGS PE data (given different read depths):
+### You may use our models trained with WGS data (150bp paired-end data, given different read depths):
 50x\_rf\_PCAandPhase\_30mtry.rds\
 100x\_rf\_PCAandPhase\_30mtry.rds\
 150x\_rf\_PCAandPhase\_30mtry.rds\
