@@ -30,6 +30,13 @@ import os
 from pandas import *
 import itertools
 from collections import OrderedDict, defaultdict
+import logging
+logger = logging.getLogger('ftpuploader')
+hdlr = logging.FileHandler('ftplog.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO)
 
 def run_cmd(cmd):
 	Popen(cmd, shell=True, stdout=PIPE).communicate()
@@ -113,14 +120,16 @@ for line in file:
 	if len(major_ids)>=2 and len(minor_ids)>=2:
 		conflict_reads=set(major_ids) & set(minor_ids)
 		conflictnum=len(conflict_reads)
-			
-		for read in a.fetch(chrom, start, end):
-			if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
-				f3.write(read)
-			if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
-				f1.write(read)
-			if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
-				f2.write(read)
+		try:	
+			for read in a.fetch(chrom, start, end):
+				if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
+					f3.write(read)
+				if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
+					f1.write(read)
+				if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
+					f2.write(read)
+		except Exception as e:
+			logger.error('Failed to fetch bam:' + str(e) + chrom + ":" +  str(start) + "-" + str(end))
 	f1.close()
 	f2.close() 
 	f3.close()
