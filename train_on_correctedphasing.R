@@ -19,7 +19,8 @@ input$phase <- gsub('hap>3', 'repeat', gsub('hap=3', 'mosaic', gsub('hap=2','het
 
 all_train <- subset(input, phase != "notphased")
 all_train <-all_train[!is.na(all_train$mosaic_likelihood),]
-all_train.2 <- subset(all_train, select=-c(althom_likelihood, id, context, validation,dp_p))
+#all_train.2 <- subset(all_train, select=-c(althom_likelihood, id, context, validation,dp_p))
+all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood))
 
 control <- trainControl(method="repeatedcv", number=10, repeats=3, search="grid")
 tunegrid <- expand.grid(.mtry=30)
