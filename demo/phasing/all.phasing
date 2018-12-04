@@ -1,0 +1,2 @@
+sample chr pos ref alt phasing conflicting_reads
+test 1 1004865 G C hap=3 0

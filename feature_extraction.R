@@ -15,7 +15,10 @@ if (length(args)!=3) {
 
 input=read.delim(input_file,header=TRUE,sep=" ")
 input <- subset(input, ((((querypos_minor!="," & seqpos_minor!=",") & seqpos_major!="," )  & baseq_minor_near1b!=",") & leftpos_minor!=",") &  baseq_major_near1b!=",")
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
 my.wilcox.p <- function(x)
 {
        ref_pos=as.numeric(unlist(strsplit(as.character(x[2]),",")))

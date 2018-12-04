@@ -89,7 +89,7 @@ for line in file:
 	pos2=min(int(chr_sizes[chr]),int(pos)+1)
 	major_allele=fields[3]
 	minor_allele=fields[4]
-	name=str(sample)+'_'+str(chr)+'_'+str(pos)+"_"+str(major_allele)+"_"+str(minor_allele)
+	name=str(sample)+'~'+str(chr)+'~'+str(pos)+"~"+str(major_allele)+"~"+str(minor_allele)
 	input_bam=bam_dir+"/"+str(sample)+".bam"
 	a=pysam.AlignmentFile(input_bam, "rb")
 	chrom=str(chr)

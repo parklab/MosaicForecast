@@ -4,13 +4,14 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=6:
-	print ("Usage: python phase_WGS.py bam_dir data_dir ref_fasta n_jobs input_positions(file format:sample chr pos ref alt, sep=\\t) min_dp_inforSNPs(int)")
+	print ("Usage: python phase_WGS.python3.6.1_multiplesamples.py bam_dir output_dir ref_fasta n_jobs input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int)")
+#	1       1004864 1004865 G       C       test
 #1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
 elif count==6:
 	#sample=sys.argv[1]
 	bam_dir_tmp=sys.argv[1]
-	data_dir_tmp=sys.argv[2]
+	output_dir_tmp=sys.argv[2]
 	ref_fasta=sys.argv[3]
 	n_jobs=sys.argv[4]
 	input_pos=sys.argv[5]
@@ -29,6 +30,13 @@ import os
 from pandas import *
 import itertools
 from collections import OrderedDict, defaultdict
+import logging
+logger = logging.getLogger('ftpuploader')
+hdlr = logging.FileHandler('ftplog.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO)
 
 def run_cmd(cmd):
 	Popen(cmd, shell=True, stdout=PIPE).communicate()
@@ -38,12 +46,11 @@ if bam_dir_tmp.endswith('/'):
 else:
 	bam_dir=bam_dir_tmp
 
-if data_dir_tmp.endswith('/'):
-	data_dir=data_dir_tmp[:-1]
+if output_dir_tmp.endswith('/'):
+	output_dir=output_dir_tmp[:-1]
 else:
-	data_dir=data_dir_tmp
+	output_dir=output_dir_tmp
 
-output_dir=data_dir+'/phasing'
 os.system("mkdir -p "+output_dir)
 
 
@@ -70,10 +77,11 @@ cmd_list2=list()
 file=open(input_pos)
 fo1=open(output_dir+"/all_candidates","w")
 for line in file:
+	#1       1004864 1004865 G       C       test
 	line=line.rstrip()
 	fields=line.split('\t')
-	sample=fields[0]
-	chr=fields[1]
+	sample=fields[5]
+	chr=fields[0]
 	chrom=str(chr)
 	pos=int(fields[2])
 	major_allele=fields[3]
@@ -112,14 +120,16 @@ for line in file:
 	if len(major_ids)>=2 and len(minor_ids)>=2:
 		conflict_reads=set(major_ids) & set(minor_ids)
 		conflictnum=len(conflict_reads)
-			
-		for read in a.fetch(chrom, start, end):
-			if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
-				f3.write(read)
-			if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
-				f1.write(read)
-			if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
-				f2.write(read)
+		try:	
+			for read in a.fetch(chrom, start, end):
+				if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
+					f3.write(read)
+				if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
+					f1.write(read)
+				if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
+					f2.write(read)
+		except Exception as e:
+			logger.error('Failed to fetch bam:' + str(e) + chrom + ":" +  str(start) + "-" + str(end))
 	f1.close()
 	f2.close() 
 	f3.close()

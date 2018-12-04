@@ -1,0 +1,2 @@
+id	dp_p	querypos_p	leftpos_p	seqpos_p	mapq_p	baseq_p	baseq_t	ref_baseq1b_p	ref_baseq1b_t	alt_baseq1b_p	alt_baseq1b_t	sb_p	context	major_mismatches_mean	minor_mismatches_mean	mismatches_p	AF	dp	mosaic_likelihood	het_likelihood	refhom_likelihood	althom_likelihood	mapq_difference	sb_read12_p	dp_diff
+test~1~1004865~G~C	0.388159280338	0.54414	0.52826	0.35789	0.77359	0.79005	0.10229	0.63795	1.11226	0.64694	0.02569	0.30647	CGG	0.82	1.222	0.09746	0.085	212	1	9.23303891898954e-36	2.78766286384353e-32	0	-0.24742	0.3897	-7.67859999999999

@@ -1,6 +1,6 @@
-#!/usr/bin/env Rscript
+RSCRIPT='''#!/usr/bin/env Rscript
 
-.libPaths( c( .libPaths(), "/n/data1/hms/dbmi/park/yanmei/tools/R_packages/") )
+# .libPaths( c( .libPaths(), "/n/data1/hms/dbmi/park/yanmei/tools/R_packages/") )
 
 
 args<-commandArgs(TRUE)
@@ -30,6 +30,6 @@ prediction_probs <- predict(M,input,type="prob")
 output <- cbind(output, prediction_probs)
 
 write.table(output,row.names=FALSE, col.names=TRUE,sep="\t",file=output_file,quote=FALSE)
-
+'''
 
 
