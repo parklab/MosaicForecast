@@ -2,18 +2,19 @@
 .libPaths( c( .libPaths(), "/n/data1/hms/dbmi/park/yanmei/tools/R_packages/") )
 
 args<-commandArgs(TRUE)
-if (length(args)!=2) {
-  stop("Rscript feature_extraction.R input_file(feature_list_frompython) output_file(feature_list_R)", call.=FALSE)
-} else if (length(args)==2) {
+if (length(args)!=3) {
+  stop("Rscript feature_extraction.R input_file(feature_list_frompython) output_file(feature_list_R) read_length(int)", call.=FALSE)
+} else if (length(args)==3) {
 	verbose=TRUE
 	input_file=args[1]
 	output_file=args[2]
+	read_length=as.numeric(args[3])
 }
 
 #id      querypos_major  querypos_minor  leftpos_major   leftpos_minor   seqpos_major    seqpos_minor    mapq_major      mapq_minor      baseq_major     baseq_minor     baseq_major_near1b      baseq_minor+near1b  major_plus      major_minus     minor_plus      minor_minus     context1        context2        context1_count  context2_count  mismatches_major        mismatches_minor        major_read1     major_read2 minor_read1     minor_read2     dp_near dp_far  dp_p
 
 input=read.delim(input_file,header=TRUE,sep=" ")
-
+input <- subset(input, ((((querypos_minor!="," & seqpos_minor!=",") & seqpos_major!="," )  & baseq_minor_near1b!=",") & leftpos_minor!=",") &  baseq_major_near1b!=",")
 
 my.wilcox.p <- function(x)
 {
@@ -136,14 +137,14 @@ my.mean <-function(x)
        mismatch_major=as.numeric(unlist(strsplit(as.character(x[22]),",")))
        round(mean(mismatch_major),3)
 }
-input$major_mismatches_mean=apply(input,1,my.mean)
+input$major_mismatches_mean=apply(input,1,my.mean)/read_length
 
 my.mean <-function(x)
 {
        mismatch_minor=as.numeric(unlist(strsplit(as.character(x[23]),",")))
        round(mean(mismatch_minor),3)
 }
-input$minor_mismatches_mean=apply(input,1,my.mean)
+input$minor_mismatches_mean=apply(input,1,my.mean)/read_length
 
 my.wilcox.p <- function(x)
 {
@@ -238,7 +239,7 @@ my.diff <- function(x)
 input$dp_diff=apply(input,1,my.diff)
 
 
-output=input[,c(1,seq(30,54))]
+output=input[,c(1,seq(30,55))]
 
 mosaic_p <- 10^(as.numeric(as.vector(output$mosaic_likelihood)))
 het_p <- 10^(as.numeric(as.vector(output$het_likelihood)))
@@ -253,9 +254,9 @@ output$althom_likelihood <- althom_p/input$normalize
 
 
 write.table(output,output_file,quote=F,sep="\t",row.names=F,col.names=T)
-~
+
 #head -1 all_putative_mosaics_feature.list.forR
-#id      querypos_major  querypos_minor  leftpos_major   leftpos_minor   seqpos_major    seqpos_minor    mapq_major      mapq_minor      baseq_major     baseq_minor     baseq_major_near1b      baseq_minor+near1b  major_plus      major_minus     minor_plus      minor_minus     context_reference_forward       context_reference_reverse       context_antireference_forward   context_antireference_reverse   context_reference_forward_count     context_reference_reverse_count context_antireference_forward_count     context_antireference_reverse_count     mismatches_major        mismatches_minor        major_read1major_read2      minor_read1     minor_read2     dp_near dp_far  dp_p
+#id      querypos_major  querypos_minor  leftpos_major   leftpos_minor   seqpos_major    seqpos_minor    mapq_major      mapq_minor      baseq_major     baseq_minor     baseq_major_near1b      baseq_minor+near1b  major_plus      major_minus     minor_plus      minor_minus     context_reference_forward       context_reference_reverse       context_antireference_forward   context_antireference_reverse   context_reference_forward_count     context_reference_reverse_count context_antireference_forward_count     context_antireference_reverse_count     mismatches_major        mismatches_minor        major_read1major_read2      minor_read1     minor_read2     dp_near dp_far  dp_p	conflict_num
 
 
 
