@@ -5,6 +5,7 @@ args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)!=3) {
 	stop("Rscript Train_RFmodel.R trainset prediction_model type(Phase|Refine)
+	Note:
 	The \"Phase\" model indicates the RF model trained on phasing (hap=2, hap=3, hap>3); 
 	The \"Refine\" model indicates the RF model trained on Refined-genotypes from the multinomial logistic regression model (het, mosaic, repeat, refhom)
 ", call.=FALSE)

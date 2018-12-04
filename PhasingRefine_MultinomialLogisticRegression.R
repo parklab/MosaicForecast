@@ -4,7 +4,12 @@
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)!=5) {
-	stop("Rscript Phasing_Refine_Multinomial_Logistic_Regression.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) type(pvalue|effectsize)", call.=FALSE)
+	stop("Rscript Phasing_Refine_Multinomial_Logistic_Regression.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) type(pvalue|effectsize)
+
+	Note:
+	Use \"pvalue\" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
+        Use \"effectsize\" when your data has extrmely un-even read coverage and small training sample size
+", call.=FALSE)
 } else if (length(args)==4) {
 	train_file <- args[1]
 	prediction_model <- args[2]
