@@ -40,7 +40,7 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 3. File format of the input\_positions: chr pos-1 pos ref alt sample, sep=\t 
 4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
 
-**Output:
+**Output:**
 ```
 hap=2: het
 hap=3: mosaic
