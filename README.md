@@ -30,15 +30,17 @@ A mosaicSNV detecting software based on phasing and random forest
 **Usage:** 
 
 ```
-python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions(file format:chr pos-1 pos ref alt sample, sep=\t) min\_dp\_inforSNPs(integer, can be set to 20)
+python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min\_dp\_inforSNPs
 
 ```
 
 **Note:** 
 
 1. Name of bam files should be "sample.bam" under the bam\_dir. 
-2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa). 
-3. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs.
+2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).
+3. File format of the input\_positions: chr pos-1 pos ref alt sample, sep=\t 
+4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
+
 
 ```
 hap=2: het
