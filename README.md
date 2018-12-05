@@ -30,8 +30,7 @@ A mosaicSNV detecting software based on phasing and random forest
 **Usage:** 
 
 ```
-python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min\_dp\_inforSNPs
-
+python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min_dp_inforSNPs
 ```
 
 **Note:** 
