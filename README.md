@@ -1,8 +1,8 @@
-# MosaicPC-Calico
-A mosaicSNV detecting software based on phasing and random forest
+# MosaicForecast
+A mosaic SNV detecting software based on phasing and random forest
 
 # Required Interpreter Versions:
-* Python version 3.6.1
+* Python version 3+
 * R version 3.4.1
 
 # Packages need to be installed:
