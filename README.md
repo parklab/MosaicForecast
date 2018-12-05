@@ -33,7 +33,7 @@ python phase_WGS.python3.6.1_multiplesamples.py
 **Usage:** 
 
 ```
-python Phase.py bam_dir output_dir ref_fasta n\_jobs input_positions(file format:chr pos-1 pos ref alt sample, sep=\t) min\_dp\_inforSNPs(integer, can be set to 20)
+python Phase.py bam_dir output_dir ref_fasta n\_jobs\_parallel input_positions(file format:chr pos-1 pos ref alt sample, sep=\t) min\_dp\_inforSNPs(integer, can be set to 20)
 
 ```
 
@@ -46,13 +46,13 @@ python Phase.py bam_dir output_dir ref_fasta n\_jobs input_positions(file format
 ```
 hap=2: het
 hap=3: mosaic
-hap>=4: cnv/repeat
+hap>3: cnv/repeat
 ```
 
 **Demo:**
 
 ```
-python phase_WGS.python3.6.1_multiplesamples.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 demo/test.input 20
+python Phase.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 demo/test.input 20
 python ReadLevel_Features_extraction.py
 Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep="\t") output_features bam_dir reference_fasta
 

@@ -4,7 +4,7 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=6:
-	print ("Usage: python phase_WGS.python3.6.1_multiplesamples.py bam_dir output_dir ref_fasta n_jobs input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int)")
+	print ("Usage: python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int)\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.")
 #	1       1004864 1004865 G       C       test
 #1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
