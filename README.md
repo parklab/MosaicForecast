@@ -33,7 +33,8 @@ python phase_WGS.python3.6.1_multiplesamples.py
 **Usage:** 
 
 ```
-python phase_WGS.python3.6.1_multiplesamples.py bam_dir output_dir ref_fasta n\_jobs input_positions(file format:chr pos-1 pos ref alt sample, sep=\t) min\_dp\_inforSNPs(integer, can be set to 20)
+python Phase.py bam_dir output_dir ref_fasta n\_jobs input_positions(file format:chr pos-1 pos ref alt sample, sep=\t) min\_dp\_inforSNPs(integer, can be set to 20)
+
 ```
 
 **Note:** 
@@ -52,6 +53,12 @@ hap>=4: cnv/repeat
 
 ```
 python phase_WGS.python3.6.1_multiplesamples.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 demo/test.input 20
+python ReadLevel_Features_extraction.py
+Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep="\t") output_features bam_dir reference_fasta
+
+Note: 1. name of bam files are "sample.bam" by default.
+2.there should be a fai file under the same dir of the fasta file (samtools faidx input.fa)
+3. we did not use dbSNP AF as an feature, but you can use it to train your model if you have interest in common variants
 ```
 
 ## Feature extraction:

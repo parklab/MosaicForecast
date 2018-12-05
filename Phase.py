@@ -4,13 +4,14 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=6:
-	print ("Usage: python(v3) Phase.py bam_dir data_dir ref_fasta n_jobs input_positions(file format:sample chr pos ref alt, sep=\\t) min_dp_inforSNPs(int) \n\nNote: \n1. Name of bam files should be \"sample.bam\" under the bam\_dir.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.")
-	#1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
+	print ("Usage: python phase_WGS.python3.6.1_multiplesamples.py bam_dir output_dir ref_fasta n_jobs input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int)")
+#	1       1004864 1004865 G       C       test
+#1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
 elif count==6:
 	#sample=sys.argv[1]
 	bam_dir_tmp=sys.argv[1]
-	data_dir_tmp=sys.argv[2]
+	output_dir_tmp=sys.argv[2]
 	ref_fasta=sys.argv[3]
 	n_jobs=sys.argv[4]
 	input_pos=sys.argv[5]
@@ -38,12 +39,11 @@ if bam_dir_tmp.endswith('/'):
 else:
 	bam_dir=bam_dir_tmp
 
-if data_dir_tmp.endswith('/'):
-	data_dir=data_dir_tmp[:-1]
+if output_dir_tmp.endswith('/'):
+	output_dir=output_dir_tmp[:-1]
 else:
-	data_dir=data_dir_tmp
+	output_dir=output_dir_tmp
 
-output_dir=data_dir+'/phasing'
 os.system("mkdir -p "+output_dir)
 
 
@@ -70,10 +70,11 @@ cmd_list2=list()
 file=open(input_pos)
 fo1=open(output_dir+"/all_candidates","w")
 for line in file:
+	#1       1004864 1004865 G       C       test
 	line=line.rstrip()
 	fields=line.split('\t')
-	sample=fields[0]
-	chr=fields[1]
+	sample=fields[5]
+	chr=fields[0]
 	chrom=str(chr)
 	pos=int(fields[2])
 	major_allele=fields[3]
@@ -179,7 +180,7 @@ for line in file:
 		##print (chr,pos, major_num, minor_num)
 		##print (f3_sorted_name)
 		f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rb')
-		for rec in pysamstats.stat_variation(f3_alignment_file, fafile=ref_fasta, min_mapq=0, min_baseq=0):
+		for rec in pysamstats.stat_variation(f3_alignment_file, fafile=ref_fasta, min_mapq=20, min_baseq=20):
 			if  ([rec['A'],rec['C'],rec['G'],rec['T']].count(0)<=2) and (rec['reads_pp']>10):
 				bases=['A','C','G','T']
 				counts=[rec['A'],rec['C'],rec['G'],rec['T']]
@@ -287,12 +288,14 @@ for line in input_table:
 		phase[name]['hap=3']=phase[name].get("hap=3",0)+0
 		phase[name]['hap>3']=phase[name].get("hap>3",0)+0
 		if C1+C2+C3+C4>=10:
-			if ((((C2==float(0) or C1>C2*float(10) ) and ( C3==float(0) or C4>C3*float(10) )) or ((C1==float(0) or C2>C1*float(10)) and (C4==float(0) or C3>C4*float(10)))) and (C1+C2>float(3) and C3+C4>float(3))):
-				phase[name]['hap=2']=phase[name].get("hap=2",0)+1
-			elif (C1*C2==float(0) and C1+C2>=float(3) and C3*C4>float(0) and (C3>C4/float(10) or C3<C4*float(10))) or (C3*C4==float(0) and C3+C4>=float(3) and C1*C2>float(0) and (C1>C2/float(10) or C1<C2*float(10))):
-				phase[name]['hap=3']=phase[name].get("hap=3",0)+1
-			elif C1*C2>float(0) and C3*C4>float(0):
+			#UMB1349 18 30348609 C T 30348301 G A 0 34 29 0 2
+
+			if not ( ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)) or (((C1>C2/10) and (C1<C2*10)) and (C3<C4/10 or C4<C3/10))  ):
 				phase[name]['hap>3']=phase[name].get("hap>3",0)+1
+			elif (((C1>C2/10) and (C1<C2*10)) and (C3<C4/10 or C4<C3/10)):
+				phase[name]['hap=3']=phase[name].get("hap=3",0)+1
+			elif ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)):
+				phase[name]['hap=2']=phase[name].get("hap=2",0)+1
 
 phasing_2by2 = dict()
 fo=open(output_dir+"/all.phasing_2by2","w")
@@ -433,8 +436,9 @@ fo4=open(output_dir+"/all.phasing","w")
 print ("sample","chr","pos","ref","alt","phasing","conflicting_reads",file=fo4)
 for k,v in sorted(phasing_2by2.items()):
 	if k in MT2_phasing_num:
-		if max(MT2_phasing_num[k], key=MT2_phasing_num[k].get)=="wrong":
-			phasing_2by2[k]="hap>3"
+		if MT2_phasing_num[k]['wrong']>=MT2_phasing_num[k]['correct']:
+#		if max(MT2_phasing_num[k], key=MT2_phasing_num[k].get)=="wrong":
+			v="hap>3"
 	print (' '.join(k.split(';')), v, conflict_mosaic[k], file=fo4)
 fo4.close()
 
