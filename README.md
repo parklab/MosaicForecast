@@ -121,27 +121,30 @@ Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase
 Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine
 ```
 
+**Output:**
+```
+RF prediction model
+```
+
 ## Convert phasing to four-category genotypes based on experimental data:
 
 #### (Recommended when you have >=100 hap>=3 sites validated orthogonally)
-#### 1st step: correct genotype labels of phasable sites using experimentally validated sites:
+**Usage:**
 ```
-Rscript phasing_correction_train.R
+Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1(model) output2(converted genotypes) read_length(int) type(pvalue|effectsize)
 ```
-**Usage:** Rscript training\_phasing\_correction.R trainset prediction\_model\_phasingcorrection output\_file\_phasingcorrected
 
-**Demo:**\
-Rscript phasing\_correction\_train.R demo/
-all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation demo/prediction\_model\_phasingcorrection.rds demo/test\_phasingcorrected
+**Note:**
 
-
-#### 2nd step: train based on corrected phasable sites:
-```
-Rscript train_on_correctedphasing.R
-```
-**Usage:** Rscript training\_on\_phasing.R trainset prediction\_model
+1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
+2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size.
+3. The input file should be a list of pre-generated read-level features for all phasable sites, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
+4. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
 
 **Demo:**
-Rscript train\_on\_correctedphasing.R demo/test\_phasingcorrected demo/test2.rds
+```
+Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
+```
+
 
 
