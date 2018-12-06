@@ -43,9 +43,9 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 **Output:**
 ```
 output_dir/all.phasing
-hap=2: het
-hap=3: mosaic
-hap>3: cnv/repeat
+hap=2: likely het variants
+hap=3: likely mosaic variants
+hap>3: likely cnv/repeat
 ```
 
 **Demo:**
