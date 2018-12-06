@@ -181,15 +181,15 @@ for line in file:
 						elif pileupread.alignment.flag &128:
 							minor_read2[name]=major_read2.get(name,0)+1
 						
-						if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-						#if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+						#if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+						if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
 							seqpos_minor[name].append(pileupread.query_position)
 							if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 								baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
 	#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 	#       baseq_minor_near1b[name].append("end")
-						elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-						#elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+						#elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+						elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 							seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
 							if pileupread.query_position >=1 :
 								baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])

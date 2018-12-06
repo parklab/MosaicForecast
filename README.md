@@ -2,7 +2,7 @@
 A mosaic SNV detecting software based on phasing and random forest
 
 # Required Interpreter Versions:
-* Python version 3+
+* Python version 3.4+
 * R version 3.4.1
 
 # Packages need to be installed:
@@ -42,6 +42,7 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 
 **Output:**
 ```
+output\_dir/all.phasing
 hap=2: het
 hap=3: mosaic
 hap>3: cnv/repeat
@@ -53,11 +54,43 @@ hap>3: cnv/repeat
 python Phase.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 demo/test.input 20
 ```
 
-## Feature extraction:
+## Extraction of read-level features:
+**Usage:**
+
 ### 1st step:
 ```
-python feature_extraction.python3.6.1.py
+python ReadLevel\_Features\_extraction.py input.bed output.features bam_dir reference_fasta
 ```
+**Note:**
+1. Name of bam files are "sample.bam" by default.
+2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).
+3. File format of the input.bed: chr pos-1 pos ref alt sample, sep=\t 
+
+### 2nd step:
+```
+Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_length(integer) type(pvalue||effectsize)
+```
+**Note:**
+1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
+2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size. The "effectsize" mode is relatively slow.
+3. The input\_file is the file from the 1st step.
+
+**Output:**
+``
+A list of read-level features for each input site.
+```
+
+**Demo:**
+
+```
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${reference_fasta}
+Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 150 pvalue 
+```
+
+
+
+
+
 **Usage:** 
 
 python(v3.6.1) feature\_extraction.py input\_bed(file\_format: chr pos-1 pos ref alt sample, sep="\t") output\_features bam\_dir reference\_fasta
