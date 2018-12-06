@@ -105,17 +105,25 @@ Rscript Prediction.R demo/test.features\_R models\_trained/brain\_MT2-PON.250x\_
 > * models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Refine\_pvalue.rds
 
 ## You could also train models using your own data:
-### Method1. train models only based on phasable sites:
+**Usage:**
 ```
-Rscript train_on_phasing.R
+Rscript Train_RFmodel.R input(trainset) output(prediction_model) type(Phase|Refine)
 ```
-**Usage:** Rscript train\_on\_phasing.R trainset prediction\_model
+**Note:** 
+
+1. You could choose to train your model based on Phasing (hap=2, hap=3, hap>3, type in "Phase") or Refined genotypes ("mosaic","het","refhom","repeat", type in "Refine").
+2. The input file should be a list of pre-generated read-level features, adding a column termed "phase" (Phase model) or "phase\_model\_corrected" (Refined genotypes model). 
+
 
 **Demo:**
-Rscript train\_on\_phasing.R demo/all\_putative\_mosaics\_feature.list.features\_addphasing\_addvalidation demo/test.rds 
+```
+Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase
+Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine
+```
 
-### Method2. correct genotypes from phasing and train models based on corrected phasable sites:
-#### (Recommended when you have >=150 phasable sites validated orthogonally)
+## Convert phasing to four-category genotypes based on experimental data:
+
+#### (Recommended when you have >=100 hap>=3 sites validated orthogonally)
 #### 1st step: correct genotype labels of phasable sites using experimentally validated sites:
 ```
 Rscript phasing_correction_train.R
