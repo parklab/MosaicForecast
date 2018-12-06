@@ -10,7 +10,7 @@ if (length(args)!=5) {
 	Use \"pvalue\" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
         Use \"effectsize\" when your data has extrmely un-even read coverage and small training sample size
 ", call.=FALSE)
-} else if (length(args)==4) {
+} else if (length(args)==5) {
 	train_file <- args[1]
 	prediction_model <- args[2]
 	output_file <- args[3]

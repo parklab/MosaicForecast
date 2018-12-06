@@ -11,7 +11,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 * itertools
 * subprocess
 * multiprocessing
-* regex (2017.9.23)
+* regex 
 * numpy (1.12.1)
 * pyfaidx (0.5.3.1)
 * pysam (0.11.2.2)
@@ -40,18 +40,18 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 3. File format of the input\_positions: chr pos-1 pos ref alt sample, sep=\t 
 4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
 
+**Demo:**
+
+```
+python Phase.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 demo/test.input 20
+```
+
 **Output:**
 ```
 output_dir/all.phasing
 hap=2: likely het variants
 hap=3: likely mosaic variants
 hap>3: likely cnv/repeat
-```
-
-**Demo:**
-
-```
-python Phase.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 demo/test.input 20
 ```
 
 ## Extraction of read-level features:
@@ -75,16 +75,16 @@ Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_leng
 2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size. The "effectsize" mode is relatively slow.
 3. The input\_file is the file from the 1st step.
 
-**Output:**
-```
-A list of read-level features for each input site.
-```
 **Demo:**
 ```
 python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${reference_fasta}
 Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 150 pvalue 
 ```
 
+**Output:**
+```
+A list of read-level features for each input site.
+```
 
 ## Prediction:
 
@@ -95,6 +95,12 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 
 **Demo:**
 Rscript Prediction.R demo/test.features\_R models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Refine\_pvalue.rds  demo/test\_predictions
+
+**Output:**
+```
+Genotype predictions for all input sites.
+```
+
 
 > You may use our models trained with brain WGS data (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings):
 >
@@ -123,7 +129,7 @@ Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine
 
 **Output:**
 ```
-RF prediction model
+Random Forest prediction model
 ```
 
 ## Convert phasing to four-category genotypes based on experimental data:
@@ -146,5 +152,10 @@ Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1
 Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
 ```
 
+**Output:**
+```
+1. Four-category genotypes extrapolated based on phasing and read-level features
+2. "phasablesites_PCA.pdf", showing positions of different phasable sites in the PCA space constructed with read-level features. 
+```
 
 
