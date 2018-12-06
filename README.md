@@ -86,7 +86,7 @@ Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 
 A list of read-level features for each input site.
 ```
 
-## Prediction:
+## Genotype Prediction:
 
 **Usage:**
 
