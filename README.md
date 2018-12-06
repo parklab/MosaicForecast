@@ -92,6 +92,9 @@ A list of read-level features for each input site.
 
 Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(predictions)
 
+**Note:**
+1. The input\_file is a list of read-level features.
+2. The modle\_trained is the pre-trained RF model to predict genotypes.
 
 **Demo:**
 Rscript Prediction.R demo/test.features\_R models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Refine\_pvalue.rds  demo/test\_predictions
