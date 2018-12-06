@@ -42,7 +42,7 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 
 **Output:**
 ```
-output\_dir/all.phasing
+output_dir/all.phasing
 hap=2: het
 hap=3: mosaic
 hap>3: cnv/repeat
@@ -59,7 +59,7 @@ python Phase.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 d
 
 ### 1st step:
 ```
-python ReadLevel\_Features\_extraction.py input.bed output.features bam_dir reference_fasta
+python ReadLevel_Features_extraction.py input.bed output.features bam_dir reference_fasta
 ```
 **Note:**
 1. Name of bam files are "sample.bam" by default.
@@ -74,14 +74,11 @@ Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_leng
 1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
 2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size. The "effectsize" mode is relatively slow.
 3. The input\_file is the file from the 1st step.
-
 **Output:**
 ``
 A list of read-level features for each input site.
 ```
-
 **Demo:**
-
 ```
 python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${reference_fasta}
 Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 150 pvalue 
