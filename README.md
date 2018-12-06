@@ -1,9 +1,9 @@
 # MosaicForecast
-A mosaic SNV detecting software based on phasing and random forest
+A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic single-nucleotide variants (SNVs).
 
 # Required Interpreter Versions:
 * Python version 3.4+
-* R version 3.4.1
+* R version 3.4+
 
 # Packages need to be installed:
 ## Python packages:
