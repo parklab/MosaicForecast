@@ -74,6 +74,7 @@ Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_leng
 1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
 2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size. The "effectsize" mode is relatively slow.
 3. The input\_file is the file from the 1st step.
+
 **Output:**
 ``
 A list of read-level features for each input site.
