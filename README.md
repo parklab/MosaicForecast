@@ -76,7 +76,7 @@ Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_leng
 3. The input\_file is the file from the 1st step.
 
 **Output:**
-``
+```
 A list of read-level features for each input site.
 ```
 **Demo:**
