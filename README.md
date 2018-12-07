@@ -116,7 +116,7 @@ Genotype predictions for all input sites.
 > * models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Phase\_pvalue.rds
 
 
-## You could also train models using your own data:
+## You could also train RF models using your own data:
 **Usage:**
 ```
 Rscript Train_RFmodel.R input(trainset) output(prediction_model) type(Phase|Refine)
