@@ -94,7 +94,7 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 
 **Note:**
 1. The input\_file is a list of read-level features.
-2. The modle\_trained is the pre-trained RF model to predict genotypes.
+2. The model\_trained is the pre-trained RF model to predict genotypes.
 
 **Demo:**
 
