@@ -97,6 +97,7 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 2. The modle\_trained is the pre-trained RF model to predict genotypes.
 
 **Demo:**
+
 Rscript Prediction.R demo/test.features\_R models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Refine\_pvalue.rds  demo/test\_predictions
 
 **Output:**
@@ -112,6 +113,8 @@ Genotype predictions for all input sites.
 > * models\_trained/50-200X\_brainWGS/brain\_MT2-PON.150x.rds
 > * models\_trained/50-200X\_brainWGS/brain\_MT2-PON.200x.rds
 > * models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Refine\_pvalue.rds
+> * models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Phase\_pvalue.rds
+
 
 ## You could also train models using your own data:
 **Usage:**
