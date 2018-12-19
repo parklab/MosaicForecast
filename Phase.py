@@ -287,7 +287,7 @@ for line in input_table:
 		phase[name]['hap=2']=phase[name].get("hap=2",0)+0
 		phase[name]['hap=3']=phase[name].get("hap=3",0)+0
 		phase[name]['hap>3']=phase[name].get("hap>3",0)+0
-		phase[name]['NA']=phase[name].get("NA",0)+0
+		#phase[name]['NA']=phase[name].get("NA",0)+0
 		if C1+C2+C3+C4>=10:
 			#UMB1349 18 30348609 C T 30348301 G A 0 34 29 0 2
 
@@ -297,14 +297,17 @@ for line in input_table:
 				phase[name]['hap=3']=phase[name].get("hap=3",0)+1
 			elif ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)):
 				phase[name]['hap=2']=phase[name].get("hap=2",0)+1
-			elif C3+C4==0:
-				phase[name]['NA']=phase[name].get("NA",0)+1
+		#	elif C3+C4==0:
+		#		phase[name]['NA']=phase[name].get("NA",0)+1
 
 phasing_2by2 = dict()
 fo=open(output_dir+"/all.phasing_2by2","w")
 for k,v in sorted(phase.items()):
-	phasing_2by2[k]=max(v,key=v.get)
-	print (' '.join(str(x) for x in k.split(";")), v,max(v, key=v.get), file=fo)
+	if max(phase[k]['hap=2'],phase[k]['hap=3'],phase[k]['hap>3'])>0:
+		phasing_2by2[k]=max(v,key=v.get)
+		print (' '.join(str(x) for x in k.split(";")), v,max(v, key=v.get), file=fo)
+	elif max(phase[k]['hap=2'],phase[k]['hap=3'],phase[k]['hap>3'])==0:
+		phasing_2by2[k]="UNKNOWN"
 fo.close()
 
 #phasing_2by2 = dict()
@@ -438,7 +441,7 @@ fo3.close()
 fo4=open(output_dir+"/all.phasing","w")
 print ("sample","chr","pos","ref","alt","phasing","conflicting_reads",file=fo4)
 for k,v in sorted(phasing_2by2.items()):
-	if not v == "NA":
+	if not v == "UNKNOWN":
 		if k in MT2_phasing_num:
 			if MT2_phasing_num[k]['wrong']>=MT2_phasing_num[k]['correct'] and MT2_phasing_num[k]['wrong']>0:
 	#		if max(MT2_phasing_num[k], key=MT2_phasing_num[k].get)=="wrong":
