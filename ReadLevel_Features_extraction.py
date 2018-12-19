@@ -177,9 +177,9 @@ for line in file:
 							minor_minus[name]=minor_minus.get(name,0)+1
 						
 						if pileupread.alignment.flag & 64:
-							minor_read1[name]=major_read1.get(name,0)+1
+							minor_read1[name]=minor_read1.get(name,0)+1
 						elif pileupread.alignment.flag &128:
-							minor_read2[name]=major_read2.get(name,0)+1
+							minor_read2[name]=minor_read2.get(name,0)+1
 						
 						if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
 						#if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
