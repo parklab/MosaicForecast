@@ -27,6 +27,8 @@ input[is.na(input)]<-0
 #}
 #input$MAF <- as.character(input$MAF)
 #input$MAF <- as.numeric(input$MAF)
+input$sb_p[input$sb_p=="Inf"]<- 100
+input$sb_read12_p[input$sb_read12_p=="Inf"]<- 100
 
 
 output<- input
