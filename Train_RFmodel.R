@@ -44,6 +44,7 @@ if (type=="Phase") {
 	input$mapq_p[is.na(input$mapq_p)]<-1
 	all_train <- input
 	all_train <- subset(input, phase != "notphased")
+	all_train$phase <- as.factor(as.character(all_train$phase))
 	all_train <-all_train[!is.na(all_train$mosaic_likelihood),]
 	#if(sum(all_train$MAF==".")>0){
 	#        all_train$MAF<-0
