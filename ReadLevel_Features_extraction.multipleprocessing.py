@@ -32,6 +32,7 @@ base['A']='T'
 base['T']='A'
 base['G']='C'
 base['C']='G'
+base['N']='N'
 
 fo=open(output,"w")
 header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num'.split()
