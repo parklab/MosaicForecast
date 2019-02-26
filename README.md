@@ -29,13 +29,14 @@ A machine learning method that leverages read-based phasing and read-level featu
 * bigWigAverageOverBed (v2)
 
 ## Resources:
-### Mappability score: 
+#### Mappability score: 
 * Umap: https://bismap.hoffmanlab.org/
-### Regions to filter out:
+#### Regions to filter out:
 * Segmental Duplication regions: http://humanparalogy.gs.washington.edu/ 
 * Regions enriched for SNPs with >=3 haplotypes: https://github.com/parklab/MosaicForecast/tree/master/resources
-### Population allale frequency
+#### Population allale frequency
 * Gnomad datasets: https://gnomad.broadinstitute.org/downloads
+
 
 # Usage:
 ## Phasing:
