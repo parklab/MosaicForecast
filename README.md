@@ -66,7 +66,7 @@ Intermediate files:
 
 ### 1st step:
 ```
-python ReadLevel_Features_extraction.py input.bed output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) n_jobs_parallel
+python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) n_jobs_parallel
 
 ```
 **Note:**
