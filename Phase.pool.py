@@ -140,9 +140,9 @@ def process_line0(line):
 	run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
 	run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
 
-	subprocess.call("samtools index "+f1_sorted_name,shell=True)	
-	subprocess.call("samtools index "+f2_sorted_name,shell=True)	
-	subprocess.call("samtools index "+f3_sorted_name,shell=True)	
+	srun_cmd("samtools index "+f1_sorted_name)	
+	srun_cmd("samtools index "+f2_sorted_name)	
+	srun_cmd("samtools index "+f3_sorted_name)	
 
 #	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
 #	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
