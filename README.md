@@ -44,7 +44,7 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 **Demo:**
 
 ```
-python Phase.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 1 demo/test.input 20
+python Phase.py demo demo/phasing ${reference_dir}/human_g1k_v37_decoy.fasta 2 demo/test.input 20
 ```
 
 **Output:**
@@ -81,7 +81,7 @@ Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_leng
 
 **Demo:**
 ```
-python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${ref.fa} ${Umap.bw} 1
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${ref.fa} ${Umap.bw} 2
 Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 150 pvalue
  
 ```
