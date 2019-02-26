@@ -257,11 +257,12 @@ if __name__ == "__main__":
 		result=pool.map(process_line, source_file,1)
 		if len(result)>0:
 			for item in result:
-				for atuple in item:
-					try:
-						print (' '.join(str(x) for x in atuple),file=merged_inforSNPs)
-					except:
-						continue
+				if not item is None:
+					for atuple in item:
+						try:
+							print (' '.join(str(x) for x in atuple),file=merged_inforSNPs)
+						except:
+							continue
 
 merged_inforSNPs.close()
 
