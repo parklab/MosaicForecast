@@ -10,6 +10,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 * collections
 * itertools
 * subprocess
+* joblib
 * multiprocessing
 * regex 
 * numpy
@@ -59,12 +60,15 @@ hap>3: likely cnv/repeat
 
 ### 1st step:
 ```
-python ReadLevel_Features_extraction.py input.bed output.features bam_dir reference_fasta
+python ReadLevel_Features_extraction.py input.bed output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) n_jobs_parallel
+
 ```
 **Note:**
-1. Name of bam files are "sample.bam" by default.
-2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).
+1. Names of bam files should be "sample.bam" under the bam_dir.
+2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa)
 3. File format of the input.bed: chr pos-1 pos ref alt sample, sep=\t 
+4. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants
+5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
 
 ### 2nd step:
 ```
