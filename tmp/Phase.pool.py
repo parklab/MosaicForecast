@@ -69,10 +69,9 @@ cmd_list1=list()
 cmd_list2=list()
 
 ##1st step: generate seperate bams supporting ref allale and alt alleles:
-#file=open(input_pos)
-#fo1=open(output_dir+"/all_candidates","w")
-def process_line0(line):
-#for line in file:
+file=open(input_pos)
+fo1=open(output_dir+"/all_candidates","w")
+for line in file:
 	#1       1004864 1004865 G       C       test
 	line=line.rstrip()
 	fields=line.split('\t')
@@ -135,49 +134,25 @@ def process_line0(line):
 	f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
 	f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
 	f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
-
-	run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
-	run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
-	run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
-
-	subprocess.call("samtools index "+f1_sorted_name,shell=True)	
-	subprocess.call("samtools index "+f2_sorted_name,shell=True)	
-	subprocess.call("samtools index "+f3_sorted_name,shell=True)	
-
-#	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
-#	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
-#	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
-#	cmd_list2.append("samtools index "+f1_sorted_name)
-#	cmd_list2.append("samtools index "+f2_sorted_name)
-#	cmd_list2.append("samtools index "+f3_sorted_name)
-#	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
-	return sample,chr,pos,major_allele,minor_allele,str(major_num),str(minor_num),str(conflictnum)
-
-fo1=open(output_dir+"/all_candidates","w")
-
-if __name__ == "__main__":
-	pool = Pool(processes=int(n_threads))
-	with open(input_pos) as source_file:
-	# chunk the work into batches of 4 lines at a time
-		#pool.map(process_line, source_file,1)
-		result=pool.map(process_line0, source_file,1)
-		for atuple in result:
-			try:
-				print (' '.join(str(x) for x in atuple),file=fo1)
-			except:
-				continue
-
+	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
+	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
+	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
+	cmd_list2.append("samtools index "+f1_sorted_name)
+	cmd_list2.append("samtools index "+f2_sorted_name)
+	cmd_list2.append("samtools index "+f3_sorted_name)
+	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
+file.close()
 fo1.close()
 	
-#pool=Pool(processes=int(n_threads))
-#pool.map(run_cmd,cmd_list1,1)
-#pool.close()
-#pool.join()
-#
-#pool=Pool(processes=int(n_threads))
-#pool.map(run_cmd,cmd_list2,1)
-#pool.close()
-#pool.join()
+pool=Pool(processes=int(n_threads))
+pool.map(run_cmd,cmd_list1,1)
+pool.close()
+pool.join()
+
+pool=Pool(processes=int(n_threads))
+pool.map(run_cmd,cmd_list2,1)
+pool.close()
+pool.join()
 
 
 #2nd step: extract candidate nearby inforSNPs (germline het):
@@ -262,6 +237,18 @@ if __name__ == "__main__":
 						print (' '.join(str(x) for x in atuple),file=merged_inforSNPs)
 					except:
 						continue
+#if __name__ == "__main__":
+#        pool = Pool(processes=int(n_jobs))
+#        with open(output_dir+"/all_candidates") as source_file:
+#		# chunk the work into batches of 4 lines at a time
+#		#pool.map(process_line, source_file,1)
+#		result=pool.map(process_line, source_file,1)
+#                for item in result:
+#			for atuple in item:
+#				try:
+#					print (' '.join(str(x) for x in atuple),file=merged_inforSNPs)
+#				except:
+#					continue
 
 merged_inforSNPs.close()
 
