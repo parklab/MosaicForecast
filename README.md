@@ -24,6 +24,18 @@ A machine learning method that leverages read-based phasing and read-level featu
 * glmnet (2.0-13)
 * nnet (7.3-12)
 * ggbiplot (0.55)
+### Others:
+* wigToBigWig (v4)
+* bigWigAverageOverBed (v2)
+
+## Resources:
+### Mappability score: 
+* Umap: https://bismap.hoffmanlab.org/
+### Regions to filter out:
+* Segmental Duplication regions: http://humanparalogy.gs.washington.edu/ 
+* Regions enriched for SNPs with >=3 haplotypes: https://github.com/parklab/MosaicForecast/tree/master/resources
+### Population allale frequency
+* Gnomad datasets: https://gnomad.broadinstitute.org/downloads
 
 # Usage:
 ## Phasing:
