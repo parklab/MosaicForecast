@@ -81,12 +81,8 @@ Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_leng
 
 **Demo:**
 ```
-python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${reference_fasta}
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${ref.fa} ${Umap.bw} 1
 Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 150 pvalue
-
-multiple threads and add mappability:
-python ReadLevel_Features_extraction.multiplethreads_addmappability.py demo/test.input demo/test.features demo /home/yd65/tools/MosaicHunter/resources/human_g1k_v37_decoy.fasta ${k24.umap.wg.bw} 1
-Rscript ReadLevel_Features_extraction_addmappability.R demo/test.features demo/test.features_R 150 pvalue
  
 ```
 
