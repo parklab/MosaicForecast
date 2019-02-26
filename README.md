@@ -10,7 +10,6 @@ A machine learning method that leverages read-based phasing and read-level featu
 * collections
 * itertools
 * subprocess
-* joblib
 * multiprocessing
 * regex 
 * numpy
