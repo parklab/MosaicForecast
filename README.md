@@ -170,7 +170,8 @@ Random Forest prediction model
 #### (Recommended when you have >=100 hap>=3 sites validated orthogonally)
 **Usage:**
 ```
-Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1(model) output2(converted genotypes) read_length(int) type(pvalue|effectsize)
+Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1(model)
+output2(converted genotypes) read_length(int) type(pvalue|effectsize)
 ```
 
 **Note:**
@@ -182,7 +183,8 @@ Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1
 
 **Demo:**
 ```
-Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
+Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset
+demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
 ```
 
 **Output:**
