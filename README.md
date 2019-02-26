@@ -66,7 +66,8 @@ Intermediate files:
 
 ### 1st step:
 ```
-python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) n_jobs_parallel
+python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
+Umap_mappability(bigWig file,k=24) n_jobs_parallel
 
 ```
 **Note:**
@@ -78,7 +79,8 @@ python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
 
 ### 2nd step:
 ```
-Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_length(integer) type(pvalue||effectsize)
+Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_length(integer) 
+type(pvalue||effectsize)
 ```
 **Note:**
 1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
