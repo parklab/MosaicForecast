@@ -18,7 +18,7 @@ elif count==6:
 	bam_dir_tmp=sys.argv[3]
 	reference_fasta=sys.argv[4]
 	unimap_mappability_BigWigfile=sys.argv[5]
-	n_jobs=sys.argv[6]
+	n_threads=int(sys.argv[6])
 	#sequencing_type=sys.argv[5]
 
 import numpy as np
@@ -30,6 +30,7 @@ from scipy.stats import mannwhitneyu
 from subprocess import *
 from multiprocessing import Pool
 import subprocess
+from joblib import Parallel, delayed
 base=dict()
 base['A']='T'
 base['T']='A'
@@ -73,9 +74,9 @@ subprocess.run("rm "+tmp_filename, shell=True)
 subprocess.run("rm "+tmp_filename+".2", shell=True)
 
 
-fo=open(output,"w")
-header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability'.split()
-print (' '.join(header),file=fo)
+#fo=open(output,"w")
+#header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability'.split()
+#print (' '.join(header),file=fo)
 #print (' '.join(header))
 
 if bam_dir_tmp.endswith('/'):
@@ -295,26 +296,29 @@ def process_line(line):
 				dp_near[name].append(pileupcolumn.n)
 	
 		u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
-		return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name]
+		print( name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name],file=fo)
 	#print (fo)
 	except:
 		print ("context error: ",chrom, start,end)
 
-#pool=Pool(processes=int(n_jobs))
-#pool.map(run_cmd,cmd_list1,1)
-	
-if __name__ == "__main__":
-	pool = Pool(processes=int(n_jobs))
-	with open(input_pos) as source_file:
-	# chunk the work into batches of 4 lines at a time
-		#pool.map(process_line, source_file,1)
-		result=pool.map(process_line, source_file,1)
-		for atuple in result:
-			try:
-				print (' '.join(str(x) for x in atuple),file=fo)
-			except:
-				continue
-
+fo=open(output,"w")
+header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability'.split()
+print (' '.join(header),file=fo)
+data = Parallel(n_jobs=-1)(delayed(process_line)(line)
+                           for line in open(input_pos))
+fo.close()
+#if __name__ == "__main__":
+#	pool = Pool(processes=int(n_jobs))
+#	with open(input_pos) as source_file:
+#	# chunk the work into batches of 4 lines at a time
+#		#pool.map(process_line, source_file,1)
+#		result=pool.map(process_line, source_file,1)
+#		for atuple in result:
+#			try:
+#				print (' '.join(str(x) for x in atuple),file=fo)
+#			except:
+#				continue
+#
 
 
 
