@@ -109,8 +109,8 @@ def process_line0(line):
 			except:
 				continue
 
-	start=int(pos)-1000
-	end=int(pos)+1000
+	start=max(int(pos)-1000,1)
+	end=min(int(pos)+1000,int(chr_sizes[chrom]))
 	conflictnum=0
 	if len(major_ids)>=2 and len(minor_ids)>=2:
 		conflict_reads=set(major_ids) & set(minor_ids)
