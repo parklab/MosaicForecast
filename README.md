@@ -52,6 +52,13 @@ output_dir/all.phasing
 hap=2: likely het variants
 hap=3: likely mosaic variants
 hap>3: likely cnv/repeat
+
+Intermediate files:
+1. output_dir/all.merged.inforSNPs.pos: all nearby inforSNPs of candidate mosaics.
+2. output_dir/all_2x2table: 2x2 tables by all nearby inforSNPs.
+3. output_dir/all.phasing_2by2: Phasing results of mosaics and all nearby inforSNPs (2x2 table).
+4. output_dir/multiple_inforSNPs.log: Phasing results of different pairs of inforSNPs.
+
 ```
 
 ## Extraction of read-level features:
