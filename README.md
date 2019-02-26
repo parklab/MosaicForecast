@@ -25,6 +25,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 * nnet (7.3-12)
 * ggbiplot (0.55)
 ### Others:
+* samtools (1.9)
 * wigToBigWig (v4)
 * bigWigAverageOverBed (v2)
 
