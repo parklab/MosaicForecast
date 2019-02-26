@@ -78,79 +78,80 @@ def process_line0(line):
 	sample=fields[5]
 	chr=fields[0]
 	chrom=str(chr)
-	pos=int(fields[2])
-	major_allele=fields[3]
-	minor_allele=fields[4]
-	input_bam=bam_dir+"/"+sample+".bam"
-	a=pysam.AlignmentFile(input_bam, "rb")
-	f1=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
-	f2=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
-	f3=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
-	name=sample+'_'+chr+'_'+str(pos)
-	major_ids=list()
-	minor_ids=list()
-	start=int(pos)-1
-	end=int(pos)
-	major_num=int(0)
-	minor_num=int(0)
-
-	for pileupcolumn in a.pileup(chrom, start, end):
-		for pileupread in pileupcolumn.pileups:
-			if pileupread.indel!=0:
-				continue
-			try:
-				querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-				if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
-					major_ids.append(pileupread.alignment.query_name)
-					major_num+=1
-				elif int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele): #and pileupread.alignment.mapping_quality>=10:
-					minor_ids.append(pileupread.alignment.query_name)
-					minor_num+=1
-			except:
-				continue
-
-	start=max(int(pos)-1000,1)
-	end=min(int(pos)+1000,int(chr_sizes[chrom]))
-	conflictnum=0
-	if len(major_ids)>=2 and len(minor_ids)>=2:
-		conflict_reads=set(major_ids) & set(minor_ids)
-		conflictnum=len(conflict_reads)
-			
-		for read in a.fetch(chrom, start, end):
-			if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
-				f3.write(read)
-			if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
-				f1.write(read)
-			if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
-				f2.write(read)
-	f1.close()
-	f2.close() 
-	f3.close()
-
-	f1_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
-	f2_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
-	f3_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+	if not re.search("MT",chrom):
+		pos=int(fields[2])
+		major_allele=fields[3]
+		minor_allele=fields[4]
+		input_bam=bam_dir+"/"+sample+".bam"
+		a=pysam.AlignmentFile(input_bam, "rb")
+		f1=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
+		f2=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
+		f3=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
+		name=sample+'_'+chr+'_'+str(pos)
+		major_ids=list()
+		minor_ids=list()
+		start=int(pos)-1
+		end=int(pos)
+		major_num=int(0)
+		minor_num=int(0)
 	
-	f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-	f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
-	f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
-
-	run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
-	run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
-	run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
-
-	run_cmd("samtools index "+f1_sorted_name)	
-	run_cmd("samtools index "+f2_sorted_name)	
-	run_cmd("samtools index "+f3_sorted_name)	
-
-#	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
-#	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
-#	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
-#	cmd_list2.append("samtools index "+f1_sorted_name)
-#	cmd_list2.append("samtools index "+f2_sorted_name)
-#	cmd_list2.append("samtools index "+f3_sorted_name)
-#	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
-	return sample,chr,pos,major_allele,minor_allele,str(major_num),str(minor_num),str(conflictnum)
+		for pileupcolumn in a.pileup(chrom, start, end):
+			for pileupread in pileupcolumn.pileups:
+				if pileupread.indel!=0:
+					continue
+				try:
+					querybase=pileupread.alignment.query_sequence[pileupread.query_position]
+					if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
+						major_ids.append(pileupread.alignment.query_name)
+						major_num+=1
+					elif int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele): #and pileupread.alignment.mapping_quality>=10:
+						minor_ids.append(pileupread.alignment.query_name)
+						minor_num+=1
+				except:
+					continue
+	
+		start=max(int(pos)-1000,1)
+		end=min(int(pos)+1000,int(chr_sizes[chrom]))
+		conflictnum=0
+		if len(major_ids)>=2 and len(minor_ids)>=2:
+			conflict_reads=set(major_ids) & set(minor_ids)
+			conflictnum=len(conflict_reads)
+				
+			for read in a.fetch(chrom, start, end):
+				if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
+					f3.write(read)
+				if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
+					f1.write(read)
+				if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
+					f2.write(read)
+		f1.close()
+		f2.close() 
+		f3.close()
+	
+		f1_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
+		f2_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
+		f3_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+		
+		f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+		f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+		f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+	
+		run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
+		run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
+		run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
+	
+		run_cmd("samtools index "+f1_sorted_name)	
+		run_cmd("samtools index "+f2_sorted_name)	
+		run_cmd("samtools index "+f3_sorted_name)	
+	
+	#	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
+	#	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
+	#	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
+	#	cmd_list2.append("samtools index "+f1_sorted_name)
+	#	cmd_list2.append("samtools index "+f2_sorted_name)
+	#	cmd_list2.append("samtools index "+f3_sorted_name)
+	#	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
+		return sample,chr,pos,major_allele,minor_allele,str(major_num),str(minor_num),str(conflictnum)
 
 fo1=open(output_dir+"/all_candidates","w")
 
