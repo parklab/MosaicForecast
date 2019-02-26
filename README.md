@@ -12,12 +12,12 @@ A machine learning method that leverages read-based phasing and read-level featu
 * subprocess
 * multiprocessing
 * regex 
-* numpy
-* pandas
+* numpy (1.16.1)
+* pandas (0.20.1)
 * pyfaidx (0.5.3.1)
 * pysam (0.11.2.2)
 * pysamstats (1.0.1)
-* scipy (0.19.0)
+* scipy (1.2.1)
 ### R packages:
 * caret (6.0-78)
 * e1071 (1.6-8)
