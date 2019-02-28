@@ -348,7 +348,11 @@ def process_line(line):
 										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(major_allele)-1:
 											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_major_near1b[name].append(baseq_average_leftbases)
+											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
 										#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 										#	baseq_major_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
@@ -356,12 +360,16 @@ def process_line(line):
 										seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
 										#if pileupread.query_position >=1 :
 										if pileupread.query_position >=len(major_allele) :
-											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
+											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
 											#print baseq_major_near1b[name]
+											qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_major_near1b[name].append(baseq_average_leftbases)
 						
 							##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
-							elif pileupread.indel!=0 and pileupread.indel<0: #del <0
-								querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position]
+							elif pileupread.indel<0: #del <0
+								#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+1]
+								querybase=pileupread.alignment.query_sequence[pileupread.query_position]
 								#print(querybase,major_allele, minor_allele)
 								if (int(pileupcolumn.pos)==int(pos)-1) and (str(querybase)==str(minor_allele)) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
 									minor_ids[name].append(pileupread.alignment.query_name)
@@ -387,7 +395,14 @@ def process_line(line):
 										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
 										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(major_allele)-1:
-											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+#											baseq_average=sum(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele):])
+											
+#											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+
+
+											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_minor_near1b[name].append(baseq_average_leftbases)
 				#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 				#       baseq_minor_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
@@ -396,7 +411,10 @@ def process_line(line):
 										#if pileupread.query_position >=1 :
 										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
 										if pileupread.query_position >=len(major_allele) :
-											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
+											#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
+											qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_minor_near1b[name].append(baseq_average_leftbases)
 			
 									if pileupread.alignment.is_proper_pair:
 									##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
@@ -503,15 +521,24 @@ def process_line(line):
 										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(minor_allele)-1:
 											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
+#											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
+											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1:len(pileupread.alignment.query_sequence)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_major_near1b[name].append(baseq_average_leftbases)
 										#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 										#	baseq_major_near1b[name].append("end")
+
+	
+
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 									##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 										seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
 										#if pileupread.query_position >=1 :
 										if pileupread.query_position >=len(minor_allele) :
-											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
+#											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
+											qualities=pileupread.alignment.query_qualities[0:len(pileupread.alignment.query_sequence)-len(minor_allele)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_major_near1b[name].append(baseq_average_leftbases)
 											#print baseq_major_near1b[name]
 						
 							if pileupread.indel > 0: ###ins>0
@@ -545,7 +572,10 @@ def process_line(line):
 										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
 										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(minor_allele)-1:
-											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
+											#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
+											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1:len(pileupread.alignment.query_sequence)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_minor_near1b[name].append(baseq_average_leftbases)
 				#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 				#       baseq_minor_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
@@ -554,7 +584,10 @@ def process_line(line):
 										#if pileupread.query_position >=1 :
 										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
 										if pileupread.query_position >=len(minor_allele) :
-											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
+											#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
+											qualities=pileupread.alignment.query_qualities[0:len(pileupread.alignment.query_sequence)-len(minor_allele)]
+											baseq_average_leftbases=sum(qualities)/len(qualities)
+											baseq_minor_near1b[name].append(baseq_average_leftbases)
 			
 									if pileupread.alignment.is_proper_pair:
 									##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
