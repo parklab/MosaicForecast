@@ -244,7 +244,7 @@ if (type=="pvalue"){
 	}
 	input$dp_diff=apply(input,1,my.diff)
 	
-	output=input[,c(1,seq(30,57))]
+	output=input[,c(1,seq(30,61))]
 	
 	mosaic_p <- 10^(as.numeric(as.vector(output$mosaic_likelihood)))
 	het_p <- 10^(as.numeric(as.vector(output$het_likelihood)))
@@ -534,7 +534,7 @@ if (type=="pvalue"){
 	input$dp_diff=apply(input,1,my.diff)
 	
 	
-	output=input[,c(1,seq(30,56))]
+	output=input[,c(1,seq(30,61))]
 	
 	mosaic_p <- 10^(as.numeric(as.vector(output$mosaic_likelihood)))
 	het_p <- 10^(as.numeric(as.vector(output$het_likelihood)))

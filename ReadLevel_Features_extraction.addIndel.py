@@ -38,7 +38,7 @@ base['C']='G'
 #base['N']='N'
 
 homopolymers=list()
-homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG"]
+homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG","ATTATT","TAATAA","AATAAT","GCCGCC","CGGCGG","CCGCCG","ATTTATTT","TAAATAAA","GCCCGCCCC","CGGGCGGG","CCGGCCGG","GGCCGGCC","TTTATTT","ATTTATT","TAAATAA","AAATAAT","GCCCGCC","CCCGCCC","GGCGGC"]
 
 file=open(input_pos)
 tmp_filename=str(uuid.uuid4())
@@ -76,7 +76,7 @@ subprocess.run("rm "+tmp_filename+".2", shell=True)
 
 
 fo=open(output,"w")
-header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability type'.split()
+header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability type length GCcontent ref_softclip alt_softclip'.split()
 print (' '.join(header),file=fo)
 #print (' '.join(header))
 
@@ -138,198 +138,68 @@ def process_line(line):
 	fields=line.split('\t')
 	sample=fields[5]
 	chr=fields[0]
-	pos=int(fields[2])
-	pos1=max(0,int(pos)-1)
-	pos2=min(int(chr_sizes[chr]),int(pos)+1)
-	major_allele=fields[3]
-	minor_allele=fields[4]
-	name=str(sample)+'~'+str(chr)+'~'+str(pos)+"~"+str(major_allele)+"~"+str(minor_allele)
-	input_bam=bam_dir+"/"+str(sample)+".bam"
-	a=pysam.AlignmentFile(input_bam, "rb")
-	chrom=str(chr)
-	start=int(pos)-1
-	end=int(pos)
-	major_plus[name]=0
-	minor_plus[name]=0
-	major_minus[name]=0
-	minor_minus[name]=0
-	major_read1[name]=0
-	minor_read1[name]=0
-	major_read2[name]=0
-	minor_read2[name]=0
-	major_ids[name]=list()
-	minor_ids[name]=list()
-	conflict_num[name]=0
-	context1_count[name]=context1_count.get(name,0)
-	context2_count[name]=context2_count.get(name,0)
-	mismatches_major[name]=list()
-	mismatches_minor[name]=list()
-	try:
-		if len(major_allele)==1 and len(minor_allele)==1:
-			state="snp"
-			context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
-			context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
-			for pileupcolumn in a.pileup(chrom, start, end):
-				for pileupread in pileupcolumn.pileups:
-					if pileupread.indel !=0:
-						continue
-					try:
-						querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-						if pileupcolumn.pos==pos-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
-							#if sequencing_type="PE":
-							#print pileupcolumn.pos
-							if querybase==major_allele:
-								major_ids[name].append(pileupread.alignment.query_name)
-								querypos_major[name].append(pileupread.query_position)
-								#print querypos_major[name]
-								mapq_major[name].append(pileupread.alignment.mapping_quality)
-								baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
-								leftpos_major[name].append(pileupread.alignment.reference_start)
-								#mismatches_major[name].append(filterPick(pileupread.alignment.tags,'NM'))
-								mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
-								#print mismatches_major[name]
-								#print mismatches_major[name]
-								if not pileupread.alignment.is_reverse:
-									major_plus[name]=major_plus.get(name,0)+1
-								elif pileupread.alignment.is_reverse:
-									major_minus[name]=major_minus.get(name,0)+1
-			
-								if pileupread.alignment.flag & 64:
-									major_read1[name]=major_read1.get(name,0)+1
-								elif pileupread.alignment.flag &128:
-									major_read2[name]=major_read2.get(name,0)+1
-							
-								
-								if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-								##if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-									seqpos_major[name].append(pileupread.query_position)
-									#print seqpos_major[name]
-									if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-										baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-									#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-									#	baseq_major_near1b[name].append("end")
-								elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-								##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-									seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-									if pileupread.query_position >=1 :
-										baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
-										#print baseq_major_near1b[name]
-					
-						##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
-							elif querybase==minor_allele:
-								minor_ids[name].append(pileupread.alignment.query_name)
-								querypos_minor[name].append(pileupread.query_position)
-								mapq_minor[name].append(pileupread.alignment.mapping_quality)
-								baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
-								leftpos_minor[name].append(pileupread.alignment.reference_start)
-								#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
-								mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
-								if not pileupread.alignment.is_reverse:
-									minor_plus[name]=minor_plus.get(name,0)+1
-								elif pileupread.alignment.is_reverse:
-									minor_minus[name]=minor_minus.get(name,0)+1
-								
-								if pileupread.alignment.flag & 64:
-									minor_read1[name]=minor_read1.get(name,0)+1
-								elif pileupread.alignment.flag &128:
-									minor_read2[name]=minor_read2.get(name,0)+1
-								
-								if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-								#if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-									seqpos_minor[name].append(pileupread.query_position)
-									if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-										baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-			#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-			#       baseq_minor_near1b[name].append("end")
-								elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-								#elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-									seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-									if pileupread.query_position >=1 :
-										baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
-		
-								if pileupread.alignment.is_proper_pair:
-								##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
-									if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
-										context1_count[name]=context1_count.get(name,int(0))+int(1)
-									elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
-										context2_count[name]=context2_count.get(name,int(0))+int(1)
-									elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
-										context2_count[name]=context2_count.get(name,int(0))+int(1)
-									elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
-										context1_count[name]=context1_count.get(name,int(0))+int(1)
-		#      elif pileupread.query_position <1:
-		#       baseq_minor_near1b[name].append("end")
-					except:
-						#print ("error: ", chrom,pos)
-						continue   
-			conflict_reads=set(major_ids[name]) & set(minor_ids[name])
-			conflict_num[name]=len(conflict_reads)
-					
-			for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)]))):
-				if pileupcolumn.pos==pos-2000:
-					dp_far[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos-1500:
-					dp_far[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos-1000:
-					dp_far[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos-500:
-					dp_far[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos+500:
-					dp_far[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos+1000:
-					dp_far[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos+1500:
-					dp_far[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos+2000:
-					dp_far[name].append(pileupcolumn.n)
-				
-				elif pileupcolumn.pos==pos-200:
-					dp_near[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos-100:
-					dp_near[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos-50:
-					dp_near[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos-1:
-					dp_near[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos+50:
-					dp_near[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos+100:
-					dp_near[name].append(pileupcolumn.n)
-				elif pileupcolumn.pos==pos+200:
-					dp_near[name].append(pileupcolumn.n)
-		
-			u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
-			return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state
-
-		elif len(major_allele)>1 and len(minor_allele)==1:
-			state="del"
-			#context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
-			context1_10bp=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
-			context2_10bp=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
-			context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
-			context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
-
-			if_homopolymer="No"
-			for item in homopolymers:
-				if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp)):
-					if_homopolymer="Yes"
-					break
-			if if_homopolymer=="No":			
+	if not re.search("MT",chr):
+		pos=int(fields[2])
+		pos1=max(0,int(pos)-1)
+		pos2=min(int(chr_sizes[chr]),int(pos)+1)
+		major_allele=fields[3]
+		minor_allele=fields[4]
+		name=str(sample)+'~'+str(chr)+'~'+str(pos)+"~"+str(major_allele)+"~"+str(minor_allele)
+		input_bam=bam_dir+"/"+str(sample)+".bam"
+		a=pysam.AlignmentFile(input_bam, "rb")
+		chrom=str(chr)
+		start=int(pos)-1
+		end=int(pos)
+		major_plus[name]=0
+		minor_plus[name]=0
+		major_minus[name]=0
+		minor_minus[name]=0
+		major_read1[name]=0
+		minor_read1[name]=0
+		major_read2[name]=0
+		minor_read2[name]=0
+		major_ids[name]=list()
+		minor_ids[name]=list()
+		conflict_num[name]=0
+		context1_count[name]=context1_count.get(name,0)
+		context2_count[name]=context2_count.get(name,0)
+		mismatches_major[name]=list()
+		mismatches_minor[name]=list()
+		try:
+			if len(major_allele)==1 and len(minor_allele)==1:
+				state="SNP"
+				length=0
+				major_softclippedreads=0
+				minor_softclippedreads=0
+				major_num=0
+				minor_num=0
+				context_20bp=str(reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))])
+				GCcontent=(context_20bp.count('G')+context_20bp.count('C'))/len(context_20bp)
+				context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
+				context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
 				for pileupcolumn in a.pileup(chrom, start, end):
 					for pileupread in pileupcolumn.pileups:
+						if pileupread.indel !=0:
+							continue
 						try:
-							if pileupread.indel==0:
-								querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-								#print(querybase,major_allele, minor_allele)
-								#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele)[1]: #and pileuperead.alignment.mapping_quality>=10:
-								if int(pileupcolumn.pos)==int(pos)-1: #and pileuperead.alignment.mapping_quality>=10:
+							querybase=pileupread.alignment.query_sequence[pileupread.query_position]
+							if pileupcolumn.pos==pos-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+								#if sequencing_type="PE":
+								#print pileupcolumn.pos
+								if querybase==major_allele:
+									major_num=major_num+1
+									if (pileupread.alignment.get_cigar_stats()[0][4])>=10:
+										major_softclippedreads=major_softclippedreads+1
 									major_ids[name].append(pileupread.alignment.query_name)
 									querypos_major[name].append(pileupread.query_position)
+									#print querypos_major[name]
 									mapq_major[name].append(pileupread.alignment.mapping_quality)
 									baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
 									leftpos_major[name].append(pileupread.alignment.reference_start)
+									#mismatches_major[name].append(filterPick(pileupread.alignment.tags,'NM'))
 									mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
-
+									#print mismatches_major[name]
+									#print mismatches_major[name]
 									if not pileupread.alignment.is_reverse:
 										major_plus[name]=major_plus.get(name,0)+1
 									elif pileupread.alignment.is_reverse:
@@ -345,33 +215,22 @@ def process_line(line):
 									##if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
 										seqpos_major[name].append(pileupread.query_position)
 										#print seqpos_major[name]
-										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(major_allele)-1:
-											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
-											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_major_near1b[name].append(baseq_average_leftbases)
-											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+										if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
 										#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 										#	baseq_major_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 									##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 										seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-										#if pileupread.query_position >=1 :
-										if pileupread.query_position >=len(major_allele) :
-											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
+										if pileupread.query_position >=1 :
+											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
 											#print baseq_major_near1b[name]
-											qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_major_near1b[name].append(baseq_average_leftbases)
 						
 							##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
-							elif pileupread.indel<0: #del <0
-								#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+1]
-								querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-								#print(querybase,major_allele, minor_allele)
-								if (int(pileupcolumn.pos)==int(pos)-1) and (str(querybase)==str(minor_allele)) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+								elif querybase==minor_allele:
+									minor_num=minor_num+1
+									if int(pileupread.alignment.get_cigar_stats()[0][4])>10:
+										minor_softclippedreads=minor_softclippedreads+1
 									minor_ids[name].append(pileupread.alignment.query_name)
 									querypos_minor[name].append(pileupread.query_position)
 									mapq_minor[name].append(pileupread.alignment.mapping_quality)
@@ -392,29 +251,15 @@ def process_line(line):
 									if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
 									#if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
 										seqpos_minor[name].append(pileupread.query_position)
-										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(major_allele)-1:
-#											baseq_average=sum(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele):])
-											
-#											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
-
-
-											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_minor_near1b[name].append(baseq_average_leftbases)
+										if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
 				#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 				#       baseq_minor_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 									#elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 										seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-										#if pileupread.query_position >=1 :
-										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
-										if pileupread.query_position >=len(major_allele) :
-											#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
-											qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_minor_near1b[name].append(baseq_average_leftbases)
+										if pileupread.query_position >=1 :
+											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
 			
 									if pileupread.alignment.is_proper_pair:
 									##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
@@ -468,186 +313,378 @@ def process_line(line):
 						dp_near[name].append(pileupcolumn.n)
 			
 				u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
-				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state
-		#print (fo)
-
-
-##end: paste from phase
-
-		elif len(major_allele)==1 and len(minor_allele)>1:
-			state="ins"
-			#context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
-			context1_10bp=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
-			context2_10bp=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
-			context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
-			context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
-
-			if_homopolymer="No"
-			for item in homopolymers:
-				if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp)):
-					if_homopolymer="Yes"
-					break
-			if if_homopolymer=="No":			
-				for pileupcolumn in a.pileup(chrom, start, end):
-					for pileupread in pileupcolumn.pileups:
-						try:
-							if pileupread.indel==0:
-								querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-								#print(querybase,major_allele, minor_allele)
-								#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele)[1]: #and pileuperead.alignment.mapping_quality>=10:
-								if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
-									major_ids[name].append(pileupread.alignment.query_name)
-									querypos_major[name].append(pileupread.query_position)
-									mapq_major[name].append(pileupread.alignment.mapping_quality)
-									baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
-									leftpos_major[name].append(pileupread.alignment.reference_start)
-									mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
-
-									if not pileupread.alignment.is_reverse:
-										major_plus[name]=major_plus.get(name,0)+1
-									elif pileupread.alignment.is_reverse:
-										major_minus[name]=major_minus.get(name,0)+1
-				
-									if pileupread.alignment.flag & 64:
-										major_read1[name]=major_read1.get(name,0)+1
-									elif pileupread.alignment.flag &128:
-										major_read2[name]=major_read2.get(name,0)+1
-								
-									
-									if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-									##if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-										seqpos_major[name].append(pileupread.query_position)
-										#print seqpos_major[name]
-										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(minor_allele)-1:
-											#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-#											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
-											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1:len(pileupread.alignment.query_sequence)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_major_near1b[name].append(baseq_average_leftbases)
-										#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-										#	baseq_major_near1b[name].append("end")
-
+				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state, str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num)
 	
-
-									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-									##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-										seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-										#if pileupread.query_position >=1 :
-										if pileupread.query_position >=len(minor_allele) :
-#											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
-											qualities=pileupread.alignment.query_qualities[0:len(pileupread.alignment.query_sequence)-len(minor_allele)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_major_near1b[name].append(baseq_average_leftbases)
-											#print baseq_major_near1b[name]
-						
-							if pileupread.indel > 0: ###ins>0
-								#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
-								#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
-								if (int(pileupcolumn.pos)==int(pos)-1) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+			elif len(major_allele)>1 and len(minor_allele)==1:
+				major_num=0
+				minor_num=0
+				major_softclippedreads=0
+				minor_softclippedreads=0
+				state="DEL"
+				length=len(major_allele)-len(minor_allele)
+				#context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
+				context1_10bp=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
+				context2_10bp=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
+				context_20bp=str(reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))])
+				GCcontent=(context_20bp.count('G')+context_20bp.count('C'))/len(context_20bp)
+				context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
+				context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
+	
+				if_homopolymer="No"
+				for item in homopolymers:
+					if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp)):
+						if_homopolymer="Yes"
+						break
+				if if_homopolymer=="No":			
+					for pileupcolumn in a.pileup(chrom, start, end):
+						for pileupread in pileupcolumn.pileups:
+							try:
+								if pileupread.indel==0:
+									querybase=pileupread.alignment.query_sequence[pileupread.query_position]
 									#print(querybase,major_allele, minor_allele)
-									minor_ids[name].append(pileupread.alignment.query_name)
-									querypos_minor[name].append(pileupread.query_position)
-									mapq_minor[name].append(pileupread.alignment.mapping_quality)
-									queryscore=pileupread.alignment.query_qualities[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
-									baseq_mean =sum(queryscore)/len(queryscore)
-									#baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
-									baseq_minor[name].append(baseq_mean)
-									leftpos_minor[name].append(pileupread.alignment.reference_start)
-									#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
-									mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
-									if not pileupread.alignment.is_reverse:
-										minor_plus[name]=minor_plus.get(name,0)+1
-									elif pileupread.alignment.is_reverse:
-										minor_minus[name]=minor_minus.get(name,0)+1
-									
-									if pileupread.alignment.flag & 64:
-										minor_read1[name]=minor_read1.get(name,0)+1
-									elif pileupread.alignment.flag &128:
-										minor_read2[name]=minor_read2.get(name,0)+1
-									
-									if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-									#if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-										seqpos_minor[name].append(pileupread.query_position)
-										#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
-										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-										if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(minor_allele)-1:
-											#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
-											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1:len(pileupread.alignment.query_sequence)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_minor_near1b[name].append(baseq_average_leftbases)
-				#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-				#       baseq_minor_near1b[name].append("end")
-									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-									#elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-										seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-										#if pileupread.query_position >=1 :
-										#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
-										if pileupread.query_position >=len(minor_allele) :
-											#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
-											qualities=pileupread.alignment.query_qualities[0:len(pileupread.alignment.query_sequence)-len(minor_allele)]
-											baseq_average_leftbases=sum(qualities)/len(qualities)
-											baseq_minor_near1b[name].append(baseq_average_leftbases)
-			
-									if pileupread.alignment.is_proper_pair:
-									##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
-										if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
-											context1_count[name]=context1_count.get(name,int(0))+int(1)
-										elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
-											context2_count[name]=context2_count.get(name,int(0))+int(1)
-										elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
-											context2_count[name]=context2_count.get(name,int(0))+int(1)
-										elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
-											context1_count[name]=context1_count.get(name,int(0))+int(1)
-			#      elif pileupread.query_position <1:
-			#       baseq_minor_near1b[name].append("end")
-						except:
-							#print ("error: ", chrom,pos)
-							continue   
-				conflict_reads=set(major_ids[name]) & set(minor_ids[name])
-				conflict_num[name]=len(conflict_reads)
-						
-				for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)]))):
-					if pileupcolumn.pos==pos-2000:
-						dp_far[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos-1500:
-						dp_far[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos-1000:
-						dp_far[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos-500:
-						dp_far[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos+500:
-						dp_far[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos+1000:
-						dp_far[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos+1500:
-						dp_far[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos+2000:
-						dp_far[name].append(pileupcolumn.n)
+									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele)[1]: #and pileuperead.alignment.mapping_quality>=10:
+									if int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024): #and pileuperead.alignment.mapping_quality>=10:
+										major_num=major_num+1
+										if pileupread.alignment.get_cigar_stats()[0][4]>10:
+											major_softclippedreads=major_softclippedreads+1
+										major_ids[name].append(pileupread.alignment.query_name)
+										querypos_major[name].append(pileupread.query_position)
+										mapq_major[name].append(pileupread.alignment.mapping_quality)
+										baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
+										leftpos_major[name].append(pileupread.alignment.reference_start)
+										mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+	
+										if not pileupread.alignment.is_reverse:
+											major_plus[name]=major_plus.get(name,0)+1
+										elif pileupread.alignment.is_reverse:
+											major_minus[name]=major_minus.get(name,0)+1
 					
-					elif pileupcolumn.pos==pos-200:
-						dp_near[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos-100:
-						dp_near[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos-50:
-						dp_near[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos-1:
-						dp_near[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos+50:
-						dp_near[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos+100:
-						dp_near[name].append(pileupcolumn.n)
-					elif pileupcolumn.pos==pos+200:
-						dp_near[name].append(pileupcolumn.n)
-			
-				u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
-				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state
-		#print (fo)
-	except:
-		print ("context error: ",chrom, start,end)
-
-
-
+										if pileupread.alignment.flag & 64:
+											major_read1[name]=major_read1.get(name,0)+1
+										elif pileupread.alignment.flag &128:
+											major_read2[name]=major_read2.get(name,0)+1
+									
+										
+										if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+										##if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+											seqpos_major[name].append(pileupread.query_position)
+											#print seqpos_major[name]
+											#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+											if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(major_allele)-1:
+												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
+												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+												qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_major_near1b[name].append(baseq_average_leftbases)
+												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+											#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+											#	baseq_major_near1b[name].append("end")
+										elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+										##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+											seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
+											#if pileupread.query_position >=1 :
+											if pileupread.query_position >=len(major_allele) :
+												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
+												#print baseq_major_near1b[name]
+												qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_major_near1b[name].append(baseq_average_leftbases)
+							
+								##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+								elif pileupread.indel<0: #del <0
+									#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+1]
+									querybase=pileupread.alignment.query_sequence[pileupread.query_position]
+									#print(querybase,major_allele, minor_allele)
+									if (int(pileupcolumn.pos)==int(pos)-1) and (str(querybase)==str(minor_allele)) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+										minor_num=minor_num+1
+										if pileupread.alignment.get_cigar_stats()[0][4]>10:
+											minor_softclippedreads=minor_softclippedreads+1
+										minor_ids[name].append(pileupread.alignment.query_name)
+										querypos_minor[name].append(pileupread.query_position)
+										mapq_minor[name].append(pileupread.alignment.mapping_quality)
+										baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
+										leftpos_minor[name].append(pileupread.alignment.reference_start)
+										#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
+										mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+										if not pileupread.alignment.is_reverse:
+											minor_plus[name]=minor_plus.get(name,0)+1
+										elif pileupread.alignment.is_reverse:
+											minor_minus[name]=minor_minus.get(name,0)+1
+										
+										if pileupread.alignment.flag & 64:
+											minor_read1[name]=minor_read1.get(name,0)+1
+										elif pileupread.alignment.flag &128:
+											minor_read2[name]=minor_read2.get(name,0)+1
+										
+										if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+										#if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+											seqpos_minor[name].append(pileupread.query_position)
+											#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+											#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
+											if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(major_allele)-1:
+	#											baseq_average=sum(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele):])
+												
+	#											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+	
+	
+												qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_minor_near1b[name].append(baseq_average_leftbases)
+					#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+					#       baseq_minor_near1b[name].append("end")
+										elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+										#elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+											seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
+											#if pileupread.query_position >=1 :
+											#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
+											if pileupread.query_position >=len(major_allele) :
+												#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
+												qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_minor_near1b[name].append(baseq_average_leftbases)
+				
+										if pileupread.alignment.is_proper_pair:
+										##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
+											if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
+												context1_count[name]=context1_count.get(name,int(0))+int(1)
+											elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
+												context2_count[name]=context2_count.get(name,int(0))+int(1)
+											elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
+												context2_count[name]=context2_count.get(name,int(0))+int(1)
+											elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
+												context1_count[name]=context1_count.get(name,int(0))+int(1)
+				#      elif pileupread.query_position <1:
+				#       baseq_minor_near1b[name].append("end")
+							except:
+								#print ("error: ", chrom,pos)
+								continue   
+					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
+					conflict_num[name]=len(conflict_reads)
+							
+					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)]))):
+						if pileupcolumn.pos==pos-2000:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-1500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-1000:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+1000:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+1500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+2000:
+							dp_far[name].append(pileupcolumn.n)
+						
+						elif pileupcolumn.pos==pos-200:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-100:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-50:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-1:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+50:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+100:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+200:
+							dp_near[name].append(pileupcolumn.n)
+				
+					u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
+					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state,str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num)
+			#print (fo)
+	
+	
+	##end: paste from phase
+	
+			elif len(major_allele)==1 and len(minor_allele)>1:
+				state="INS"
+				length=len(minor_allele)-len(major_allele)
+				major_num=0
+				minor_num=0
+				major_softclippedreads=0
+				minor_softclippedreads=0
+				context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
+				context1_10bp=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
+				context2_10bp=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
+				context_20bp=str(reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))])
+				GCcontent=(context_20bp.count('G')+context_20bp.count('C'))/len(context_20bp)
+				context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
+				context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
+	
+				if_homopolymer="No"
+				for item in homopolymers:
+					if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp)):
+						if_homopolymer="Yes"
+						break
+				if if_homopolymer=="No":			
+					for pileupcolumn in a.pileup(chrom, start, end):
+						for pileupread in pileupcolumn.pileups:
+							try:
+								if pileupread.indel==0:
+									querybase=pileupread.alignment.query_sequence[pileupread.query_position]
+									#print(querybase,major_allele, minor_allele)
+									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele)[1]: #and pileuperead.alignment.mapping_quality>=10:
+									if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024): #and pileuperead.alignment.mapping_quality>=10:
+										major_num=major_num+1
+										if pileupread.alignment.get_cigar_stats()[0][4]>10:
+											major_softclippedreads=major_softclippedreads+1
+										major_ids[name].append(pileupread.alignment.query_name)
+										querypos_major[name].append(pileupread.query_position)
+										mapq_major[name].append(pileupread.alignment.mapping_quality)
+										baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
+										leftpos_major[name].append(pileupread.alignment.reference_start)
+										mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+	
+										if not pileupread.alignment.is_reverse:
+											major_plus[name]=major_plus.get(name,0)+1
+										elif pileupread.alignment.is_reverse:
+											major_minus[name]=major_minus.get(name,0)+1
+					
+										if pileupread.alignment.flag & 64:
+											major_read1[name]=major_read1.get(name,0)+1
+										elif pileupread.alignment.flag &128:
+											major_read2[name]=major_read2.get(name,0)+1
+									
+										
+										if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+										##if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+											seqpos_major[name].append(pileupread.query_position)
+											#print seqpos_major[name]
+											#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+											if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(minor_allele)-1:
+												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
+	#											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
+												qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1:len(pileupread.alignment.query_sequence)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_major_near1b[name].append(baseq_average_leftbases)
+											#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+											#	baseq_major_near1b[name].append("end")
+	
+		
+	
+										elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+										##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+											seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
+											#if pileupread.query_position >=1 :
+											if pileupread.query_position >=len(minor_allele) :
+	#											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
+												qualities=pileupread.alignment.query_qualities[0:len(pileupread.alignment.query_sequence)-len(minor_allele)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_major_near1b[name].append(baseq_average_leftbases)
+												#print baseq_major_near1b[name]
+							
+								if pileupread.indel > 0: ###ins>0
+									#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
+									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
+									if (int(pileupcolumn.pos)==int(pos)-1) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+										#print(querybase,major_allele, minor_allele)
+										minor_ids[name].append(pileupread.alignment.query_name)
+										querypos_minor[name].append(pileupread.query_position)
+										mapq_minor[name].append(pileupread.alignment.mapping_quality)
+										queryscore=pileupread.alignment.query_qualities[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
+										baseq_mean =sum(queryscore)/len(queryscore)
+										#baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
+										baseq_minor[name].append(baseq_mean)
+										leftpos_minor[name].append(pileupread.alignment.reference_start)
+										#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
+										mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+										if not pileupread.alignment.is_reverse:
+											minor_plus[name]=minor_plus.get(name,0)+1
+										elif pileupread.alignment.is_reverse:
+											minor_minus[name]=minor_minus.get(name,0)+1
+										
+										if pileupread.alignment.flag & 64:
+											minor_read1[name]=minor_read1.get(name,0)+1
+										elif pileupread.alignment.flag &128:
+											minor_read2[name]=minor_read2.get(name,0)+1
+										
+										if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+										#if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
+											seqpos_minor[name].append(pileupread.query_position)
+											#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
+											#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
+											if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(minor_allele)-1:
+												#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1])
+												qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(minor_allele)+1:len(pileupread.alignment.query_sequence)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_minor_near1b[name].append(baseq_average_leftbases)
+					#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+					#       baseq_minor_near1b[name].append("end")
+										elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+										#elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
+											seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
+											#if pileupread.query_position >=1 :
+											#	baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
+											if pileupread.query_position >=len(minor_allele) :
+												#baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(minor_allele)])
+												qualities=pileupread.alignment.query_qualities[0:len(pileupread.alignment.query_sequence)-len(minor_allele)]
+												baseq_average_leftbases=sum(qualities)/len(qualities)
+												baseq_minor_near1b[name].append(baseq_average_leftbases)
+				
+										if pileupread.alignment.is_proper_pair:
+										##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
+											if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
+												context1_count[name]=context1_count.get(name,int(0))+int(1)
+											elif pileupread.alignment.flag & 128 and (pileupread.alignment.is_reverse):
+												context2_count[name]=context2_count.get(name,int(0))+int(1)
+											elif pileupread.alignment.flag & 64 and (pileupread.alignment.is_reverse):
+												context2_count[name]=context2_count.get(name,int(0))+int(1)
+											elif pileupread.alignment.flag & 128 and (not pileupread.alignment.is_reverse):
+												context1_count[name]=context1_count.get(name,int(0))+int(1)
+				#      elif pileupread.query_position <1:
+				#       baseq_minor_near1b[name].append("end")
+							except:
+								#print ("error: ", chrom,pos)
+								continue   
+					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
+					conflict_num[name]=len(conflict_reads)
+							
+					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)]))):
+						if pileupcolumn.pos==pos-2000:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-1500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-1000:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+1000:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+1500:
+							dp_far[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+2000:
+							dp_far[name].append(pileupcolumn.n)
+						
+						elif pileupcolumn.pos==pos-200:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-100:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-50:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos-1:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+50:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+100:
+							dp_near[name].append(pileupcolumn.n)
+						elif pileupcolumn.pos==pos+200:
+							dp_near[name].append(pileupcolumn.n)
+				
+					u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
+					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state,str(length),str(GCcontent),  str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num)
+			#print (fo)
+		except:
+			print ("context error: ",chrom, start,end)
+	
+	
+	
 #pool=Pool(processes=int(n_jobs))
 #pool.map(run_cmd,cmd_list1,1)
 	
