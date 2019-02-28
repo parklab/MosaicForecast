@@ -582,6 +582,9 @@ def process_line(line):
 									#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
 									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
 									if (int(pileupcolumn.pos)==int(pos)-1) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+										minor_num=minor_num+1
+										if pileupread.alignment.get_cigar_stats()[0][4]>10:
+											minor_softclippedreads=minor_softclippedreads+1
 										#print(querybase,major_allele, minor_allele)
 										minor_ids[name].append(pileupread.alignment.query_name)
 										querypos_minor[name].append(pileupread.query_position)
