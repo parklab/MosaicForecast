@@ -3,16 +3,17 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)!=3) {
-	stop("Rscript Train_RFmodel.R trainset prediction_model type(Phase|Refine)
+if (length(args)!=4) {
+	stop("Rscript Train_RFmodel.R trainset prediction_model type_model(Phase|Refine) type_variant(SNP|INS|DEL)
 	Note:
 	The \"Phase\" model indicates the RF model trained on phasing (hap=2, hap=3, hap>3); 
 	The \"Refine\" model indicates the RF model trained on Refined-genotypes from the multinomial logistic regression model (het, mosaic, repeat, refhom)
 ", call.=FALSE)
-} else if (length(args)==3) {
+} else if (length(args)==4) {
 	input_file <- args[1]
 	prediction_model <- args[2]
 	type <- as.character(args[3])
+	type_variant <- as.character(args[4])
 }
 
 library(caret)
@@ -29,8 +30,12 @@ if (type=="Phase") {
 	all_train$phase <- as.factor(as.character(all_train$phase))
 	all_train <-all_train[!is.na(all_train$mosaic_likelihood),]
 	#all_train.2 <- subset(all_train, select=-c(althom_likelihood, id, validation, dp_p, pc1, pc2, pc3, pc4, phase))
-	#all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phasing))
-	all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase,conflict_num))
+	#all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,GCcontent,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phasing))
+	if (type_variant=="SNP"){
+		all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase,conflict_num,mappability))
+	}else if (type_variant=="INS"||type_variant=="DEL"){
+		all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,GCcontent,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase,conflict_num,mappability,length,ref_softclip))
+	}
 	
 	control <- trainControl(method="repeatedcv", number=10, repeats=3, search="grid")
 	tunegrid <- expand.grid(.mtry=30)
@@ -50,8 +55,12 @@ if (type=="Phase") {
 	#        all_train$MAF<-0
 	#}
 	#all_train$MAF[is.na(all_train$MAF)]<-0
-	all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase_model_corrected,conflict_num))
-	#all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase_corrected,MAF,repeats,ECNT,HCNT))
+	if (type_variant=="SNP"){
+	all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase_model_corrected,conflict_num,mappability))
+	}else if (type_variant=="INS" || type_variant=="DEL"){
+	all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,GCcontent,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase_model_corrected,conflict_num,mappability,length,ref_softclip))
+}
+	#all_train.2 <- subset(all_train, select=c(querypos_p,leftpos_p,seqpos_p,mapq_p,baseq_p,baseq_t,ref_baseq1b_p,ref_baseq1b_t,alt_baseq1b_p,alt_baseq1b_t,sb_p,context,GCcontent,major_mismatches_mean,minor_mismatches_mean,mismatches_p,AF,dp,mapq_difference,sb_read12_p,dp_diff,mosaic_likelihood,het_likelihood,refhom_likelihood,phase_corrected,MAF,repeats,ECNT,HCNT))
 	
 	all_train.2$sb_p[all_train.2$sb_p=="Inf"]<- 100
 	all_train.2$sb_read12_p[all_train.2$sb_read12_p=="Inf"]<- 100
