@@ -95,9 +95,11 @@ def process_line0(line):
 		end=int(pos)
 		major_num=int(0)
 		minor_num=int(0)
-		
+		length=len(major_allele)-len(minor_allele)
+		if length<0:
+			length=0-length
 		if len(major_allele)==1 and len(minor_allele)==1:
-			state="snp"
+			state="SNP"
 			for pileupcolumn in a.pileup(chrom, start, end):
 				for pileupread in pileupcolumn.pileups:
 					if pileupread.indel!=0:
@@ -114,8 +116,7 @@ def process_line0(line):
 						continue
 
 		elif len(major_allele)>1 and len(minor_allele)==1:
-			state="del"
-
+			state="DEL"
 			#context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
 			context1=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
 			context2=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
@@ -126,21 +127,32 @@ def process_line0(line):
 				if re.search(str(item), str(context1)) or re.search(str(item),str(context2)):
 					if_homopolymer="Yes"
 					break
-			if if_homopolymer=="No":			
+			if if_homopolymer=="No":
+				for read in a.fetch(chrom,start-length, end+length):
+					try:
+						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
+						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
+							minor_ids.append(read.query_name)
+							minor_num+=1
+						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+							minor_ids.append(read.query_name)
+							minor_num+=1
+					except:
+						continue	
+						#print (chrom, pos, read.query_name, read.cigar)
 				for pileupcolumn in a.pileup(chrom, start, end):
 					for pileupread in pileupcolumn.pileups:
 						try:
-							if pileupread.indel!=0 and pileupread.indel<0: #del <0
+							if pileupread.indel<0: #del <0
 								querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(minor_allele)]
 								#print(querybase,major_allele, minor_allele)
 								if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
 									minor_ids.append(pileupread.alignment.query_name)
 									minor_num+=1
 							elif pileupread.indel==0:
-								#querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-								#print(querybase,major_allele, minor_allele)
-								#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele)[1]: #and pileuperead.alignment.mapping_quality>=10:
-								if int(pileupcolumn.pos)==int(pos)-1: #and pileuperead.alignment.mapping_quality>=10:
+								#if int(pileupcolumn.pos)==int(pos)-1 and (not (pileupread.alignment.query_alignment_end==int(pos)-1 and pileupread.alignment.cigar[-1][0]==4 and pileupread.alignment.cigar[-1][1]<=length)) and (not (pileupread.alignment.query_alignment_start==int(pos)-1 and pileupread.alignment.cigar[0][0]==4 and pileupread.alignment.cigar[0][1]<=length)): #and pileuperead.alignment.mapping_quality>=10:
+								if int(pileupcolumn.pos)==int(pos)-1 and (not (pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))): #and pileuperead.alignment.mapping_quality>=10:
 									major_ids.append(pileupread.alignment.query_name)
 									major_num+=1
 						except:
@@ -148,7 +160,6 @@ def process_line0(line):
 
 		elif len(major_allele)==1 and len(minor_allele)>1:
 			state="ins"
-
 			context1=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
 			context2=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
 			context=reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))]
@@ -158,7 +169,19 @@ def process_line0(line):
 				if re.search(str(item), str(context1)) or re.search(str(item),str(context2)):
 					if_homopolymer="Yes"
 					break
-			if if_homopolymer=="No":			
+			if if_homopolymer=="No":
+				for read in a.fetch(chrom,start-length, end+length):
+					try:
+						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
+						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
+							minor_ids.append(read.query_name)
+							minor_num+=1
+						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+							minor_ids.append(read.query_name)
+							minor_num+=1
+					except:
+						print (chrom, pos, read.query_name, read.cigar)
 				for pileupcolumn in a.pileup(chrom, start, end):
 					for pileupread in pileupcolumn.pileups:
 						try:
@@ -170,16 +193,22 @@ def process_line0(line):
 									minor_num+=1
 							elif pileupread.indel==0:
 								querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-								if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
-									major_ids.append(pileupread.alignment.query_name)
-									major_num+=1
+								if int(pileupcolumn.pos)==int(pos)-1:
+									#if str(querybase)==str(major_allele) and (not (pileupread.alignment.query_alignment_end==int(pos)-1 and pileupread.alignment.cigar[-1][0]==4 and pileupread.alignment.cigar[-1][1]<=length)) and (not (pileupread.alignment.query_alignment_start==int(pos)-1 and pileupread.alignment.cigar[0][0]==4 and pileupread.alignment.cigar[0][1]<=length)):
+									if str(querybase)==str(major_allele) and (not (pileupread.alignment.query_alignment_end>=int(pos)-2 and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start<=int(pos) and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))):
+										major_ids.append(pileupread.alignment.query_name)
+										major_num+=1
 						except:
 							continue						
+
+
 							
 	
 		start=max(int(pos)-1000,1)
 		end=min(int(pos)+1000,int(chr_sizes[chrom]))
 		conflictnum=0
+		major_ids=list(set(major_ids))
+		minor_ids=list(set(minor_ids))
 		if len(major_ids)>=2 and len(minor_ids)>=2:
 			conflict_reads=set(major_ids) & set(minor_ids)
 			conflictnum=len(conflict_reads)
