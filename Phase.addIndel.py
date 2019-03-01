@@ -132,12 +132,16 @@ def process_line0(line):
 					try:
 						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
 						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
-							minor_ids.append(read.query_name)
-							minor_num+=1
+							query_clipped = read.query_sequence[:read.query_alignment_start]
+							if re.search(query_clipped, major_allele):
+								minor_ids.append(read.query_name)
+								minor_num+=1
 						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
 						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-							minor_ids.append(read.query_name)
-							minor_num+=1
+							query_clipped = read.query_sequence[read.query_alignment_end:]
+							if re.search(query_clipped, major_allele):
+								minor_ids.append(read.query_name)
+								minor_num+=1
 					except:
 						continue	
 						#print (chrom, pos, read.query_name, read.cigar)
@@ -166,7 +170,7 @@ def process_line0(line):
 
 			if_homopolymer="No"
 			for item in homopolymers:
-				if re.search(str(item), str(context1)) or re.search(str(item),str(context2) or re.search(str(item),minor_allele) or len(minor_allele)>15):
+				if re.search(str(item), str(context1)) or re.search(str(item),str(context2) or re.search(str(item),minor_allele)):
 					if_homopolymer="Yes"
 					break
 			if if_homopolymer=="No":
@@ -174,12 +178,16 @@ def process_line0(line):
 					try:
 						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
 						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
-							minor_ids.append(read.query_name)
-							minor_num+=1
+							query_clipped = read.query_sequence[:read.query_alignment_start]
+							if re.search(query_clipped, minor_allele):
+								minor_ids.append(read.query_name)
+								minor_num+=1
 						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
 						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-							minor_ids.append(read.query_name)
-							minor_num+=1
+							query_clipped=read.query_sequence[read.query_alignment_end:]
+							if re.search(query_clipped, minor_allele):
+								minor_ids.append(read.query_name)
+								minor_num+=1
 					except:
 						continue
 #						print (chrom, pos, read.query_name, read.cigar)
