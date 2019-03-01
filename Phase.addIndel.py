@@ -48,7 +48,7 @@ else:
 
 os.system("mkdir -p "+output_dir)
 homopolymers=list()
-homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG","ATTATT","TAATAA","AATAAT","GCCGCC","CGGCGG","CCGCCG","ATTTATTT","TAAATAAA","GCCCGCCCC","CGGGCGGG","CCGGCCGG","GGCCGGCC","TTTATTT","ATTTATT","TAAATAA","AAATAAT","GCCCGCC","CCCGCCC","GGCGGC"]
+homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG","CTCTCT","TCTCTC","ATTATT","TAATAA","AATAAT","GCCGCC","CGGCGG","CCGCCG","ATTTATTT","TAAATAAA","GCCCGCCCC","CGGGCGGG","CCGGCCGG","GGCCGGCC","TTTATTT","ATTTATT","TAAATAA","AAATAAT","GCCCGCC","CCCGCCC","GGCGGC","GAAAGAAA","AAAGAAAG","TTTCTTTC","TTCTTTCT","CCCTCCCT","CTTTCTTT"]
 
 reference = Fasta(ref_fasta)
 genome=ref_fasta+".fai"
@@ -159,14 +159,14 @@ def process_line0(line):
 							continue						
 
 		elif len(major_allele)==1 and len(minor_allele)>1:
-			state="ins"
+			state="INS"
 			context1=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
 			context2=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
 			context=reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))]
 
 			if_homopolymer="No"
 			for item in homopolymers:
-				if re.search(str(item), str(context1)) or re.search(str(item),str(context2)):
+				if re.search(str(item), str(context1)) or re.search(str(item),str(context2) or re.search(str(item),minor_allele) or len(minor_allele)>15):
 					if_homopolymer="Yes"
 					break
 			if if_homopolymer=="No":
@@ -181,7 +181,8 @@ def process_line0(line):
 							minor_ids.append(read.query_name)
 							minor_num+=1
 					except:
-						print (chrom, pos, read.query_name, read.cigar)
+						continue
+#						print (chrom, pos, read.query_name, read.cigar)
 				for pileupcolumn in a.pileup(chrom, start, end):
 					for pileupread in pileupcolumn.pileups:
 						try:

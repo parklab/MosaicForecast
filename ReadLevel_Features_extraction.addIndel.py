@@ -343,7 +343,7 @@ def process_line(line):
 									querybase=pileupread.alignment.query_sequence[pileupread.query_position]
 									#print(querybase,major_allele, minor_allele)
 									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele)[1]: #and pileuperead.alignment.mapping_quality>=10:
-									if int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024): #and pileuperead.alignment.mapping_quality>=10:
+									if int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024) and (not (pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))): #and pileuperead.alignment.mapping_quality>=10:
 										major_num=major_num+1
 										if pileupread.alignment.get_cigar_stats()[0][4]>10:
 											major_softclippedreads=major_softclippedreads+1
@@ -363,35 +363,27 @@ def process_line(line):
 											major_read1[name]=major_read1.get(name,0)+1
 										elif pileupread.alignment.flag &128:
 											major_read2[name]=major_read2.get(name,0)+1
-									
 										
 										if pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
-										##if pileupread.alignment.reference_start-pileupread.alignment.next_reference_start<0: 
 											seqpos_major[name].append(pileupread.query_position)
 											#print seqpos_major[name]
 											#if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 											if pileupread.query_position < len(pileupread.alignment.query_sequence)-len(major_allele)-1:
-												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
 												qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
 												baseq_average_leftbases=sum(qualities)/len(qualities)
 												baseq_major_near1b[name].append(baseq_average_leftbases)
 												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
-											#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-											#	baseq_major_near1b[name].append("end")
 										elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
-										##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 											seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
-											#if pileupread.query_position >=1 :
 											if pileupread.query_position >=len(major_allele) :
-												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-len(major_allele)])
-												#print baseq_major_near1b[name]
 												qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
 												baseq_average_leftbases=sum(qualities)/len(qualities)
 												baseq_major_near1b[name].append(baseq_average_leftbases)
 							
+#									elif int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024) and ((pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5)) or (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))): #and pileuperead.alignment.mapping_quality>=10:
+
 								##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
-								elif pileupread.indel<0: #del <0
+								elif pileupread.indel<0 or (pileupread.indel==0 and (int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024) and ((pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5)) or (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))))): #del <0 or clipped reads
 									#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+1]
 									querybase=pileupread.alignment.query_sequence[pileupread.query_position]
 									#print(querybase,major_allele, minor_allele)
@@ -518,7 +510,7 @@ def process_line(line):
 	
 				if_homopolymer="No"
 				for item in homopolymers:
-					if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp)):
+					if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp) or re.search(str(item),minor_allele)):
 						if_homopolymer="Yes"
 						break
 				if if_homopolymer=="No":			
@@ -529,7 +521,12 @@ def process_line(line):
 									querybase=pileupread.alignment.query_sequence[pileupread.query_position]
 									#print(querybase,major_allele, minor_allele)
 									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele)[1]: #and pileuperead.alignment.mapping_quality>=10:
-									if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024): #and pileuperead.alignment.mapping_quality>=10:
+#									if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024): #and pileuperead.alignment.mapping_quality>=10:
+
+									if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024) and (not (pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))): #and pileuperead.alignment.mapping_quality>=10:
+
+
+
 										major_num=major_num+1
 										if pileupread.alignment.get_cigar_stats()[0][4]>10:
 											major_softclippedreads=major_softclippedreads+1
@@ -578,7 +575,8 @@ def process_line(line):
 												baseq_major_near1b[name].append(baseq_average_leftbases)
 												#print baseq_major_near1b[name]
 							
-								if pileupread.indel > 0: ###ins>0
+#								if pileupread.indel > 0: ###ins>0
+								elif pileupread.indel>0 or (pileupread.indel==0 and (int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024) and ((pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5)) or (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))))): #del <0 or clipped reads
 									#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
 									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
 									if (int(pileupcolumn.pos)==int(pos)-1) and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
