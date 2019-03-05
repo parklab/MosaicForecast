@@ -488,7 +488,7 @@ for line in input_table:
 				#if not ( ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)) or (((C1>C2/10) and (C1<C2*10)) and (C3<=C4/10 or C4<=C3/10))  ):
 				if not ( ( (C1>C2*10) and (C4>C3*10) and (C1<C4*5 and C1>C4/5) ) or ((C1<C2/10) and (C4<C3/10) and (C2<C3*5 and C2>C3/5)) or (((C1>C2/10) and (C1<C2*10)) and (C3<=C4/10 or C4<=C3/10))  ):
 					phase[name]['hap>3']=phase[name].get("hap>3",0)+1
-				elif (((C1>C2/10) and (C1<C2*10)) and (C3<C4/10 or C4<C3/10)):
+				elif (((C1>C2/10) and (C1<C2*10)) and (C3<C4/10 or C4<C3/10) and (C3+C4>1)):
 					phase[name]['hap=3']=phase[name].get("hap=3",0)+1
 				#elif ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)):
 				#	phase[name]['hap=2']=phase[name].get("hap=2",0)+1
@@ -499,7 +499,7 @@ for line in input_table:
 			elif variant_type!="SNP":
 				if not ( ((C1>C2*5) and (C4>C3*5) and (C1<C4*5 and C1>C4/5)) or ((C1<C2/5) and (C4<C3/5) and (C2<C3*5 and C2>C3/5)) or (((C1>C2/5) and (C1<C2*5)) and (C3<=C4/5 or C4<=C3/5))  ):
 					phase[name]['hap>3']=phase[name].get("hap>3",0)+1
-				elif (((C1>C2/5) and (C1<C2*5)) and (C3<C4/5 or C4<C3/5)):
+				elif (((C1>C2/5) and (C1<C2*5)) and (C3<C4/5 or C4<C3/5) and (C3+C4>1)):
 					phase[name]['hap=3']=phase[name].get("hap=3",0)+1
 				elif ((C1>C2*5) and (C4>C3*5) and (C1<C4*5 and C1>C4/5)) or ((C1<C2/5) and (C4<C3/5) and (C2<C3*5 and C2>C3/5)):
 					phase[name]['hap=2']=phase[name].get("hap=2",0)+1
@@ -509,8 +509,10 @@ fo=open(output_dir+"/all.phasing_2by2","w")
 for k,v in sorted(phase.items()):
 	if max(phase[k]['hap=2'],phase[k]['hap=3'],phase[k]['hap>3'])>0:
 		phasing_2by2[k]=max(v,key=v.get)
-		#if phase[k]['hap>3']>=2:
-		#	phasing_2by2[k]='hap>3'
+		if phase[k]['hap>3']>=2:
+			phasing_2by2[k]='hap>3'
+		if phasing_2by2[k]=="hap=3" and phase[k]['hap>3']==phase[k]['hap=3']:
+			phasing_2by2[k]='hap>3'
 		print (' '.join(str(x) for x in k.split(";")), v,max(v, key=v.get), file=fo)
 	elif max(phase[k]['hap=2'],phase[k]['hap=3'],phase[k]['hap>3'])==0:
 		phasing_2by2[k]="UNKNOWN"
