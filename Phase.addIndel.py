@@ -132,13 +132,13 @@ def process_line0(line):
 					try:
 						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
 						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
-							query_clipped = read.query_sequence[:read.query_alignment_start]
+							query_clipped = read.query_sequence[:read.query_alignment_start][:length]
 							if re.search(query_clipped, major_allele):
 								minor_ids.append(read.query_name)
 								minor_num+=1
 						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
 						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-							query_clipped = read.query_sequence[read.query_alignment_end:]
+							query_clipped = read.query_sequence[read.query_alignment_end:][-length:]
 							if re.search(query_clipped, major_allele):
 								minor_ids.append(read.query_name)
 								minor_num+=1
@@ -178,13 +178,13 @@ def process_line0(line):
 					try:
 						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
 						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
-							query_clipped = read.query_sequence[:read.query_alignment_start]
+							query_clipped = read.query_sequence[:read.query_alignment_start][:length]
 							if re.search(query_clipped, minor_allele):
 								minor_ids.append(read.query_name)
 								minor_num+=1
 						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
 						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-							query_clipped=read.query_sequence[read.query_alignment_end:]
+							query_clipped=read.query_sequence[read.query_alignment_end:][-length:]
 							if re.search(query_clipped, minor_allele):
 								minor_ids.append(read.query_name)
 								minor_num+=1
@@ -483,22 +483,25 @@ for line in input_table:
 		phase[name]['hap>3']=phase[name].get("hap>3",0)+0
 		#phase[name]['NA']=phase[name].get("NA",0)+0
 		if C1+C2+C3+C4>=10:
-			if variant_type=="snp":
+			if variant_type=="SNP":
 			#UMB1349 18 30348609 C T 30348301 G A 0 34 29 0 2
-				if not ( ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)) or (((C1>C2/10) and (C1<C2*10)) and (C3<=C4/10 or C4<=C3/10))  ):
+				#if not ( ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)) or (((C1>C2/10) and (C1<C2*10)) and (C3<=C4/10 or C4<=C3/10))  ):
+				if not ( ( (C1>C2*10) and (C4>C3*10) and (C1<C4*5 and C1>C4/5) ) or ((C1<C2/10) and (C4<C3/10) and (C2<C3*5 and C2>C3/5)) or (((C1>C2/10) and (C1<C2*10)) and (C3<=C4/10 or C4<=C3/10))  ):
 					phase[name]['hap>3']=phase[name].get("hap>3",0)+1
 				elif (((C1>C2/10) and (C1<C2*10)) and (C3<C4/10 or C4<C3/10)):
 					phase[name]['hap=3']=phase[name].get("hap=3",0)+1
-				elif ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)):
+				#elif ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)):
+				#	phase[name]['hap=2']=phase[name].get("hap=2",0)+1
+				elif ( (C1>C2*10) and (C4>C3*10) and (C1<C4*5 and C1>C4/5) ) or ((C1<C2/10) and (C4<C3/10) and (C2<C3*5 and C2>C3/5)):
 					phase[name]['hap=2']=phase[name].get("hap=2",0)+1
 		#	elif C3+C4==0:
 		#		phase[name]['NA']=phase[name].get("NA",0)+1
-			elif variant_type!="snp":
-				if not ( ((C1>C2*5) and (C4>C3*5)) or ((C1<C2/5) and (C4<C3/5)) or (((C1>C2/5) and (C1<C2*5)) and (C3<=C4/5 or C4<=C3/5))  ):
+			elif variant_type!="SNP":
+				if not ( ((C1>C2*5) and (C4>C3*5) and (C1<C4*5 and C1>C4/5)) or ((C1<C2/5) and (C4<C3/5) and (C2<C3*5 and C2>C3/5)) or (((C1>C2/5) and (C1<C2*5)) and (C3<=C4/5 or C4<=C3/5))  ):
 					phase[name]['hap>3']=phase[name].get("hap>3",0)+1
 				elif (((C1>C2/5) and (C1<C2*5)) and (C3<C4/5 or C4<C3/5)):
 					phase[name]['hap=3']=phase[name].get("hap=3",0)+1
-				elif ((C1>C2*5) and (C4>C3*5)) or ((C1<C2/5) and (C4<C3/5)):
+				elif ((C1>C2*5) and (C4>C3*5) and (C1<C4*5 and C1>C4/5)) or ((C1<C2/5) and (C4<C3/5) and (C2<C3*5 and C2>C3/5)):
 					phase[name]['hap=2']=phase[name].get("hap=2",0)+1
 
 phasing_2by2 = dict()
@@ -506,6 +509,8 @@ fo=open(output_dir+"/all.phasing_2by2","w")
 for k,v in sorted(phase.items()):
 	if max(phase[k]['hap=2'],phase[k]['hap=3'],phase[k]['hap>3'])>0:
 		phasing_2by2[k]=max(v,key=v.get)
+		#if phase[k]['hap>3']>=2:
+		#	phasing_2by2[k]='hap>3'
 		print (' '.join(str(x) for x in k.split(";")), v,max(v, key=v.get), file=fo)
 	elif max(phase[k]['hap=2'],phase[k]['hap=3'],phase[k]['hap>3'])==0:
 		phasing_2by2[k]="UNKNOWN"
