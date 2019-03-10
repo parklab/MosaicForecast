@@ -47,6 +47,7 @@ else:
 	output_dir=output_dir_tmp
 
 os.system("mkdir -p "+output_dir)
+os.system("mkdir -p "+output_dir+"/tmp")
 homopolymers=list()
 homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG","CTCTCT","TCTCTC","ATTATT","TAATAA","AATAAT","GCCGCC","CGGCGG","CCGCCG","ATTTATTT","TAAATAAA","GCCCGCCCC","CGGGCGGG","CCGGCCGG","GGCCGGCC","TTTATTT","ATTTATT","TAAATAA","AAATAAT","GCCCGCC","CCCGCCC","GGCGGC","GAAAGAAA","AAAGAAAG","TTTCTTTC","TTCTTTCT","CCCTCCCT","CTTTCTTT"]
 
@@ -85,9 +86,9 @@ def process_line0(line):
 		minor_allele=fields[4]
 		input_bam=bam_dir+"/"+sample+".bam"
 		a=pysam.AlignmentFile(input_bam, "rb")
-		f1=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
-		f2=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
-		f3=pysam.AlignmentFile(output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
+		f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
+		f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
+		f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
 		name=sample+'_'+chr+'_'+str(pos)
 		major_ids=list()
 		minor_ids=list()
@@ -233,13 +234,13 @@ def process_line0(line):
 		f2.close() 
 		f3.close()
 	
-		f1_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
-		f2_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
-		f3_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+		f1_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
+		f2_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
+		f3_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
 		
-		f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-		f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
-		f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+		f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+		f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+		f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
 	
 		run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
 		run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
@@ -325,7 +326,7 @@ def process_line(line):
 	conflict_mosaic[mosaic_name]=conflictnum
 	start=int(pos)-1
 	end=int(pos)
-	f3_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+	f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
 	x=list()
 	if major_num>=3 and minor_num>=3:
 		##print (chr,pos, major_num, minor_num)
@@ -402,8 +403,8 @@ def process_line2(line):
 	conflict=fields[9]
 	variant_type=fields[10]
 	if pos != inforSNP_pos:
-		f1_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-		f2_sorted_name=output_dir+"/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+		f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+		f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
 		a1=pysam.AlignmentFile(f1_sorted_name,"rb")
 		a2=pysam.AlignmentFile(f2_sorted_name,"rb")
 		start_pos=max(int(inforSNP_pos)-1000,0)
