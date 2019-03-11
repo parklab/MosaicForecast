@@ -80,184 +80,207 @@ def process_line0(line):
 	sample=fields[5]
 	chr=fields[0]
 	chrom=str(chr)
-	if not re.search("MT",chrom):
-		pos=int(fields[2])
-		major_allele=fields[3]
-		minor_allele=fields[4]
-		input_bam=bam_dir+"/"+sample+".bam"
-		a=pysam.AlignmentFile(input_bam, "rb")
-		f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
-		f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
-		f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
-		name=sample+'_'+chr+'_'+str(pos)
-		major_ids=list()
-		minor_ids=list()
-		start=int(pos)-1
-		end=int(pos)
-		major_num=int(0)
-		minor_num=int(0)
-		length=len(major_allele)-len(minor_allele)
-		if length<0:
-			length=0-length
-		if len(major_allele)==1 and len(minor_allele)==1:
-			state="SNP"
-			for pileupcolumn in a.pileup(chrom, start, end):
-				for pileupread in pileupcolumn.pileups:
-					if pileupread.indel!=0:
-						continue
-					try:
-						querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-						if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
-							major_ids.append(pileupread.alignment.query_name)
-							major_num+=1
-						elif int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele): #and pileupread.alignment.mapping_quality>=10:
-							minor_ids.append(pileupread.alignment.query_name)
-							minor_num+=1
-					except:
-						continue
-
-		elif len(major_allele)>1 and len(minor_allele)==1:
-			state="DEL"
-			#context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
-			context1=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
-			context2=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
-			context=reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))]
-
-			if_homopolymer="No"
-			for item in homopolymers:
-				if re.search(str(item), str(context1)) or re.search(str(item),str(context2)):
-					if_homopolymer="Yes"
-					break
-			if if_homopolymer=="No":
-				for read in a.fetch(chrom,start-length, end+length):
-					try:
-						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
-						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
-							query_clipped = read.query_sequence[:read.query_alignment_start][:length]
-							if re.search(query_clipped, major_allele):
-								minor_ids.append(read.query_name)
-								minor_num+=1
-						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-							query_clipped = read.query_sequence[read.query_alignment_end:][-length:]
-							if re.search(query_clipped, major_allele):
-								minor_ids.append(read.query_name)
-								minor_num+=1
-					except:
-						continue	
-						#print (chrom, pos, read.query_name, read.cigar)
+	major_allele=fields[3]
+	minor_allele=fields[4]
+	pos=int(fields[2])
+	if not (re.search("MT",chrom) or re.search(",",minor_allele) or major_allele==minor_allele):
+		try:
+			input_bam=bam_dir+"/"+sample+".bam"
+			a=pysam.AlignmentFile(input_bam, "rb")
+			f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
+			f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
+			f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
+			name=sample+'_'+chr+'_'+str(pos)
+			major_ids=list()
+			minor_ids=list()
+			start=int(pos)-1
+			end=int(pos)
+			major_num=int(0)
+			minor_num=int(0)
+			length=len(major_allele)-len(minor_allele)
+			if length<0:
+				length=0-length
+			if len(major_allele)==1 and len(minor_allele)==1:# and minor_allele!=".":
+				state="SNP"
 				for pileupcolumn in a.pileup(chrom, start, end):
 					for pileupread in pileupcolumn.pileups:
+						if pileupread.indel!=0:
+							continue
 						try:
-							if pileupread.indel<0: #del <0
-								querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(minor_allele)]
-								#print(querybase,major_allele, minor_allele)
-								if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
-									minor_ids.append(pileupread.alignment.query_name)
-									minor_num+=1
-							elif pileupread.indel==0:
-								#if int(pileupcolumn.pos)==int(pos)-1 and (not (pileupread.alignment.query_alignment_end==int(pos)-1 and pileupread.alignment.cigar[-1][0]==4 and pileupread.alignment.cigar[-1][1]<=length)) and (not (pileupread.alignment.query_alignment_start==int(pos)-1 and pileupread.alignment.cigar[0][0]==4 and pileupread.alignment.cigar[0][1]<=length)): #and pileuperead.alignment.mapping_quality>=10:
-								if int(pileupcolumn.pos)==int(pos)-1 and (not (pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))): #and pileuperead.alignment.mapping_quality>=10:
-									major_ids.append(pileupread.alignment.query_name)
-									major_num+=1
+							querybase=pileupread.alignment.query_sequence[pileupread.query_position]
+							if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
+								major_ids.append(pileupread.alignment.query_name)
+								major_num+=1
+							elif int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele): #and pileupread.alignment.mapping_quality>=10:
+								minor_ids.append(pileupread.alignment.query_name)
+								minor_num+=1
 						except:
-							continue						
-
-		elif len(major_allele)==1 and len(minor_allele)>1:
-			state="INS"
-			context1=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
-			context2=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
-			context=reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))]
-
-			if_homopolymer="No"
-			for item in homopolymers:
-				if re.search(str(item), str(context1)) or re.search(str(item),str(context2) or re.search(str(item),minor_allele)):
-					if_homopolymer="Yes"
-					break
-			if if_homopolymer=="No":
-				for read in a.fetch(chrom,start-length, end+length):
-					try:
-						#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
-						if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
-							query_clipped = read.query_sequence[:read.query_alignment_start][:length]
-							if re.search(query_clipped, minor_allele):
-								minor_ids.append(read.query_name)
-								minor_num+=1
-						#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-						elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
-							query_clipped=read.query_sequence[read.query_alignment_end:][-length:]
-							if re.search(query_clipped, minor_allele):
-								minor_ids.append(read.query_name)
-								minor_num+=1
-					except:
-						continue
-#						print (chrom, pos, read.query_name, read.cigar)
+							continue
+	
+			elif len(major_allele)>1 and len(major_allele)==len(minor_allele):
+				state="MNP"
 				for pileupcolumn in a.pileup(chrom, start, end):
 					for pileupread in pileupcolumn.pileups:
+						if pileupread.indel!=0:
+							continue
 						try:
-							if pileupread.indel > 0: ###ins>0
-								#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
-								#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
-								if int(pileupcolumn.pos)==int(pos)-1:
-									minor_ids.append(pileupread.alignment.query_name)
+							querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(minor_allele)]
+							if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(major_allele): #and pileuperead.alignment.mapping_quality>=10:
+								major_ids.append(pileupread.alignment.query_name)
+								major_num+=1
+							elif int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele): #and pileupread.alignment.mapping_quality>=10:
+								minor_ids.append(pileupread.alignment.query_name)
+								minor_num+=1
+						except:
+							continue
+#			elif len(major_allele)>1 and len(minor_allele)==1:
+			elif len(major_allele)> len(minor_allele):
+				state="DEL"
+				#context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
+				context1=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
+				context2=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
+				context=reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))]
+	
+				if_homopolymer="No"
+				for item in homopolymers:
+					if re.search(str(item), str(context1)) or re.search(str(item),str(context2)):
+						if_homopolymer="Yes"
+						break
+				if if_homopolymer=="No":
+					for read in a.fetch(chrom,start-length, end+length):
+						try:
+							#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
+							if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
+								query_clipped = read.query_sequence[:read.query_alignment_start][:length]
+								if re.search(query_clipped, major_allele):
+									minor_ids.append(read.query_name)
 									minor_num+=1
-							elif pileupread.indel==0:
-								querybase=pileupread.alignment.query_sequence[pileupread.query_position]
-								if int(pileupcolumn.pos)==int(pos)-1:
-									#if str(querybase)==str(major_allele) and (not (pileupread.alignment.query_alignment_end==int(pos)-1 and pileupread.alignment.cigar[-1][0]==4 and pileupread.alignment.cigar[-1][1]<=length)) and (not (pileupread.alignment.query_alignment_start==int(pos)-1 and pileupread.alignment.cigar[0][0]==4 and pileupread.alignment.cigar[0][1]<=length)):
-									if str(querybase)==str(major_allele) and (not (pileupread.alignment.query_alignment_end>=int(pos)-2 and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start<=int(pos) and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))):
+							#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+							elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+								query_clipped = read.query_sequence[read.query_alignment_end:][-length:]
+								if re.search(query_clipped, major_allele):
+									minor_ids.append(read.query_name)
+									minor_num+=1
+						except:
+							continue	
+							#print (chrom, pos, read.query_name, read.cigar)
+					for pileupcolumn in a.pileup(chrom, start, end):
+						for pileupread in pileupcolumn.pileups:
+							try:
+								if pileupread.indel<0: #del <0
+									querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(minor_allele)]
+									#print(querybase,major_allele, minor_allele)
+									if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
+										minor_ids.append(pileupread.alignment.query_name)
+										minor_num+=1
+								elif pileupread.indel==0:
+									#if int(pileupcolumn.pos)==int(pos)-1 and (not (pileupread.alignment.query_alignment_end==int(pos)-1 and pileupread.alignment.cigar[-1][0]==4 and pileupread.alignment.cigar[-1][1]<=length)) and (not (pileupread.alignment.query_alignment_start==int(pos)-1 and pileupread.alignment.cigar[0][0]==4 and pileupread.alignment.cigar[0][1]<=length)): #and pileuperead.alignment.mapping_quality>=10:
+									if int(pileupcolumn.pos)==int(pos)-1 and (not (pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))): #and pileuperead.alignment.mapping_quality>=10:
 										major_ids.append(pileupread.alignment.query_name)
 										major_num+=1
+							except:
+								continue						
+	
+			#elif len(major_allele)==1 and len(minor_allele)>1:
+			elif len(major_allele) < len(minor_allele):
+				state="INS"
+				context1=reference[chrom][max(1,int(pos)-11):min(int(pos)+1,int(chr_sizes[chrom]))]
+				context2=reference[chrom][max(1,int(pos)-1):min(int(pos)+10,int(chr_sizes[chrom]))]
+				context=reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))]
+	
+				if_homopolymer="No"
+				for item in homopolymers:
+					if re.search(str(item), str(context1)) or re.search(str(item),str(context2) or re.search(str(item),minor_allele)):
+						if_homopolymer="Yes"
+						break
+				if if_homopolymer=="No":
+					for read in a.fetch(chrom,start-length, end+length):
+						try:
+							#if read.cigar[0][0]==4 and read.cigar[0][1]<=length and read.reference_start>= pos-1 and read.reference_start-read.query_alignment_start< pos-1:
+							if (read.cigar[0][0]==4 or read.cigar[0][0]==5) and read.reference_start>= pos-2 and read.reference_start-read.query_alignment_start< pos-1:
+								query_clipped = read.query_sequence[:read.query_alignment_start][:length]
+								if re.search(query_clipped, minor_allele):
+									minor_ids.append(read.query_name)
+									minor_num+=1
+							#elif read.cigar[-1][0]==4 and read.cigar[-1][1]<=length and read.reference_end <= pos-1 and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+							elif (read.cigar[-1][0]==4 or read.cigar[-1][0]==5) and read.reference_end <= pos and (read.reference_end + read.query_length-read.query_alignment_end>pos-1):
+								query_clipped=read.query_sequence[read.query_alignment_end:][-length:]
+								if re.search(query_clipped, minor_allele):
+									minor_ids.append(read.query_name)
+									minor_num+=1
 						except:
-							continue						
-
-
-							
+							continue
+	#						print (chrom, pos, read.query_name, read.cigar)
+					for pileupcolumn in a.pileup(chrom, start, end):
+						for pileupread in pileupcolumn.pileups:
+							try:
+								if pileupread.indel > 0: ###ins>0
+									#querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+(len(minor_allele)-len(major_allele))+1]
+#									querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(minor_allele)]
+									#if int(pileupcolumn.pos)==int(pos)-1 and str(querybase)==str(minor_allele):
+									if int(pileupcolumn.pos)==int(pos)-1:
+										minor_ids.append(pileupread.alignment.query_name)
+										minor_num+=1
+								elif pileupread.indel==0:
+									#querybase=pileupread.alignment.query_sequence[pileupread.query_position]
+									querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(major_allele)]
+									if int(pileupcolumn.pos)==int(pos)-1:
+										#if str(querybase)==str(major_allele) and (not (pileupread.alignment.query_alignment_end==int(pos)-1 and pileupread.alignment.cigar[-1][0]==4 and pileupread.alignment.cigar[-1][1]<=length)) and (not (pileupread.alignment.query_alignment_start==int(pos)-1 and pileupread.alignment.cigar[0][0]==4 and pileupread.alignment.cigar[0][1]<=length)):
+										if str(querybase)==str(major_allele) and (not (pileupread.alignment.query_alignment_end>=int(pos)-2 and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5))) and (not (pileupread.alignment.query_alignment_start<=int(pos) and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))):
+											major_ids.append(pileupread.alignment.query_name)
+											major_num+=1
+							except:
+								continue						
 	
-		start=max(int(pos)-1000,1)
-		end=min(int(pos)+1000,int(chr_sizes[chrom]))
-		conflictnum=0
-		major_ids=list(set(major_ids))
-		minor_ids=list(set(minor_ids))
-		if len(major_ids)>=2 and len(minor_ids)>=2:
-			conflict_reads=set(major_ids) & set(minor_ids)
-			conflictnum=len(conflict_reads)
-				
-			for read in a.fetch(chrom, start, end):
-				if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
-					f3.write(read)
-				if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
-					f1.write(read)
-				if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
-					f2.write(read)
-		f1.close()
-		f2.close() 
-		f3.close()
 	
-		f1_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
-		f2_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
-		f3_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+								
 		
-		f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-		f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
-		f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
-	
-		run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
-		run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
-		run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
-	
-		run_cmd("samtools index "+f1_sorted_name)	
-		run_cmd("samtools index "+f2_sorted_name)	
-		run_cmd("samtools index "+f3_sorted_name)	
-	
-	#	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
-	#	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
-	#	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
-	#	cmd_list2.append("samtools index "+f1_sorted_name)
-	#	cmd_list2.append("samtools index "+f2_sorted_name)
-	#	cmd_list2.append("samtools index "+f3_sorted_name)
-	#	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
-		return sample,chr,pos,major_allele,minor_allele,str(major_num),str(minor_num),str(conflictnum),state
+			start=max(int(pos)-1000,1)
+			end=min(int(pos)+1000,int(chr_sizes[chrom]))
+			conflictnum=0
+			major_ids=list(set(major_ids))
+			minor_ids=list(set(minor_ids))
+			if len(major_ids)>=2 and len(minor_ids)>=2:
+				conflict_reads=set(major_ids) & set(minor_ids)
+				conflictnum=len(conflict_reads)
+					
+				for read in a.fetch(chrom, start, end):
+					if ((read.query_name in major_ids) or (read.query_name in minor_ids)) and (read.query_name not in list(conflict_reads)):
+						f3.write(read)
+					if (read.query_name in major_ids) and (read.query_name not in list(conflict_reads)):
+						f1.write(read)
+					if (read.query_name in minor_ids) and (read.query_name not in list(conflict_reads)):
+						f2.write(read)
+			f1.close()
+			f2.close() 
+			f3.close()
+		
+			f1_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
+			f2_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
+			f3_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+			
+			f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+			f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+			f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+		
+			run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
+			run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
+			run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
+		
+			run_cmd("samtools index "+f1_sorted_name)	
+			run_cmd("samtools index "+f2_sorted_name)	
+			run_cmd("samtools index "+f3_sorted_name)	
+		
+		#	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
+		#	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
+		#	cmd_list1.append("samtools sort "+f3_name+" -o "+f3_sorted_name)
+		#	cmd_list2.append("samtools index "+f1_sorted_name)
+		#	cmd_list2.append("samtools index "+f2_sorted_name)
+		#	cmd_list2.append("samtools index "+f3_sorted_name)
+		#	print (sample,chr,pos,major_allele,minor_allele,major_num,minor_num,conflictnum,file=fo1)
+			return sample,chr,pos,major_allele,minor_allele,str(major_num),str(minor_num),str(conflictnum),state
+		except:
+			print("check the format of your input file:\nchr\tpos-1\tpos\tref\talt\tsample")
 
 fo1=open(output_dir+"/all_candidates","w")
 
@@ -484,7 +507,7 @@ for line in input_table:
 		phase[name]['hap>3']=phase[name].get("hap>3",0)+0
 		#phase[name]['NA']=phase[name].get("NA",0)+0
 		if C1+C2+C3+C4>=10:
-			if variant_type=="SNP":
+			if variant_type=="SNP" or variant_type=="MNP":
 			#UMB1349 18 30348609 C T 30348301 G A 0 34 29 0 2
 				#if not ( ((C1>C2*10) and (C4>C3*10)) or ((C1<C2/10) and (C4<C3/10)) or (((C1>C2/10) and (C1<C2*10)) and (C3<=C4/10 or C4<=C3/10))  ):
 				if not ( ( (C1>C2*10) and (C4>C3*10) and (C1<C4*5 and C1>C4/5) ) or ((C1<C2/10) and (C4<C3/10) and (C2<C3*5 and C2>C3/5)) or (((C1>C2/10) and (C1<C2*10)) and (C3<=C4/10 or C4<=C3/10))  ):
