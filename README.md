@@ -162,13 +162,12 @@ Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK
 Genotype probability predictions for all input sites.
 ```
 
-| id | prediction | het | mosaic | refhom | repeat |
-| --- | --- | --- | --- | --- | --- |
-| test\~11\~40316580\~C\~T | mosaic | 0.002 | 0.958 | 0 | 0.04 |
-| test\~12\~52644508\~C\~T | mosaic | 0.002 | 0.982 | 0 | 0.016 |
-| test\~15\~75918044\~G\~A | mosaic | 0.006 | 0.812 | 0 | 0.182 |
-| test\~1\~1004865\~G\~C | mosaic | 0.006 | 0.988 | 0 | 0.006 |
-
+| id | AF | dp | prediction | het | mosaic | refhom | repeat |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| test\~11\~40316580\~C\~T | 0.028 | 214 | mosaic | 0.002 | 0.958 | 0 | 0.04 |
+| test\~12\~52644508\~C\~T | 0.054 | 203 | mosaic | 0.002 | 0.982 | 0 | 0.016 |
+| test\~15\~75918044\~G\~A | 0.036 | 193 | mosaic | 0.006 | 0.812 | 0 | 0.182 |
+| test\~1\~1004865\~G\~C | 0.085 | 212 | mosaic | 0.006 | 0.988 | 0 | 0.006 |
 
 
 ## You could also train RF models using your own data:
