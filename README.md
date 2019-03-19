@@ -87,6 +87,7 @@ Intermediate files:
 
 ```
 
+
 ## Extraction of read-level features:
 **Usage:**
 
@@ -132,6 +133,7 @@ A list of read-level features for each input site.
 | test\~12\~52644508\~C\~T | 0.197545792452075 | 0 | 1 | SNP | 0 | 0.571428571428571 | 0.0208333333333333 | 0 | 0.19325 | 0.20057 | 0.88251 | NA | 0.11764 | -0.95448 | 0.31536 | 0.6827 | 0.31601 | 0.58756 | 0.13401 | CGC | 0.01236 | 0.0127266666666667 | 0.17424 | 0.054 | 203 | 0.999999999985368 | 5.11687178601205e-39 | 1.46319954019795e-11 | 0 | 0 | 0.36124 | -12.8571 |
 
 
+
 ## Genotype Prediction:
 
 **Usage:**
@@ -166,6 +168,7 @@ Genotype predictions for all input sites.
 | test\~12\~52644508\~C\~T | mosaic | 0.002 | 0.982 | 0 | 0.016 |
 | test\~15\~75918044\~G\~A | mosaic | 0.006 | 0.812 | 0 | 0.182 |
 | test\~1\~1004865\~G\~C | mosaic | 0.006 | 0.988 | 0 | 0.006 |
+
 
 
 ## You could also train RF models using your own data:
