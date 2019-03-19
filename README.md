@@ -128,14 +128,14 @@ A list of read-level features for each input site.
 <style>
   .markdown-body table td {
     font-size: 12px !important;
+</style>
+}
 
 | id | dp_p | conflict_num | mappability | type | length | GCcontent | ref_softclip | alt_softclip | querypos_p | leftpos_p | seqpos_p | mapq_p | baseq_p | baseq_t | ref_baseq1b_p | ref_baseq1b_t | alt_baseq1b_p | alt_baseq1b_t | sb_p | context | major_mismatches_mean | minor_mismatches_mean | mismatches_p | AF | dp | mosaic_likelihood | het_likelihood | refhom_likelihood | althom_likelihood | mapq_difference | sb_read12_p | dp_diff |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | test\~11\~40316580\~C\~T | 0.3183008162818 | 0 | 1 | SNP | 0 | 0.476190476190476 | 0.0240384615384615 | 0 | 0.1582 | 0.16521 | 0.68821 | NA | 0.91657 | -0.57364 | 0.98911 | 0.21893 | 0.67576 | -0.8528 | 0.69934 | GGA | 0.00878 | 0.0144466666666667 | 0.29396 | 0.028 | 214 | 0.999414559235067 | 3.90999117967593e-49 | 0.000585440764932926 | 0 | 0 | 0.69142 | -12.8571 |
 | test\~12\~52644508\~C\~T | 0.197545792452075 | 0 | 1 | SNP | 0 | 0.571428571428571 | 0.0208333333333333 | 0 | 0.19325 | 0.20057 | 0.88251 | NA | 0.11764 | -0.95448 | 0.31536 | 0.6827 | 0.31601 | 0.58756 | 0.13401 | CGC | 0.01236 | 0.0127266666666667 | 0.17424 | 0.054 | 203 | 0.999999999985368 | 5.11687178601205e-39 | 1.46319954019795e-11 | 0 | 0 | 0.36124 | -12.8571 |
 
-  }
-</style>
 
 ## Genotype Prediction:
 
