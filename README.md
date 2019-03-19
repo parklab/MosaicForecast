@@ -153,7 +153,7 @@ Genotype predictions for all input sites.
 ```
 
 | id | prediction | het | mosaic | refhom | repeat |
-| --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- |
 | test~11~40316580~C~T | mosaic | 0.002 | 0.958 | 0 | 0.04 |
 | test~12~52644508~C~T | mosaic | 0.002 | 0.982 | 0 | 0.016 |
 | test~15~75918044~G~A | mosaic | 0.006 | 0.812 | 0 | 0.182 |
