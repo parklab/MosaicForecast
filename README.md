@@ -64,6 +64,7 @@ python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 2 demo/test.input
 **Output:**
 ```
 output_dir/all.phasing
+```
 |sample | chr | pos | ref | alt | phasing | conflicting_reads|
 |test | 12 | 52644508 | C | T | hap=3 | 0|
 |test | 15 | 75918044 | G | A | hap=3 | 0|
@@ -74,7 +75,7 @@ output_dir/all.phasing
 hap=2: likely het variants
 hap=3: likely mosaic variants
 hap>3: likely cnv/repeat
-
+```
 Intermediate files:
 1. output_dir/all.merged.inforSNPs.pos: all nearby inforSNPs of candidate mosaics.
 2. output_dir/all_2x2table: 2x2 tables by all nearby inforSNPs.
