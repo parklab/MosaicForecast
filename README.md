@@ -57,7 +57,7 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 **Demo:**
 
 ```
-python Phase.py demo demo/phasing human_g1k_v37_decoy.fasta 2 demo/test.input 20
+python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 2 demo/test.input 20
 ```
 
 **Output:**
