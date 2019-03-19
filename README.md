@@ -147,7 +147,7 @@ Genotype predictions for all input sites.
 ## You could also train RF models using your own data:
 **Usage:**
 ```
-Rscript Train_RFmodel.R input(trainset) output(prediction_model) type(Phase|Refine)
+Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phase|Refine) type_variant(SNP|INS|DEL)
 ```
 **Note:** 
 
@@ -157,8 +157,9 @@ Rscript Train_RFmodel.R input(trainset) output(prediction_model) type(Phase|Refi
 
 **Demo:**
 ```
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine
+Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase SNP
+Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine DEL
+Rscript Train_RFmodel.R demo/deletions_phasable_trainset demo/Deletions_Refine_model.rds Refine DEL
 ```
 
 **Output:**
