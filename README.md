@@ -142,6 +142,14 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 1. The input\_file is a list of read-level features.
 2. The model\_trained is the pre-trained RF model to predict genotypes.
 
+> You may use our models trained with brain WGS data (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings):
+>
+> * models\_trained/50xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/100xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/150xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/200xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/250xRFmodel\_addRMSK\_Refine.rds
+
 **Demo:**
 
 Rscript Prediction.R demo/test.SNP.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.SNP.predictions
@@ -151,14 +159,6 @@ Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK
 ```
 Genotype predictions for all input sites.
 ```
-> You may use our models trained with brain WGS data (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings):
->
-> * models\_trained/50xRFmodel\_addRMSK\_Refine.rds
-> * models\_trained/100xRFmodel\_addRMSK\_Refine.rds
-> * models\_trained/150xRFmodel\_addRMSK\_Refine.rds
-> * models\_trained/200xRFmodel\_addRMSK\_Refine.rds
-> * models\_trained/250xRFmodel\_addRMSK\_Refine.rds
-
 
 | id | prediction | het | mosaic | refhom | repeat |
 | --- | --- | --- | --- | --- | --- |
