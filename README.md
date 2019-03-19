@@ -176,7 +176,7 @@ output2(converted genotypes) read_length(int) type(pvalue|effectsize)
 
 **Note:**
 
-1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
+1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >5000 sites);
 2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size.
 3. The input file should be a list of pre-generated read-level features for all phasable sites, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
 4. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
