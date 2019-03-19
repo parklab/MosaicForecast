@@ -66,6 +66,7 @@ python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 2 demo/test.input
 output_dir/all.phasing
 
 | sample | chr | pos | ref | alt | phasing | conflicting_reads |
+| --- | --- | --- | --- | --- | --- | --- |
 | test | 12 | 52644508 | C | T | hap=3 | 0 |
 | test | 15 | 75918044 | G | A | hap=3 | 0 |
 | test | 1 | 1004865 | G | C | hap=3 | 0 |
