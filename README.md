@@ -159,7 +159,7 @@ Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK
 
 **Output:**
 ```
-Genotype predictions for all input sites.
+Genotype probability predictions for all input sites.
 ```
 
 | id | prediction | het | mosaic | refhom | repeat |
