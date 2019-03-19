@@ -35,6 +35,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 #### Regions to filter out:
 * Segmental Duplication regions: http://humanparalogy.gs.washington.edu/ 
 * Regions enriched for SNPs with >=3 haplotypes: https://github.com/parklab/MosaicForecast/tree/master/resources
+* Simple repeats (shoule be removed if call mosaic INDELS): https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=716260999_jBJij5JXiQiuykIobdBExCLj0XEf
 #### Population allale frequency
 * Gnomad datasets: https://gnomad.broadinstitute.org/downloads
 
