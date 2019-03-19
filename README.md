@@ -103,8 +103,8 @@ type(pvalue||effectsize)
 
 **Demo:**
 ```
-python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${ref.fa} ${k24.umap.wg.bw} 2
-Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 150 pvalue
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa} ${k24.umap.wg.bw} 2
+Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features 150 pvalue
  
 ```
 
@@ -125,7 +125,8 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 
 **Demo:**
 
-Rscript Prediction.R demo/test.features\_R models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Refine\_pvalue.rds  demo/test\_predictions
+Rscript Prediction.R demo/test.SNP.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.SNP.predictions
+Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.DEL.predictions
 
 **Output:**
 ```
@@ -135,12 +136,11 @@ Genotype predictions for all input sites.
 
 > You may use our models trained with brain WGS data (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings):
 >
-> * models\_trained/50-200X\_brainWGS/brain\_MT2-PON.50x.rds
-> * models\_trained/50-200X\_brainWGS/brain\_MT2-PON.100x.rds
-> * models\_trained/50-200X\_brainWGS/brain\_MT2-PON.150x.rds
-> * models\_trained/50-200X\_brainWGS/brain\_MT2-PON.200x.rds
-> * models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Refine\_pvalue.rds
-> * models\_trained/brain\_MT2-PON.250x\_MosaicForecast-Phase\_pvalue.rds
+> * models\_trained/50xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/100xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/150xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/200xRFmodel\_addRMSK\_Refine.rds
+> * models\_trained/250xRFmodel\_addRMSK\_Refine.rds
 
 
 ## You could also train RF models using your own data:
