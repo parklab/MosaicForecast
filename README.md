@@ -151,15 +151,6 @@ Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK
 ```
 Genotype predictions for all input sites.
 ```
-
-| id | prediction | het | mosaic | refhom | repeat |
-| --- | --- | --- | --- | --- | --- |
-| test~11~40316580~C~T | mosaic | 0.002 | 0.958 | 0 | 0.04 |
-| test~12~52644508~C~T | mosaic | 0.002 | 0.982 | 0 | 0.016 |
-| test~15~75918044~G~A | mosaic | 0.006 | 0.812 | 0 | 0.182 |
-| test~1~1004865~G~C | mosaic | 0.006 | 0.988 | 0 | 0.006 |
-
-
 > You may use our models trained with brain WGS data (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings):
 >
 > * models\_trained/50xRFmodel\_addRMSK\_Refine.rds
@@ -167,6 +158,14 @@ Genotype predictions for all input sites.
 > * models\_trained/150xRFmodel\_addRMSK\_Refine.rds
 > * models\_trained/200xRFmodel\_addRMSK\_Refine.rds
 > * models\_trained/250xRFmodel\_addRMSK\_Refine.rds
+
+
+| id | prediction | het | mosaic | refhom | repeat |
+| --- | --- | --- | --- | --- | --- |
+| test\~11\~40316580\~C\~T | mosaic | 0.002 | 0.958 | 0 | 0.04 |
+| test\~12\~52644508\~C\~T | mosaic | 0.002 | 0.982 | 0 | 0.016 |
+| test\~15\~75918044\~G\~A | mosaic | 0.006 | 0.812 | 0 | 0.182 |
+| test\~1\~1004865\~G\~C | mosaic | 0.006 | 0.988 | 0 | 0.006 |
 
 
 ## You could also train RF models using your own data:
