@@ -3,19 +3,21 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)!=5) {
-	stop("Rscript Phasing_Refine_Multinomial_Logistic_Regression.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) type(pvalue|effectsize)
+if (length(args)!=6) {
+	stop("Rscript Phasing_Refine_Multinomial_Logistic_Regression.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) type(pvalue|effectsize) model_class(glmnet or naivebayes)
 
 	Note:
 	Use \"pvalue\" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
         Use \"effectsize\" when your data has extrmely un-even read coverage and small training sample size
+	By default should use glmnet
 ", call.=FALSE)
-} else if (length(args)==5) {
+} else if (length(args)==6) {
 	train_file <- args[1]
 	prediction_model <- args[2]
 	output_file <- args[3]
 	read_length <- as.numeric(args[4])
 	type <- as.character(args[5])
+	model_type <- as.character(args[6])
 }
 
 library(stats)
@@ -23,7 +25,7 @@ library(caret)
 library(nnet)
 library(glmnet)
 library(ggbiplot)
-
+library(e1071)
 
 if (type=="pvalue") {
 	#head train_phasable_sites
@@ -37,7 +39,7 @@ if (type=="pvalue") {
 	all_phasable <- all_phasable[complete.cases(all_phasable[,seq(1,28)]),]
 	
 	
-	all_phasable.2 <- subset(all_phasable, select=c(querypos_p,leftpos_p, seqpos_p, mapq_p, baseq_p, baseq_t, ref_baseq1b_p, ref_baseq1b_t, alt_baseq1b_p, alt_baseq1b_t, sb_p, major_mismatches_mean, minor_mismatches_mean, mismatches_p, AF, dp, mosaic_likelihood, het_likelihood, refhom_likelihood, mapq_difference, sb_read12_p, dp_diff, conflict_num))
+	all_phasable.2 <- subset(all_phasable, select=c(querypos_p,leftpos_p, seqpos_p, mapq_p, baseq_p, baseq_t, ref_baseq1b_p, ref_baseq1b_t, alt_baseq1b_p, alt_baseq1b_t, sb_p, major_mismatches_mean, minor_mismatches_mean, mismatches_p, AF, dp, mosaic_likelihood, het_likelihood, refhom_likelihood, mapq_difference, sb_read12_p, dp_diff, conflict_num, mappability,ref_softclip, alt_softclip))
 	all_phasable.3<- all_phasable.2
 	all_phasable.3$querypos_p=log(all_phasable.3$querypos_p+1e-7)
 	all_phasable.3$leftpos_p=log(all_phasable.3$leftpos_p+1e-7)
@@ -57,14 +59,14 @@ if (type=="pvalue") {
 	       center = TRUE,
 	       scale. = TRUE) 
 	
-	pdf("phasablesites_PCA.pdf")
-	g <- ggbiplot(pc, obs.scale = 1, var.scale = 1, 
-		groups = all_phasable$phase, ellipse = TRUE, 
-		circle = TRUE)+
-		theme(legend.direction ='horizontal', 
-		legend.position = 'top')
-	g
-	dev.off()
+#	pdf("phasablesites_PCA.pdf")
+#	g <- ggbiplot(pc, obs.scale = 1, var.scale = 1, 
+#		groups = all_phasable$phase, ellipse = TRUE, 
+#		circle = TRUE)+
+#		theme(legend.direction ='horizontal', 
+#		legend.position = 'top')
+#	g
+#	dev.off()
 	
 	all_phasable$pc1 <- pc$x[,1]
 	all_phasable$pc2 <- pc$x[,2]
@@ -79,10 +81,29 @@ if (type=="pvalue") {
 	#all_train.2 <- subset(all_train, select=c(phase, validation, pc1, pc2, pc3, pc4, pc5))
 	all_train.2 <- subset(all_train, select=c(phase, validation, pc1, pc2, pc3, pc4))
 	all_train.2 <- subset(all_train.2, phase!="hap=2")
-	all_train.2$phase <- as.factor(all_train.2$phase)
+
+
+##add a line here to balance the number of differnet validated sites:
+	if (model_type=="glmnet"){
+		num_het<- sum(all_train.2$validation=="het")
+		num_mosaic<- sum(all_train.2$validation=="mosaic")
+		num_refhom<- sum(all_train.2$validation=="refhom")
+		num_repeat<- sum(all_train.2$validation=="repeat")
+		if (num_repeat>(num_het+num_mosaic+num_refhom)*1){
+			num_sample=round((num_het+num_mosaic+num_refhom)*1)
+			all_train.2 <- rbind(subset(all_train.2,validation!="repeat"),
+					subset(all_train.2,validation=="repeat")[sample(num_repeat,num_sample),])	
+		}
+		
+		all_train.2$phase <- as.factor(all_train.2$phase)
+		
 	
-	model <- train(validation ~ ., all_train.2, method="glmnet",tuneGrid=expand.grid(.alpha=0:1, .lambda=0:30/10))
-	saveRDS(model,prediction_model)
+		model <- train(validation ~ ., all_train.2, method="glmnet",tuneGrid=expand.grid(.alpha=0:1, .lambda=0:30/10))
+		saveRDS(model,prediction_model)
+	}else if (model_type=="naivebayes"){	
+		model <- naiveBayes(validation ~ ., all_train.2)
+		saveRDS(model,prediction_model)
+	}
 	
 	
 	all_phasable.4 <- subset(all_phasable, select=c(phase, validation, pc1, pc2, pc3, pc4))
@@ -111,7 +132,7 @@ if (type=="pvalue") {
 	all_phasable <- all_phasable[complete.cases(all_phasable[,seq(1,28)]),]
 	
 	
-	all_phasable.2 <- subset(all_phasable, select=c(querypos_p,leftpos_p, seqpos_p, mapq_p, baseq_p, baseq_t, ref_baseq1b_p, ref_baseq1b_t, alt_baseq1b_p, alt_baseq1b_t, sb_p, major_mismatches_mean, minor_mismatches_mean, mismatches_p, AF, dp, mosaic_likelihood, het_likelihood, refhom_likelihood, mapq_difference, sb_read12_p, dp_diff, conflict_num))
+	all_phasable.2 <- subset(all_phasable, select=c(querypos_p,leftpos_p, seqpos_p, mapq_p, baseq_p, baseq_t, ref_baseq1b_p, ref_baseq1b_t, alt_baseq1b_p, alt_baseq1b_t, sb_p, major_mismatches_mean, minor_mismatches_mean, mismatches_p, AF, dp, mosaic_likelihood, het_likelihood, refhom_likelihood, mapq_difference, sb_read12_p, dp_diff, conflict_num, mappability,ref_softclip, alt_softclip))
 	all_phasable.3<- all_phasable.2
 	
 	
