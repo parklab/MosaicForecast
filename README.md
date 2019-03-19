@@ -1,5 +1,5 @@
 # MosaicForecast
-A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic single-nucleotide variants (SNVs) from NGS data.
+A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic SNVs (SNPs, small indels) from NGS data.
 
 ## Required Interpreter Versions:
 * Python version 3.4+
@@ -103,7 +103,7 @@ type(pvalue||effectsize)
 
 **Demo:**
 ```
-python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${ref.fa} ${Umap.bw} 2
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${ref.fa} ${k24.umap.wg.bw} 2
 Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features_R 150 pvalue
  
 ```
