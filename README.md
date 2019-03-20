@@ -144,13 +144,16 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 1. The input\_file is a list of read-level features.
 2. The model\_trained is the pre-trained RF model to predict genotypes.
 
-> You may use our models trained with brain WGS data (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings):
+> You may use our models trained with brain WGS data for SNPs (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings):
 >
 > * models\_trained/50xRFmodel\_addRMSK\_Refine.rds
 > * models\_trained/100xRFmodel\_addRMSK\_Refine.rds
 > * models\_trained/150xRFmodel\_addRMSK\_Refine.rds
 > * models\_trained/200xRFmodel\_addRMSK\_Refine.rds
 > * models\_trained/250xRFmodel\_addRMSK\_Refine.rds
+>
+> We also pre-trained a model for mosaic deletions (using paired-end read at 250X, with phasing information):
+> * models\_trained/deletions\_250x.RF.rds
 
 **Demo:**
 
