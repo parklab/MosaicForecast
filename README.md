@@ -222,7 +222,11 @@ demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pval
 2. "phasablesites_PCA.pdf", showing positions of different phasable sites in the PCA space constructed with read-level features. 
 ```
 
-| id | phase_model_corrected | pc1 | pc2 | pc3 | pc4 |
-| --- | --- | --- | --- | --- | --- |
-| 1465~2~213242167~T~C | het | -0.977355563482789 | 3.90290608536464 | -0.0105011859403514 | -3.56971352461453 |
-| 1465~2~102947535~A~G | het | -0.389437493305123 | 4.25082509099474 | -0.0786000475355812 | -3.70813620060352 |
+| id | phase | validation | phase_model_corrected | pc1 | pc2 | pc3 | pc4 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1465\~Y\~28806739\~G\~A | hap=3 | NA | repeat | 4.00693888506366 | -2.43927734811095 | 2.75374311778492 | 0.982807312060898 |
+| 1465\~1\~151767613\~G\~A | hap=3 | refhom | repeat | -0.916649178282898 | -0.175889628931991 | -0.563215581847717 | 1.66309295428276 |
+| 1465\~10\~91875029\~T\~G | hap=3 | repeat | mosaic | -2.09846009734397 | 0.857245668232097 | -0.178542305004786 | 0.984487183928292 |
+
+
+
