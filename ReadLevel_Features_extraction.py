@@ -40,9 +40,26 @@ base['C']='G'
 homopolymers=list()
 homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG","CTCTCT","TCTCTC","ATTATT","TAATAA","AATAAT","GCCGCC","CGGCGG","CCGCCG","ATTTATTT","TAAATAAA","GCCCGCCCC","CGGGCGGG","CCGGCCGG","GGCCGGCC","TTTATTT","ATTTATT","TAAATAA","AAATAAT","GCCCGCC","CCCGCCC","GGCGGC","GAAAGAAA","AAAGAAAG","TTTCTTTC","TTCTTTCT","CCCTCCCT","CTTTCTTT"]
 
+#file=open(input_pos)
+#tmp_filename=str(uuid.uuid4())
+#input_mappability=open(tmp_filename,'w')
+#for line in file:
+#	line=line.rstrip()
+#	fields=line.split('\t')
+#	chr=fields[0]
+#	pos=int(fields[2])
+#	ref=fields[3]
+#	alt=fields[4]
+#	sample=fields[5]
+#	ID=sample+'~'+chr+"~"+str(pos)+"~"+ref+"~"+alt
+#	print("chr"+chr,pos,pos+1,ID,file=input_mappability,sep="\t")
+#file.close()
+#input_mappability.close()
+
+sites_chr_dict=dict()
+sites_pos_dict=dict()
 file=open(input_pos)
-tmp_filename=str(uuid.uuid4())
-input_mappability=open(tmp_filename,'w')
+
 for line in file:
 	line=line.rstrip()
 	fields=line.split('\t')
@@ -52,9 +69,19 @@ for line in file:
 	alt=fields[4]
 	sample=fields[5]
 	ID=sample+'~'+chr+"~"+str(pos)+"~"+ref+"~"+alt
-	print("chr"+chr,pos,pos+1,ID,file=input_mappability,sep="\t")
+	sites_chr_dict[ID]=chr
+	sites_pos_dict[ID]=pos
+#	print("chr"+chr,pos,pos+1,ID,file=input_mappability,sep="\t")
 file.close()
+
+tmp_filename=str(uuid.uuid4())
+input_mappability=open(tmp_filename,'w')
+for k,v in sorted(sites_chr_dict.items()):
+	print("chr"+v,sites_pos_dict[k],int(sites_pos_dict[k])+1,k,file=input_mappability,sep="\t")
 input_mappability.close()
+
+
+
 
 #bigWigAverageOverBed /n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw test.bed test.tab
 subprocess.run("bigWigAverageOverBed "+unimap_mappability_BigWigfile+" "+tmp_filename+" "+tmp_filename+".2", shell=True, check=True)

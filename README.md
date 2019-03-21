@@ -118,7 +118,7 @@ type(pvalue||effectsize)
 ```
 python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa}
 ${k24.umap.wg.bw} 2
-Rscript ReadLevel_Features_extraction.R demo/test.features demo/test.features 150 pvalue
+Rscript ReadLevel_Features_extraction.R demo/test.features_forR demo/test.features 150 pvalue
  
 ```
 
