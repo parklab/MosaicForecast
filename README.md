@@ -54,9 +54,7 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 
 **Demo:**
 
-```
 python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 2 demo/test.input 20
-```
 
 **Output:**
 ```
@@ -90,11 +88,9 @@ Intermediate files:
 **Usage:**
 
 ### 1st step:
-```
-python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
-Umap_mappability(bigWig file,k=24) n_jobs_parallel
 
-```
+python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) n_jobs_parallel
+
 **Note:**
 1. Names of bam files should be "sample.bam" under the bam_dir.
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa)
