@@ -99,23 +99,20 @@ python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
 5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
 
 ### 2nd step:
-```
-Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_length(integer) 
-type(pvalue||effectsize)
-```
+
+Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_length(integer) type(pvalue||effectsize)
+
 **Note:**
 1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
 2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size. The "effectsize" mode is relatively slow.
 3. The input\_file is the file from the 1st step.
 
 **Demo:**
-```
+
 python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa}
 ${k24.umap.wg.bw} 2
 Rscript ReadLevel_Features_extraction.R demo/test.features_forR demo/test.features 150 pvalue
  
-```
-
 **Output:**
 ```
 A list of read-level features for each input site.
@@ -169,22 +166,19 @@ Genotype probability predictions for all input sites.
 
 ## You could also train RF models using your own data:
 **Usage:**
-```
-Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phase|Refine)
-type_variant(SNP|INS|DEL)
-```
+
+Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phase|Refine) type_variant(SNP|INS|DEL)
+
 **Note:** 
 
 1. You could choose to train your model based on Phasing (hap=2, hap=3, hap>3, type in "Phase") or Refined genotypes ("mosaic","het","refhom","repeat", type in "Refine").
 2. The input file should be a list of pre-generated read-level features, adding a column termed "phase" (Phase model) or "phase\_model\_corrected" (Refined genotypes model). 
 
-
 **Demo:**
-```
+
 Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase SNP
 Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine DEL
 Rscript Train_RFmodel.R demo/deletions_phasable_trainset demo/Deletions_Refine_model.rds Refine DEL
-```
 
 **Output:**
 ```
@@ -195,10 +189,8 @@ Random Forest prediction model
 
 #### (Recommended when you have >=100 hap>=3 sites validated orthogonally)
 **Usage:**
-```
-Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1(model)
-output2(converted genotypes) read_length(int) type(pvalue|effectsize)
-```
+
+Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1(model) output2(converted genotypes) read_length(int) type(pvalue|effectsize)
 
 **Note:**
 
@@ -208,10 +200,8 @@ output2(converted genotypes) read_length(int) type(pvalue|effectsize)
 4. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
 
 **Demo:**
-```
-Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset
-demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
-```
+
+Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
 
 **Output:**
 ```
