@@ -109,8 +109,7 @@ Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_leng
 
 **Demo:**
 
-python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa}
-${k24.umap.wg.bw} 2
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa} ${k24.umap.wg.bw} 2  
 Rscript ReadLevel_Features_extraction.R demo/test.features_forR demo/test.features 150 pvalue
  
 **Output:**
@@ -148,7 +147,7 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 
 **Demo:**
 
-Rscript Prediction.R demo/test.SNP.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.SNP.predictions
+Rscript Prediction.R demo/test.SNP.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.SNP.predictions   
 Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.DEL.predictions
 
 **Output:**
@@ -176,9 +175,9 @@ Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phas
 
 **Demo:**
 
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase SNP
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine DEL
-Rscript Train_RFmodel.R demo/deletions_phasable_trainset demo/Deletions_Refine_model.rds Refine DEL
+Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase SNP  
+Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine DEL  
+Rscript Train_RFmodel.R demo/deletions_phasable_trainset demo/Deletions_Refine_model.rds Refine DEL    
 
 **Output:**
 ```
