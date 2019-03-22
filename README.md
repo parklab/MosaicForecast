@@ -185,7 +185,7 @@ Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK
 
 **Output:**
 ```
-Genotype probability predictions for all input sites.
+Genotype predictions for all input sites.
 ```
 
 | id | AF | dp | prediction | het | mosaic | refhom | repeat |
@@ -195,6 +195,10 @@ Genotype probability predictions for all input sites.
 | test\~15\~75918044\~G\~A | 0.036 | 193 | mosaic | 0.006 | 0.812 | 0 | 0.182 |
 | test\~1\~1004865\~G\~C | 0.085 | 212 | mosaic | 0.006 | 0.988 | 0 | 0.006 |
 
+```
+1. prediction: genotype predictions including refhom, het, mosaic and repeat.
+2. het/mosaic/refhom/repeat: genotyping probabilities for each genotype.
+```
 
 ## You could also train RF models using your own data:
 **Usage:**
@@ -236,10 +240,6 @@ Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1
 Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
 
 **Output:**
-```
-1. Four-category genotypes extrapolated based on phasing and read-level features
-2. "phasablesites_PCA.pdf", showing positions of different phasable sites in the PCA space constructed with read-level features. 
-```
 
 | id | phase | validation | phase_model_corrected | pc1 | pc2 | pc3 | pc4 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -250,6 +250,11 @@ Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset dem
 | 1465\~X\~61712742\~A\~G | hap=3 | repeat | repeat | 0.574318366975694 | 1.16511088082416 | 1.24290479319458 | 1.24880945486403 |
 | 1465\~10\~42544320\~C\~T | hap=3 | NA | repeat | 0.544602308768669 | 1.64954352441225 | 0.28095361817584 | 0.744802179936821 |
 
+```
+1. phase_model_corrected: Four-category genotypes extrapolated based on phasing and read-level features.
+2.  pc1/pc2/pc3/pc4: the first four PCA components constructed with read-level features.
+3. "phasablesites_PCA.pdf", showing positions of different phasable sites in the PCA space constructed with read-level features. 
+```
 
 
 
