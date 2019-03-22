@@ -223,7 +223,7 @@ Random Forest prediction model
 
 ## Convert phasing to four-category genotypes based on experimental data:
 
-#### (Recommended when you have >=100 hap>=3 sites validated orthogonally)
+#### (Recommended when you have >=100 hap>=3 sites validated orthogonally or checked manually)
 **Usage:**
 
 Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1(model) output2(converted genotypes) read_length(int) type(pvalue|effectsize)
@@ -240,6 +240,9 @@ Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1
 Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
 
 **Output:**
+```
+A list of extrapolated genotypes based on Phasing, Readlevel features and orthogonal validations.
+```
 
 | id | phase | validation | phase_model_corrected | pc1 | pc2 | pc3 | pc4 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
