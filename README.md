@@ -126,7 +126,7 @@ A list of read-level features for each input site.
 1. id: uniq ID of the input candidate sites.
 2. mappability: UMAP mappability score at the candidate site (k=24).
 3. type: type of the candidate mutation (SNP, MNP, INS or DEL).
-4. length: difference of base pair lengh of ref and alt allele of candidate sites.
+4. length: difference of base pair lengh of ref and alt allele for candidate sites.
 5. GCcontent: 20-bp local GCcontent.
 6. ref_softclip: proportion of soft-clipped reads for ref reads.
 7. alt_softclip: proportion of soft-clipped reads for alt reads.
