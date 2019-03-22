@@ -123,38 +123,38 @@ A list of read-level features for each input site.
 | test\~12\~52644508\~C\~T | 0.197545792452075 | 0 | 1 | SNP | 0 | 0.571428571428571 | 0.0208333333333333 | 0 | 0.19325 | 0.20057 | 0.88251 | NA | 0.11764 | -0.95448 | 0.31536 | 0.6827 | 0.31601 | 0.58756 | 0.13401 | CGC | 0.01236 | 0.0127266666666667 | 0.17424 | 0.054 | 203 | 0.999999999985368 | 5.11687178601205e-39 | 1.46319954019795e-11 | 0 | 0 | 0.36124 | -12.8571 |
 
 ```
-id: uniq ID of the input candidate sites.
-mappability: UMAP mappability score at the candidate site (k=24).
-type: type of the candidate mutation (SNP, MNP, INS or DEL).
-length: difference of base pair lengh of ref and alt allele of candidate sites.
-GCcontent: 20-bp local GCcontent.
-ref_softclip: proportion of soft-clipped reads for ref reads.
-alt_softclip: proportion of soft-clipped reads for alt reads.
-querypos_p: p-value or effect size by wilcoxon's rank sum test of base query positions of ref and alt alleles.
-leftpos_p: p-value or effect size by wilcoxon's rank sum test of left-most positions of ref and alt reads.
-seqpos_p: p-value or effect size by wilcoxon's rank sum test of base sequencing cycles of ref and alt alleles.
-baseq_p: p-value or effect size by Wilcoxon's rank sum test of base qualities of ref and alt alleles.
-baseq_t: t-value by T-test of base qualites of alt alleles vs. ref alleles.
-ref_baseq1b_p: p-value or effect size by Wilcoxon's rank sum test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position.
-ref_baseq1b_t: t-value by T-test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position.
-alt_baseq1b_p: p-value or effect size by Wilcoxon's rank sum test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position.
-alt_baseq1b_t: t-value by T-test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position.
-context: three-nucleotide base context on the reads surrounding the mutant position.
-major_mismatches_mean: average mismatches per ref reads.
-minor_mismatches_mean: average mismatches per alt reads.
-mismatches_p: p-value or effect size by Wilcoxon's rank sum test of mismatches per ref reads vs. mismatches per alt reads.
-sb_p: p-value or effect size by Fisher's exact test of strand bias for ref and alt alleles.
-sb_read12_p: p-value or effect size by Fisher's exact test of read1/read2 bias for ref and alt alleles.
-mosaic_likelihood: mosaic genotype likelihood calculated (assuming uniform distribution of mosaics allele fraction from 0-1).
-het_likelihood: Genotype likelihood of the variant being germline heterozygous.
-refhom_likelihood: reference-homozygous genotype likelihood.
-mapq_p: p-value or effect size by Wilcoxon's rank sum test of mapping qualities of ref and alt reads.
-mapq_difference: difference of average map quality per alt reads vs. average map quality per ref reads.
-AF: variant allele fraction.
-dp: read depth at mutant position.
-dp_diff: difference of average read depths of local (<200bp) and distant (>2kb) regions.
-dp_p: p-value or effect size by Wilcoxon's rank sum test of read depths sampled within 200bp window surrounding the mutant position vs. read depths sampled in distant regions from the mutant position (>2kb).
-conflict_num: number of read pairs supporting both ref and alt alleles.
+1. id: uniq ID of the input candidate sites.
+2. mappability: UMAP mappability score at the candidate site (k=24).
+3. type: type of the candidate mutation (SNP, MNP, INS or DEL).
+4. length: difference of base pair lengh of ref and alt allele of candidate sites.
+5. GCcontent: 20-bp local GCcontent.
+6. ref_softclip: proportion of soft-clipped reads for ref reads.
+7. alt_softclip: proportion of soft-clipped reads for alt reads.
+8. querypos_p: p-value or effect size by wilcoxon's rank sum test of base query positions of ref and alt alleles.
+9. leftpos_p: p-value or effect size by wilcoxon's rank sum test of left-most positions of ref and alt reads.
+10. seqpos_p: p-value or effect size by wilcoxon's rank sum test of base sequencing cycles of ref and alt alleles.
+11. baseq_p: p-value or effect size by Wilcoxon's rank sum test of base qualities of ref and alt alleles.
+12. baseq_t: t-value by T-test of base qualites of alt alleles vs. ref alleles.
+13. ref_baseq1b_p: p-value or effect size by Wilcoxon's rank sum test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position.
+14. ref_baseq1b_t: t-value by T-test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position.
+15. alt_baseq1b_p: p-value or effect size by Wilcoxon's rank sum test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position.
+16. alt_baseq1b_t: t-value by T-test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position.
+17. context: three-nucleotide base context on the reads surrounding the mutant position.
+18. major_mismatches_mean: average mismatches per ref reads.
+19. minor_mismatches_mean: average mismatches per alt reads.
+20. mismatches_p: p-value or effect size by Wilcoxon's rank sum test of mismatches per ref reads vs. mismatches per alt reads.
+21. sb_p: p-value or effect size by Fisher's exact test of strand bias for ref and alt alleles.
+22. sb_read12_p: p-value or effect size by Fisher's exact test of read1/read2 bias for ref and alt alleles.
+23. mosaic_likelihood: mosaic genotype likelihood calculated (assuming uniform distribution of mosaics allele fraction from 0-1).
+24. het_likelihood: Genotype likelihood of the variant being germline heterozygous.
+25. refhom_likelihood: reference-homozygous genotype likelihood.
+26. mapq_p: p-value or effect size by Wilcoxon's rank sum test of mapping qualities of ref and alt reads.
+27. mapq_difference: difference of average map quality per alt reads vs. average map quality per ref reads.
+28. AF: variant allele fraction.
+29. dp: read depth at mutant position.
+30. dp_diff: difference of average read depths of local (<200bp) and distant (>2kb) regions.
+31. dp_p: p-value or effect size by Wilcoxon's rank sum test of read depths sampled within 200bp window surrounding the mutant position vs. read depths sampled in distant regions from the mutant position (>2kb).
+32. conflict_num: number of read pairs supporting both ref and alt alleles.
 ```
 
 ## Genotype Prediction:
