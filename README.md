@@ -122,7 +122,35 @@ A list of read-level features for each input site.
 | test\~11\~40316580\~C\~T | 0.3183008162818 | 0 | 1 | SNP | 0 | 0.476190476190476 | 0.0240384615384615 | 0 | 0.1582 | 0.16521 | 0.68821 | NA | 0.91657 | -0.57364 | 0.98911 | 0.21893 | 0.67576 | -0.8528 | 0.69934 | GGA | 0.00878 | 0.0144466666666667 | 0.29396 | 0.028 | 214 | 0.999414559235067 | 3.90999117967593e-49 | 0.000585440764932926 | 0 | 0 | 0.69142 | -12.8571 |
 | test\~12\~52644508\~C\~T | 0.197545792452075 | 0 | 1 | SNP | 0 | 0.571428571428571 | 0.0208333333333333 | 0 | 0.19325 | 0.20057 | 0.88251 | NA | 0.11764 | -0.95448 | 0.31536 | 0.6827 | 0.31601 | 0.58756 | 0.13401 | CGC | 0.01236 | 0.0127266666666667 | 0.17424 | 0.054 | 203 | 0.999999999985368 | 5.11687178601205e-39 | 1.46319954019795e-11 | 0 | 0 | 0.36124 | -12.8571 |
 
-
+```
+querypos_p	p-value or effect size by wilcoxon's rank sum test of base query positions of ref and alt alleles
+leftpos_p	p-value or effect size by wilcoxon's rank sum test of left-most positions of ref and alt reads
+seqpos_p	p-value or effect size by wilcoxon's rank sum test of base sequencing cycles of ref and alt alleles
+baseq_p	p-value or effect size by Wilcoxon's rank sum test of base qualities of ref and alt alleles
+baseq_t	t-value by T-test of base qualites of alt alleles vs. ref alleles
+ref_baseq1b_p	p-value or effect size by Wilcoxon's rank sum test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position
+ref_baseq1b_t	t-value by T-test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position
+alt_baseq1b_p	p-value or effect size by Wilcoxon's rank sum test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position
+alt_baseq1b_t	t-value by T-test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position
+context	three-nucleotide base context on the reads surrounding the mutant position
+major_mismatches_mean	average mismatches per ref reads
+minor_mismatches_mean	average mismatches per alt reads
+mismatches_p	p-value or effect size by Wilcoxon's rank sum test of mismatches per ref reads vs. mismatches per alt reads
+sb_p	p-value or effect size by Fisher's exact test of strand bias for ref and alt alleles
+sb_read12_p	p-value or effect size by Fisher's exact test of read1/read2 bias for ref and alt alleles
+mosaic_likelihood	mosaic genotype likelihood calculated (assuming uniform distribution of mosaics allele fraction from 0-1)
+het_likelihood	Genotype likelihood of the variant being germline heterozygous
+refhom_likelihood	reference-homozygous genotype likelihood
+mapq_p	p-value or effect size by Wilcoxon's rank sum test of mapping qualities of ref and alt reads
+mapq_difference	difference of average map quality per alt reads vs. average map quality per ref reads
+AF	variant allele fraction
+dp	read depth at mutant position
+dp_diff	difference of average read depths of local (<200bp) and distant (>2kb) regions
+dp_p	p-value or effect size by Wilcoxon's rank sum test of read depths sampled within 200bp window surrounding the mutant position vs. read depths sampled in distant regions from the mutant position (>2kb)
+conflict_num	number of read pairs supporting both ref and alt alleles
+repeats	Variants within regions marked by RepeatMasker as repetitive8 were assigned the the category ‘1’; those within a segmental duplication region were assigned the category ‘2’;  and variants  within segmental duplication regions and also masked by RepeatMasker, were assigned the category ‘3’.  The remaining variants were assigned the category ‘0’. 
+MAF	population mutant allele frequency (gnomad)
+```
 
 ## Genotype Prediction:
 
