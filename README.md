@@ -11,7 +11,8 @@ A machine learning method that leverages read-based phasing and read-level featu
 * itertools
 * subprocess
 * multiprocessing
-* regex 
+* regex
+* uuid 
 * numpy (1.16.1)
 * pandas (0.20.1)
 * pyfaidx (0.5.3.1)
@@ -87,9 +88,7 @@ Intermediate files:
 ## Extraction of read-level features:
 **Usage:**
 
-### 1st step:
-
-python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) n_jobs_parallel
+python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) read_length n_jobs_parallel
 
 **Note:**
 1. Names of bam files should be "sample.bam" under the bam_dir.
@@ -98,19 +97,9 @@ python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
 4. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants
 5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
 
-### 2nd step:
-
-Rscript Rscript ReadLevel_Features_extraction.R input_file output_file read_length(integer) type(pvalue||effectsize)
-
-**Note:**
-1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
-2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size. The "effectsize" mode is relatively slow.
-3. The input\_file is the file from the 1st step.
-
 **Demo:**
 
-python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa} ${k24.umap.wg.bw} 2  
-Rscript ReadLevel_Features_extraction.R demo/test.features_forR demo/test.features 150 pvalue
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa} ${k24.umap.wg.bw} 150 2  
  
 **Output:**
 ```
