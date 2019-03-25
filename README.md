@@ -26,9 +26,9 @@ A machine learning method that leverages read-based phasing and read-level featu
 * nnet (7.3-12)
 * ggbiplot (0.55)
 ### Others:
-* samtools (1.9)
-* wigToBigWig (v4)
-* bigWigAverageOverBed (v2)
+* samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
+* wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
+* bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 
 ## Resources:
 #### Mappability score: 
