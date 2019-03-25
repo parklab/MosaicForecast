@@ -26,7 +26,7 @@ from multiprocessing import Pool
 from subprocess import *
 import subprocess
 import pysamstats
-import os
+#import os
 from pandas import *
 import itertools
 from collections import OrderedDict, defaultdict
@@ -46,8 +46,10 @@ if output_dir_tmp.endswith('/'):
 else:
 	output_dir=output_dir_tmp
 
-os.system("mkdir -p "+output_dir)
-os.system("mkdir -p "+output_dir+"/tmp")
+run_cmd("mkdir -p "+output_dir)
+run_cmd("mkdir -p "+output_dir+"/tmp")
+#os.system("mkdir -p "+output_dir)
+#os.system("mkdir -p "+output_dir+"/tmp")
 homopolymers=list()
 homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG","CTCTCT","TCTCTC","ATTATT","TAATAA","AATAAT","GCCGCC","CGGCGG","CCGCCG","ATTTATTT","TAAATAAA","GCCCGCCCC","CGGGCGGG","CCGGCCGG","GGCCGGCC","TTTATTT","ATTTATT","TAAATAA","AAATAAT","GCCCGCC","CCCGCCC","GGCGGC","GAAAGAAA","AAAGAAAG","TTTCTTTC","TTCTTTCT","CCCTCCCT","CTTTCTTT"]
 

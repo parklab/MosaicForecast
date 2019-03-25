@@ -8,28 +8,33 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 
-if count !=6:
-	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) num_threads_parallel\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n")
+if count !=7:
+	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n")
 	sys.exit(1)
-elif count==6:
+elif count==7:
 	program_name = sys.argv[0]
 	input_pos=sys.argv[1] #walsh.nocluster.noalt_allele_in_normal.norepeat.bed 1       1015256 1015257 A       G       Walsh
 	output=sys.argv[2]
 	bam_dir_tmp=sys.argv[3]
 	reference_fasta=sys.argv[4]
 	unimap_mappability_BigWigfile=sys.argv[5]
-	n_jobs=sys.argv[6]
+	read_length=int(sys.argv[6])
+	n_jobs=sys.argv[7]
 	#sequencing_type=sys.argv[5]
 
 import numpy as np
+import pandas as pd
 import regex as re
 from collections import defaultdict
 from pyfaidx import Fasta
 import pysam
+import scipy.stats
 from scipy.stats import mannwhitneyu
+from scipy.special import beta
 from subprocess import *
 from multiprocessing import Pool
 import subprocess
+import math
 base=dict()
 base['A']='T'
 base['T']='A'
@@ -39,22 +44,6 @@ base['C']='G'
 
 homopolymers=list()
 homopolymers=["AAAAA","TTTTT","GGGGG","CCCCC","ATATAT","TATATA","AGAGAG","GAGAGA","ACACAC","CACACA","TGTGTG","GTGTGT","GCGCGC","CGCGCG","CTCTCT","TCTCTC","ATTATT","TAATAA","AATAAT","GCCGCC","CGGCGG","CCGCCG","ATTTATTT","TAAATAAA","GCCCGCCCC","CGGGCGGG","CCGGCCGG","GGCCGGCC","TTTATTT","ATTTATT","TAAATAA","AAATAAT","GCCCGCC","CCCGCCC","GGCGGC","GAAAGAAA","AAAGAAAG","TTTCTTTC","TTCTTTCT","CCCTCCCT","CTTTCTTT"]
-
-#file=open(input_pos)
-#tmp_filename=str(uuid.uuid4())
-#input_mappability=open(tmp_filename,'w')
-#for line in file:
-#	line=line.rstrip()
-#	fields=line.split('\t')
-#	chr=fields[0]
-#	pos=int(fields[2])
-#	ref=fields[3]
-#	alt=fields[4]
-#	sample=fields[5]
-#	ID=sample+'~'+chr+"~"+str(pos)+"~"+ref+"~"+alt
-#	print("chr"+chr,pos,pos+1,ID,file=input_mappability,sep="\t")
-#file.close()
-#input_mappability.close()
 
 sites_chr_dict=dict()
 sites_pos_dict=dict()
@@ -81,8 +70,6 @@ for k,v in sorted(sites_chr_dict.items()):
 input_mappability.close()
 
 
-
-
 #bigWigAverageOverBed /n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw test.bed test.tab
 subprocess.run("bigWigAverageOverBed "+unimap_mappability_BigWigfile+" "+tmp_filename+" "+tmp_filename+".2", shell=True, check=True)
 
@@ -102,7 +89,7 @@ subprocess.run("rm "+tmp_filename, shell=True)
 subprocess.run("rm "+tmp_filename+".2", shell=True)
 
 
-fo=open(output,"w")
+fo=open(output+".tmp","w")
 header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability type length GCcontent ref_softclip alt_softclip'.split()
 print (' '.join(header),file=fo)
 #print (' '.join(header))
@@ -744,6 +731,118 @@ if __name__ == "__main__":
 				continue
 
 
+fo.close()
+
+df=pd.read_csv(output+".tmp",sep=" ")
+
+df = df[df.querypos_minor != ',']
+df = df[df.seqpos_minor != ',']
+df = df[df.seqpos_major != ',']
+df = df[df.baseq_minor_near1b != ',']
+df = df[df.leftpos_minor != ',']
+df = df[df.baseq_major_near1b != ',']
+
+#input <- subset(input, ((((querypos_minor!="," & seqpos_minor!=",") & seqpos_major!="," )  & baseq_minor_near1b!=",") & leftpos_minor!=",") &  baseq_major_near1b!=",")
 
 
+def my_mosaic_likelihood(a,b,c,d,e,f):
+	depth=sum([int(a),int(b),int(c),int(d)])
+	alt=sum([int(c),int(d)])
+	r=0
+	baseq_major=[float(i) for i in e.split(',')[:-1]]
+	baseq_minor=[float(i) for i in f.split(',')[:-1]]
+	r=sum([0.1**(float(i)/10) for i in baseq_major])
+	r=r+sum([1-0.1**(float(i)/10) for i in baseq_minor])
+	return(float(beta(r+1, depth-r+1)))
 
+def my_het_likelihood(a,b,c,d):
+	depth=sum([int(a),int(b),int(c),int(d)])
+	return(0.5**depth)
+
+def my_refhom_likelihod(a,b):
+	baseq_major=[float(i) for i in a.split(',')[:-1]]
+	baseq_minor=[float(i) for i in b.split(',')[:-1]]
+	q=math.log10(1)
+	q=sum(math.log10(1-0.1**(i/10)) for i in baseq_major)
+	q=q+sum(math.log10(0.1**(i/10)) for i in baseq_minor)
+	return(10**q)	
+
+def my_althom_likelihod(a,b):
+	baseq_major=[float(i) for i in a.split(',')[:-1]]
+	baseq_minor=[float(i) for i in b.split(',')[:-1]]
+	q=math.log10(1)
+	q=sum(math.log10(1-0.1**(i/10)) for i in baseq_minor)
+	q=q+sum(math.log10(0.1**(i/10)) for i in baseq_major)
+	return(10**q)	
+
+def my_wilcox_pvalue(a, b):
+	x1=[float(i) for i in a.split(',')[:-1]]
+	x2=[float(i) for i in b.split(',')[:-1]]
+	return (scipy.stats.ranksums(x1,x2)[1])
+def my_wilcox_statistics(a, b):
+	x1=[float(i) for i in a.split(',')[:-1]]
+	x2=[float(i) for i in b.split(',')[:-1]]
+	return (scipy.stats.ranksums(x1,x2)[0])
+def my_fisher_pvalue(a,b,c,d):
+	return (scipy.stats.fisher_exact([[int(a), int(b)], [int(c), int(d)]])[1])
+def my_fisher_statistics(a,b,c,d):
+	return (scipy.stats.fisher_exact([[int(a), int(b)], [int(c), int(d)]])[0])
+def my_context_selection(a,b,c,d):
+	if int(a)>=int(b):
+		return(c)
+	else:
+		return(d)
+def my_mean(a):
+	x=[float(i) for i in a.split(',')[:-1]]	
+	return(sum(x)/len(x)/float(read_length))
+def my_AF(a,b,c,d):
+	depth=sum([int(a),int(b),int(c),int(d)])
+	alt=sum([int(c),int(d)])
+	return(float(alt)/float(depth))
+def my_depth(a,b,c,d):
+	depth=sum([int(a),int(b),int(c),int(d)])
+	return(depth)
+def my_mean_difference(a,b):
+	x1=[float(i) for i in a.split(',')[:-1]]	
+	x2=[float(i) for i in b.split(',')[:-1]]	
+	return(sum(x1)/len(x1)-sum(x2)/len(x2))
+def my_difference(a,b):
+	return(float(a)-float(b))
+	
+df['querypos_p']=df.apply(lambda row: my_wilcox_pvalue(row['querypos_major'], row['querypos_minor']), axis=1)
+df['leftpos_p']=df.apply(lambda row: my_wilcox_pvalue(row['leftpos_major'], row['leftpos_minor']), axis=1)
+df['seqpos_p']=df.apply(lambda row: my_wilcox_pvalue(row['seqpos_major'], row['seqpos_minor']), axis=1)
+df['mapq_p']=df.apply(lambda row: my_wilcox_pvalue(row['mapq_major'], row['mapq_minor']), axis=1)
+df['baseq_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_major'], row['baseq_minor']), axis=1)
+df['baseq_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_major'], row['baseq_minor']), axis=1)
+df['ref_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_major'], row['baseq_major_near1b']), axis=1)
+df['ref_baseq1b_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_major'], row['baseq_major_near1b']), axis=1)
+df['alt_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
+df['alt_baseq1b_t']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
+df['sb_p']=df.apply(lambda row: my_fisher_pvalue(row['major_plus'], row['major_minus'], row['minor_plus'], row['minor_minus']), axis=1)	
+df['context']=df.apply(lambda row: my_context_selection(row['context1_count'], row['context2_count'], row['context1'], row['context2']), axis=1)	
+df['major_mismatches_mean']=df.apply(lambda row: my_mean(row['mismatches_major']), axis=1)	
+df['minor_mismatches_mean']=df.apply(lambda row: my_mean(row['mismatches_minor']), axis=1)	
+df['mismatches_p']=df.apply(lambda row: my_wilcox_pvalue(row['mismatches_major'], row['mismatches_minor']), axis=1)	
+df['AF']=df.apply(lambda row: my_AF(row['major_plus'], row['major_minus'], row['minor_plus'], row['minor_minus']), axis=1)	
+df['dp']=df.apply(lambda row: my_depth(row['major_plus'], row['major_minus'], row['minor_plus'], row['minor_minus']), axis=1)	
+df['mosaic_likelihood']=df.apply(lambda row: my_mosaic_likelihood(row['major_plus'], row['major_minus'], row['minor_plus'],row['minor_minus'],row['baseq_major'],row['baseq_minor']), axis=1)
+df['het_likelihood']=df.apply(lambda row: my_het_likelihood(row['major_plus'], row['major_minus'], row['minor_plus'],row['minor_minus']), axis=1)
+df['refhom_likelihood']=df.apply(lambda row: my_refhom_likelihod(row['baseq_major'],row['baseq_minor']), axis=1)
+df['althom_likelihood']=df.apply(lambda row: my_althom_likelihod(row['baseq_major'],row['baseq_minor']), axis=1)
+df['normalize']=df['mosaic_likelihood']+df['het_likelihood']+df['refhom_likelihood']+df['althom_likelihood']
+df['mosaic_likelihood']=df['mosaic_likelihood']/df['normalize']
+df['het_likelihood']=df['het_likelihood']/df['normalize']
+df['refhom_likelihood']=df['refhom_likelihood']/df['normalize']
+df['althom_likelihood']=df['althom_likelihood']/df['normalize']
+
+
+df['mapq_difference']=df.apply(lambda row: my_mean_difference(row['mapq_major'], row['mapq_minor']), axis=1)
+df['sb_read12_p']=df.apply(lambda row: my_fisher_pvalue(row['major_read1'], row['major_read2'], row['minor_read1'], row['minor_read2']), axis=1)
+df['dp_diff']=df.apply(lambda row: my_difference(row['dp_near'], row['dp_far']), axis=1)
+
+df_new=df[['id','dp_p','conflict_num','mappability','type','length','GCcontent','ref_softclip','alt_softclip','querypos_p','leftpos_p','seqpos_p','mapq_p','baseq_p','baseq_t','ref_baseq1b_p','ref_baseq1b_t', 'alt_baseq1b_p','alt_baseq1b_t','sb_p','context','major_mismatches_mean','minor_mismatches_mean','mismatches_p','AF','dp','mosaic_likelihood','het_likelihood','refhom_likelihood','althom_likelihood', 'mapq_difference', 'sb_read12_p', 'dp_diff']]
+#id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability type length GCcontent ref_softclip alt_softclip
+fo2=open(output,"w")
+df_new.to_csv(fo2, index=False,sep="\t")
+fo2.close()
