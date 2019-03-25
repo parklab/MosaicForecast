@@ -24,7 +24,6 @@ A machine learning method that leverages read-based phasing and read-level featu
 * e1071 (1.6-8)
 * glmnet (2.0-13)
 * nnet (7.3-12)
-* ggbiplot (0.55)
 ### Others:
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
@@ -245,7 +244,6 @@ A list of extrapolated genotypes based on Phasing, Readlevel features and orthog
 ```
 1. phase_model_corrected: Four-category genotypes extrapolated based on phasing and read-level features.
 2.  pc1/pc2/pc3/pc4: the first four PCA components constructed with read-level features.
-3. "phasablesites_PCA.pdf", showing positions of different phasable sites in the PCA space constructed with read-level features. 
 ```
 
 

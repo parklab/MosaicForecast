@@ -3,29 +3,30 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)!=6) {
-	stop("Rscript Phasing_Refine_Multinomial_Logistic_Regression.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) type(pvalue|effectsize) model_class(glmnet or naivebayes)
+if (length(args)!=5) {
+	stop("Rscript Phasing_Refine_Multinomial_Logistic_Regression.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) type(pvalue|effectsize)
 
 	Note:
 	Use \"pvalue\" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >10000 sites);
         Use \"effectsize\" when your data has extrmely un-even read coverage and small training sample size
-	By default should use glmnet
 ", call.=FALSE)
-} else if (length(args)==6) {
+} else if (length(args)==5) {
 	train_file <- args[1]
 	prediction_model <- args[2]
 	output_file <- args[3]
 	read_length <- as.numeric(args[4])
 	type <- as.character(args[5])
-	model_type <- as.character(args[6])
+	#model_type <- as.character(args[6])
 }
 
 library(stats)
 library(caret)
 library(nnet)
 library(glmnet)
-library(ggbiplot)
+#library(ggbiplot)
 library(e1071)
+
+model_type="glmnet"
 
 if (type=="pvalue") {
 	#head train_phasable_sites
@@ -151,14 +152,14 @@ if (type=="pvalue") {
 	       center = TRUE,
 	       scale. = TRUE) 
 	
-	pdf("phasablesites_PCA.pdf")
-	g <- ggbiplot(pc, obs.scale = 1, var.scale = 1, 
-		groups = all_phasable$phase, ellipse = TRUE, 
-		circle = TRUE)+
-		theme(legend.direction ='horizontal', 
-		legend.position = 'top')
-	g
-	dev.off()
+#	pdf("phasablesites_PCA.pdf")
+#	g <- ggbiplot(pc, obs.scale = 1, var.scale = 1, 
+#		groups = all_phasable$phase, ellipse = TRUE, 
+#		circle = TRUE)+
+#		theme(legend.direction ='horizontal', 
+#		legend.position = 'top')
+#	g
+#	dev.off()
 	
 	all_phasable$pc1 <- pc$x[,1]
 	all_phasable$pc2 <- pc$x[,2]
