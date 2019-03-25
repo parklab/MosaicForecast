@@ -54,9 +54,9 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
 
 **Demo:**
-
+```
 python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 2 demo/test.input 20
-
+```
 **Output:**
 ```
 output_dir/all.phasing
