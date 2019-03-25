@@ -98,9 +98,9 @@ python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
 5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
 
 **Demo:**
-
+```
 python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa} ${k24.umap.wg.bw} 150 2  
- 
+```
 **Output:**
 ```
 A list of read-level features for each input site.
@@ -168,10 +168,10 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 > * models\_trained/deletions\_250x.RF.rds
 
 **Demo:**
-
+```
 Rscript Prediction.R demo/test.SNP.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.SNP.predictions   
 Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.DEL.predictions
-
+```
 **Output:**
 ```
 Genotype predictions for all input sites.
@@ -200,11 +200,11 @@ Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phas
 2. The input file should be a list of pre-generated read-level features, adding a column termed "phase" (Phase model) or "phase\_model\_corrected" (Refined genotypes model). 
 
 **Demo:**
-
+```
 Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase SNP  
 Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine DEL  
 Rscript Train_RFmodel.R demo/deletions_phasable_trainset demo/Deletions_Refine_model.rds Refine DEL    
-
+```
 **Output:**
 ```
 Random Forest prediction model
@@ -225,9 +225,9 @@ Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1
 4. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
 
 **Demo:**
-
+```
 Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
-
+```
 **Output:**
 ```
 A list of extrapolated genotypes based on Phasing, Readlevel features and orthogonal validations.
