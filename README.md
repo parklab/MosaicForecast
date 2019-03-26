@@ -225,7 +225,7 @@ Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1
 
 **Demo:**
 ```
-Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 demo/phasable_sites_Refine.pdf 
+Rscript PhasingRefine.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 demo/phasable_sites_Refine.pdf 
 ```
 **Output:**
 ```
