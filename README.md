@@ -122,11 +122,11 @@ A list of read-level features for each input site.
 9. leftpos_p: p-value or effect size by wilcoxon's rank sum test of left-most positions of ref and alt reads.
 10. seqpos_p: p-value or effect size by wilcoxon's rank sum test of base sequencing cycles of ref and alt alleles.
 11. baseq_p: p-value or effect size by Wilcoxon's rank sum test of base qualities of ref and alt alleles.
-12. baseq_t: t-value by T-test of base qualites of alt alleles vs. ref alleles.
+12. baseq_t: The test statistic under the large-sample approximation that the rank sum statistic is normally distributed (wilcox rank sum test of base qualites of alt alleles vs. ref alleles).
 13. ref_baseq1b_p: p-value or effect size by Wilcoxon's rank sum test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position.
-14. ref_baseq1b_t: t-value by T-test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position.
+14. ref_baseq1b_t: The test statistic under the large-sample approximation that the rank sum statistic is normally distributed (wilcox rank sum test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position).
 15. alt_baseq1b_p: p-value or effect size by Wilcoxon's rank sum test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position.
-16. alt_baseq1b_t: t-value by T-test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position.
+16. alt_baseq1b_t: The test statistic under the large-sample approximation that the rank sum statistic is normally distributed (wilcox rank sum test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position).
 17. context: three-nucleotide base context on the reads surrounding the mutant position.
 18. major_mismatches_mean: average mismatches per ref reads.
 19. minor_mismatches_mean: average mismatches per alt reads.
