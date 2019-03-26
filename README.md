@@ -225,7 +225,7 @@ Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1
 
 **Demo:**
 ```
-Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 pvalue
+Rscript PhasingRefine_MultinomialLogisticRegression.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 demo/phasable_sites_Refine.pdf 
 ```
 **Output:**
 ```
@@ -243,7 +243,8 @@ A list of extrapolated genotypes based on Phasing, Readlevel features and orthog
 
 ```
 1. phase_model_corrected: Four-category genotypes extrapolated based on phasing and read-level features.
-2.  pc1/pc2/pc3/pc4: the first four PCA components constructed with read-level features.
+2. pc1/pc2/pc3/pc4/pc5: the first five PCA components constructed with read-level features.
+3. demo/phasable_sites_Refine.pdf: A plot showing the genotype extrapolation from phasing to 4-category genotypes.
 ```
 
 
