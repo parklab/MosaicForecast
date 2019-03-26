@@ -24,6 +24,8 @@ A machine learning method that leverages read-based phasing and read-level featu
 * e1071 (1.6-8)
 * glmnet (2.0-13)
 * nnet (7.3-12)
+* mlr (2.13)
+* RColorBrewer (1.1.2)
 ### Others:
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
