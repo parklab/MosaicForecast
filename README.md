@@ -1,6 +1,8 @@
 # MosaicForecast
 A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic SNVs (SNPs, small indels) from NGS data.
 
+![Fig  1](https://user-images.githubusercontent.com/8002850/55032480-509cbe00-4fe7-11e9-95b6-c7cbda1b7fe7.png)
+
 ## Required Interpreter Versions:
 * Python version 3.4+
 * R version 3.4+
