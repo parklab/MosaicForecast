@@ -14,10 +14,11 @@ A machine learning method that leverages read-based phasing and read-level featu
 * subprocess
 * multiprocessing
 * regex
-* uuid 
+* uuid
+* math 
 * numpy (1.16.1)
 * pandas (0.20.1)
-* pyfaidx (0.5.3.1)
+* pyfaidx (0.5.3)
 * pysam (0.11.2.2)
 * pysamstats (1.0.1)
 * scipy (1.2.1)
