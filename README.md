@@ -254,4 +254,10 @@ A list of extrapolated genotypes based on Phasing, Readlevel features and orthog
 ![genotype_extrapolation_phase](https://user-images.githubusercontent.com/8002850/55031935-239bdb80-4fe6-11e9-9a2f-76aa869d33ca.png)
 
 
+## Contact:
+If you have any questions please contact us:
+
+Yanmei Dou: yanmei_dou@hms.harvard.edu, douyanmei@gmail.com
+Peter J Park: peter_park@hms.harvard.edu
+
 
