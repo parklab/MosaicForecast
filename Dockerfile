@@ -45,8 +45,9 @@ RUN ["install2.r", "assertthat", "backports", "BBmisc", "bindr", "bindrcpp", "br
 
 # 4. download other tools
 WORKDIR /usr/local/bin
-COPY downloads.sh .
-RUN . downloads.sh
+COPY download.sh .
+RUN . download.sh
+
 
 # 5. set path
 ENV PATH=/usr/local/bin/bwa/:$PATH
