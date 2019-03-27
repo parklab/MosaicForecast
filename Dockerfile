@@ -1,6 +1,4 @@
 FROM ubuntu:16.04
-MAINTAINER Soo Lee (duplexa@gmail.com)
-
 # 1. general updates & installing necessary Linux components
 RUN apt-get update -y && apt-get install -y \
     bzip2 \
@@ -16,7 +14,7 @@ RUN apt-get update -y && apt-get install -y \
     zlib1g-dev \
     liblz4-tool
 
-# conda and pysam
+# 2. conda and pysam
 RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 ENV PATH=/miniconda3/bin:$PATH
 RUN conda update -y conda \
@@ -29,7 +27,7 @@ RUN conda config --add channels r \
     && conda install pysamstats==1.0.1 -y \
     && conda install scipy==1.2.1 -y 
 
-## R packages:
+## 3. R packages:
 ## http://o2r.info/containerit/articles/containerit.html
 
 FROM rocker/r-ver:3.4.1
@@ -45,25 +43,25 @@ RUN ["install2.r", "assertthat", "backports", "BBmisc", "bindr", "bindrcpp", "br
 #CMD ["R", "--vanilla", "-f", "test.R"]
 
 
-# download tools
+# 4. download other tools
 WORKDIR /usr/local/bin
 COPY downloads.sh .
 RUN . downloads.sh
 
-# set path
+# 5. set path
 ENV PATH=/usr/local/bin/bwa/:$PATH
 ENV PATH=/usr/local/bin/samtools/:$PATH
 
-# supporting UTF-8
+# 6. supporting UTF-8
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-# wrapper
+# 7. wrapper
 COPY *.py *.R *.md ./
 RUN chmod +x *py
 #COPY *.pyc *.sh ./
 #RUN chmod +x *.pyc
 
-# default command
+# 8. default command
 CMD ["ls /usr/local/bin"]
 
