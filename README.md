@@ -34,7 +34,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 * bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 ### Docker images:
-https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mf-python
+https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mf-python  
 https://hub.docker.com/r/yanmei/mf-r
 
 
