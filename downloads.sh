@@ -9,6 +9,9 @@ chmod +x wigToBigWig
 wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigAverageOverBed
 chmod +x bigWigAverageOverBed
 
+## software: fetchChromSizes
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes
+chmod +x fetchChromSizes
 ## software: samtools
 ## VERSION: 1.9
 ## TYPE: file format converter
