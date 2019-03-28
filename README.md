@@ -38,7 +38,6 @@ A machine learning method that leverages read-based phasing and read-level featu
 	We have created a docker image with all dependencies installed.
 	You could also download conda (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh) and install the dependencies as described in the Dockerfile.
 	```
-
 ### Docker image:
 https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mosaicforecast
 
