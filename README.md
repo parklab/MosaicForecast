@@ -266,7 +266,7 @@ A list of extrapolated genotypes based on Phasing, Readlevel features and orthog
 2. pc1/pc2/pc3/pc4/pc5: the first five PCA components constructed with read-level features.
 3. demo/phasable_sites_Refine.pdf: A plot showing the genotype extrapolation from phasing to 4-category genotypes.
 ```
-![genotype_extrapolation_phase](https://user-images.githubusercontent.com/8002850/55031935-239bdb80-4fe6-11e9-9a2f-76aa869d33ca.png)
+![phasing_refine](https://user-images.githubusercontent.com/8002850/55196676-7ad8b200-5186-11e9-8324-b0a16f80e6de.png)
 
 
 ## Contact:
