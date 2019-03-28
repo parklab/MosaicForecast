@@ -24,18 +24,18 @@ A machine learning method that leverages read-based phasing and read-level featu
 * scipy (1.2.1)
 ### R packages:
 * caret (6.0-80)
-* e1071 (1.7-1)
+* e1071 (1.7-0)
 * glmnet (2.0-16)
 * nnet (7.3-12)
 * mlr (2.13)
 * RColorBrewer (1.1.2)
-* ggplot2 ()
+* ggplot2 (2.3.0.0)
 ### Other softwares:
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 * bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 ### Install Dependencies:
-1. We have created a docker image with all dependencies installed:
+1. We have created a docker image with all dependencies installed:  
 	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
 2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
 	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
