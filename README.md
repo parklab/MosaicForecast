@@ -34,13 +34,11 @@ A machine learning method that leverages read-based phasing and read-level featu
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 * bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
-	```
-	We have created a docker image with all dependencies installed.
-	You could also download conda (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh) and install the dependencies as described in the Dockerfile.
-	```
-### Docker image:
-https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mosaicforecast
-
+### Install Dependencies:
+1. We have created a docker image with all dependencies installed:
+	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
+2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
+	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
 
 ## Resources:
 #### Mappability score: 
