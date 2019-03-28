@@ -184,14 +184,17 @@ if (type=="pvalue") {
 
 library(mlr)
 df <- all_train.2
+df$validation <- gsub("repeat","repeats",df$validation)
 #df$phase <- as.character(df$phase)
 df_mosaic <- subset(df,phase=="hap=3")
 df_repeat <- subset(df,phase=="hap>3")
 df_het<- subset(all_train, select=c(phase, validation, pc1, pc2, pc3, pc4, pc5))
 df_het <- subset(all_train,phase=="hap=2")
+df_het$validation <- gsub("repeat","repeats",df_het$validation)
 df_mosaic$phase <- as.factor(as.character(df_mosaic$phase))
 df_repeat$phase <- as.factor(as.character(df_repeat$phase))
 df_het$phase <- as.factor(as.character(df_het$phase))
+
 
 learnerGLMN=makeLearner(id="Elasticnet","classif.glmnet", predict.type = "prob")
 taskmosaic=makeClassifTask(data=df_mosaic,target="validation")
@@ -209,7 +212,7 @@ scale_fill_manual(values=c(mosaic="#ffae00", het=brewer.pal(9,"Set3")[9], refhom
 	  	theme_bw()+
 		ggtitle("Hap>3")
 plotLearnerPrediction(learnerGLMN,taskhet,features=c("pc1","pc2"),cv=100L,gridsize=100)+
-scale_fill_manual(values=c(mosaic="#ffae00", het=brewer.pal(9,"Set3")[9], refhom=brewer.pal(9,"Set3")[4], hets=brewer.pal(8,"Set3")[5]))+
+scale_fill_manual(values=c(mosaic="#ffae00", het=brewer.pal(9,"Set3")[9], refhom=brewer.pal(9,"Set3")[4], repeats=brewer.pal(8,"Set3")[5]))+
 	  	theme_bw()+
 		ggtitle("Hap=2")
 
