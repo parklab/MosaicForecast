@@ -1,8 +1,0 @@
-FROM rocker/r-ver:3.4.1
-RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
-  && apt-get install -y libxml2-dev
-RUN ["install2.r", "assertthat", "backports", "BBmisc", "bindr", "bindrcpp", "broom", "caret", "checkmate", "class", "codetools", "colorspace", "CVST", "data.table", "ddalpha", "DEoptimR", "dimRed", "dplyr", "DRR", "e1071", "fastmatch", "foreach", "foreign", "ggplot2", "glmnet", "glue", "gower", "gtable", "ipred", "iterators", "kernlab", "lattice", "lava", "lazyeval", "lubridate", "magrittr", "MASS", "Matrix", "mlr", "mnormt", "ModelMetrics", "munsell", "nlme", "nnet", "parallelMap", "ParamHelpers", "pillar", "pkgconfig", "plyr", "prodlim", "psych", "purrr", "R6", "RColorBrewer", "Rcpp", "RcppRoll", "recipes", "reshape2", "rlang", "robustbase", "rpart", "scales", "sfsmisc", "stringi", "stringr", "survival", "tibble", "tidyr", "tidyselect", "timeDate", "withr", "XML", "randomForest"]
-
-WORKDIR /payload/
-COPY *.R ./
-

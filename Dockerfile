@@ -2,8 +2,6 @@
 
 FROM ubuntu:18.04
 
-MAINTAINER "Tobias Verbeke" tobias.verbeke@openanalytics.eu
-
 # Add user to 'staff' group, granting them write privileges to /usr/local/lib/R/site.library
 RUN useradd docker \
 	&& mkdir /home/docker \
@@ -31,9 +29,9 @@ RUN apt-get update \
 		vim \
 		zlib1g-dev \
 		liblz4-tool \
+		libxt6 \
+		libxml2-dev \
 	&& rm -rf /var/lib/apt/lists/*
-
-
 
 RUN apt-get -qq update && apt-get -qq -y install curl bzip2 \
     && curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \
@@ -54,10 +52,19 @@ RUN apt-get -qq update && apt-get -qq -y install curl bzip2 \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/* /var/log/dpkg.log \
     && conda clean --all --yes
-#    && conda install pysamstats -y \
+
+RUN conda install -c rdonnellyr r-base \
+    && conda install -c r r-xml \
+    && conda install -c r r-ggplot2 \
+    && conda install -c r r-caret \
+    && conda install -c r r-e1071 \
+    && conda install -c r r-glmnet \
+    && conda install -c r r-rcolorbrewer \
+    && conda install -c r r-devtools \
+    && conda install -c r r-nnet
 
 ENV PATH /opt/conda/bin:$PATH
-
+RUN R -e 'install.packages("mlr", repos="http://cran.fiocruz.br/")' \ # mlr 
 
 # download other tools
 WORKDIR /usr/local/bin

@@ -3,11 +3,11 @@ A machine learning method that leverages read-based phasing and read-level featu
 
 ![MF_pipeline](https://user-images.githubusercontent.com/8002850/55032948-61016880-4fe8-11e9-8cf8-343fd3cdd26e.png)
 
-## Required Interpreter Versions:
+
+## Dependency:
+### Required Interpreter Versions:
 * Python version 3.4+
 * R version 3.4+
-
-## Packages need to be installed:
 ### Python packages:
 * collections
 * itertools
@@ -23,19 +23,24 @@ A machine learning method that leverages read-based phasing and read-level featu
 * pysamstats (1.1.2)
 * scipy (1.2.1)
 ### R packages:
-* caret (6.0-78)
-* e1071 (1.6-8)
-* glmnet (2.0-13)
+* caret (6.0-80)
+* e1071 (1.7-1)
+* glmnet (2.0-16)
 * nnet (7.3-12)
 * mlr (2.13)
 * RColorBrewer (1.1.2)
-### Others:
+* ggplot2 ()
+### Other softwares:
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 * bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
-### Docker images:
-https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mf-python  
-https://hub.docker.com/r/yanmei/mf-r
+	```
+	We have created a docker image with all dependencies installed.
+	You could also download conda (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh) and install the dependencies as described in the Dockerfile.
+	```
+
+### Docker image:
+https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mosaicforecast
 
 
 ## Resources:
