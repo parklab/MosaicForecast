@@ -1,5 +1,3 @@
-# largely based on rocker r-base image
-
 FROM ubuntu:18.04
 
 # Add user to 'staff' group, granting them write privileges to /usr/local/lib/R/site.library
