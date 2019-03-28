@@ -19,8 +19,8 @@ A machine learning method that leverages read-based phasing and read-level featu
 * numpy (1.16.1)
 * pandas (0.20.1)
 * pyfaidx (0.5.3)
-* pysam (0.11.2.2)
-* pysamstats (1.0.1)
+* pysam (0.15.2)
+* pysamstats (1.1.2)
 * scipy (1.2.1)
 ### R packages:
 * caret (6.0-78)
