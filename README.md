@@ -208,13 +208,16 @@ Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phas
 
 1. You could choose to train your model based on Phasing (hap=2, hap=3, hap>3, type in "Phase") or Refined genotypes ("mosaic","het","refhom","repeat", type in "Refine").
 2. The input file should be a list of pre-generated read-level features, adding a column termed "phase" (Phase model) or "phase\_model\_corrected" (Refined genotypes model). 
-3. We recommend using Refined genotypes instead of Phasing genotypes, since ~50% of hap=3 sites were validated as "repeat" variants in our dataset:  
+3. We stronly recommend using Refined genotypes instead of Phasing genotypes, since ~50% of hap=3 sites were validated as "repeat" variants in our dataset:  
 ![phasing_refine](https://user-images.githubusercontent.com/8002850/55193134-84f5b300-517c-11e9-9499-d79bc1027812.png)
 
-   In case you don't have experimentally-evaluated sites, it's ok to manually-check ~100 hap=3 sites with igv, and mark the sites in messy regions as "repeat". Here are some examples of "hap=3" sites experimentally evaluated as "repeat":  
+	In case you don't have experimentally-evaluated sites, it's ok to manually-check ~100 hap=3 sites with igv, and mark the sites in messy regions as "repeat". Here are some examples of "hap=3" sites experimentally evaluated as "repeat":  
    
 ![hap3_wrong_examples](https://user-images.githubusercontent.com/8002850/55192738-9094aa00-517b-11e9-8809-e67d548b009f.png)
 
+	and here are some examples of "hap=3" sites experimentally evaluated as true positive mosaics:
+	
+![hap3_right](https://user-images.githubusercontent.com/8002850/55193553-a905c400-517d-11e9-8ce1-a0eaeb30d312.png)
 
 **Demo:**
 ```
