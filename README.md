@@ -7,7 +7,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 ## Dependency:
 ### Required Interpreter Versions:
 * Python version 3.4+
-* R version 3.4+
+* R version 3.5+
 ### Python packages:
 * collections
 * itertools
@@ -35,8 +35,8 @@ A machine learning method that leverages read-based phasing and read-level featu
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 * bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 ### Installation of Dependencies:
-1. We have created a docker image with all dependencies installed:  
-	https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mosaicforecast  
+1. We have created a docker image with all dependencies installed: 
+	https://hub.docker.com/r/yanmei/mosaicforecast   
 2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
 	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
 
@@ -54,7 +54,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 ## Phasing:
 **Usage:** 
 
-python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min_dp_inforSNPs
+python Phase.py bam_dir output_dir ref_fasta  input_positions min_dp_inforSNPs Umap_mappability(bigWig file,k=24) n_threads_parallel
 
 **Note:** 
 
@@ -62,23 +62,23 @@ python Phase.py bam_dir output_dir ref_fasta n_jobs_parallel input_positions min
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).
 3. File format of the input\_positions: chr pos-1 pos ref alt sample, sep=\t 
 4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
+5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
 
 **Demo:**
 ```
-python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 2 demo/test.input 20
+python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 20 ${k24.umap.wg.bw} demo/test.input 2
 ```
 **Output:**
 ```
 output_dir/all.phasing
 ```
-
-| sample | chr | pos | ref | alt | phasing | conflicting_reads |
-| --- | --- | --- | --- | --- | --- | --- |
-| test | 12 | 52644508 | C | T | hap=3 | 0 |
-| test | 15 | 75918044 | G | A | hap=3 | 0 |
-| test | 1 | 1004865 | G | C | hap=3 | 0 |
-| test | 1 | 2591769 | AG | A | hap>3 | 2 |
-| test | 1 | 33801576 | TTTGTTG | T | hap=3 | 0 |
+| sample | chr | pos | ref | alt | phasing | conflicting_reads | mappability | variant_type |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| test | 12 | 52644508 | C | T | hap=3 | 0 | 1.0 | SNP |
+| test | 15 | 75918044 | G | A | hap=3 | 0 | 1.0 | SNP |
+| test | 1 | 1004865 | G | C | hap=3 | 0 | 1.0 | SNP |
+| test | 1 | 2591769 | AG | A | hap>3 | 1 | 0.0 | DEL |
+| test | 1 | 33801576 | TTTGTTG | T | hap=2 | 0 | 0.583333 | DEL |
 
 ```
 hap=2: likely het variants
@@ -222,7 +222,7 @@ Random Forest prediction model
 
 ## Convert phasing to four-category genotypes based on experimental data:
 
-#### (Recommended when you have >=100 hap>=3 sites validated orthogonally or checked manually)
+#### (Recommended when you have >=100 orthogonally-evaluated or manually-checked sites with hap=3)
 **Usage:**
 
 Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotypes) read_length(int) pdf(plot)

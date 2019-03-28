@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 import sys
+import uuid
 program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
-if count !=6:
-	print ("Usage: python Phase.py bam_dir output_dir ref_fasta n_threads_parallel input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int)\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.")
+if count !=7:
+	print ("Usage: python Phase.py bam_dir output_dir ref_fasta input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int) Umap_mappability(bigWig file,k=24) n_threads_parallel\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.")
 #	1       1004864 1004865 G       C       test
 #1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
-elif count==6:
+elif count==7:
 	#sample=sys.argv[1]
 	bam_dir_tmp=sys.argv[1]
 	output_dir_tmp=sys.argv[2]
 	ref_fasta=sys.argv[3]
-	n_threads=int(sys.argv[4])
-	input_pos=sys.argv[5]
-	min_dp_inforSNPs=int(sys.argv[6])
+	input_pos=sys.argv[4]
+	min_dp_inforSNPs=int(sys.argv[5])
+	unimap_mappability_BigWigfile=sys.argv[6]	
+	n_threads=int(sys.argv[7])
 	log_file='multiple_inforSNPs.log'
 
 import regex as re
@@ -63,6 +65,49 @@ for line in file0:
 	chr_sizes[fields[0]]=chr_sizes.get(fields[0],fields[1])
 file0.close()
 
+
+sites_chr_dict=dict()
+sites_pos_dict=dict()
+file=open(input_pos)
+
+for line in file:
+	line=line.rstrip()
+	fields=line.split('\t')
+	chr=fields[0]
+	pos=int(fields[2])
+	ref=fields[3]
+	alt=fields[4]
+	sample=fields[5]
+	ID=sample+';'+chr+";"+str(pos)+";"+ref+";"+alt
+	sites_chr_dict[ID]=chr
+	sites_pos_dict[ID]=pos
+#	print("chr"+chr,pos,pos+1,ID,file=input_mappability,sep="\t")
+file.close()
+
+tmp_filename=str(uuid.uuid4())
+input_mappability=open(tmp_filename,'w')
+for k,v in sorted(sites_chr_dict.items()):
+	print("chr"+v,sites_pos_dict[k],int(sites_pos_dict[k])+1,k,file=input_mappability,sep="\t")
+input_mappability.close()
+
+
+#bigWigAverageOverBed /n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw test.bed test.tab
+subprocess.run("bigWigAverageOverBed "+unimap_mappability_BigWigfile+" "+tmp_filename+" "+tmp_filename+".2", shell=True, check=True)
+
+mappability=dict()
+file=open(tmp_filename+".2")
+#4638~1~86002185~G~A     1       0       0       0       0
+#4638~10~39135403~A~T    1       1       0.5     0.5     0.5
+#4638~16~21579992~C~T    1       1       0.958333        0.958333        0.958333
+for line in file:
+	line=line.rstrip()
+	fields=line.split('\t')
+	ID=fields[0]
+	score=float(fields[5])
+	mappability[ID]=score
+file.close()
+subprocess.run("rm "+tmp_filename, shell=True)
+subprocess.run("rm "+tmp_filename+".2", shell=True)
 ##input_bam=bam_dir+"/"+sample+".bam"
 ##a=pysam.AlignmentFile(input_bam, "rb")
 	
@@ -313,6 +358,7 @@ fo1.close()
 
 #2nd step: extract candidate nearby inforSNPs (germline het):
 conflict_mosaic=dict()
+variant_state=dict()
 file=open(output_dir+"/all_candidates")
 for line in file:
 	line=line.rstrip()
@@ -329,6 +375,7 @@ for line in file:
 	variant_type=fields[8]
 	mosaic_name=sample+';'+chr+';'+str(pos)+";"+major_allele+";"+minor_allele
 	conflict_mosaic[mosaic_name]=conflictnum
+	variant_state[mosaic_name]=variant_type
 file.close()
 
 #==> /n/data1/hms/dbmi/park/yanmei/simulated_bams_na12878/12878-50x.merged.inforSNPs.pos <==
@@ -673,14 +720,14 @@ for k,v in sorted(MT2_inforSNPs_phasing.items()):
 fo3.close()
 
 fo4=open(output_dir+"/all.phasing","w")
-print ("sample","chr","pos","ref","alt","phasing","conflicting_reads",file=fo4)
+print ("sample","chr","pos","ref","alt","phasing","conflicting_reads","mappability","variant_type",file=fo4, sep="\t")
 for k,v in sorted(phasing_2by2.items()):
 	if not v == "UNKNOWN":
 		if k in MT2_phasing_num:
 			if MT2_phasing_num[k]['wrong']>=MT2_phasing_num[k]['correct'] and MT2_phasing_num[k]['wrong']>0:
 	#		if max(MT2_phasing_num[k], key=MT2_phasing_num[k].get)=="wrong":
 				v="hap>3"
-		print (' '.join(k.split(';')), v, conflict_mosaic[k], file=fo4)
+		print ('\t'.join(k.split(';')), v, conflict_mosaic[k], mappability[k], variant_state[k], sep="\t", file=fo4)
 fo4.close()
 
 
