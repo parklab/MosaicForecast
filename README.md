@@ -34,7 +34,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
 * wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
 * bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
-### Install Dependencies:
+### Installation of Dependencies:
 1. We have created a docker image with all dependencies installed:  
 	https://cloud.docker.com/u/yanmei/repository/docker/yanmei/mosaicforecast  
 2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
@@ -225,14 +225,13 @@ Random Forest prediction model
 #### (Recommended when you have >=100 hap>=3 sites validated orthogonally or checked manually)
 **Usage:**
 
-Rscript Phasing_Refine_Multinomial_Logistic_Regression.R input(trainset) output1(model) output2(converted genotypes) read_length(int) type(pvalue|effectsize)
+Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotypes) read_length(int) pdf(plot)
 
 **Note:**
 
-1. Use "pvalue" when your data has relatively even read coverage (i.e. WGS data) or the training sample size is big (i.e., >5000 sites);
-2. Use "effectsize" when your data has extrmely un-even read coverage and small training sample size.
-3. The input file should be a list of pre-generated read-level features for all phasable sites, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
-4. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
+1. The input file should be a list of pre-generated read-level features for all phasable sites, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
+2. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
+3. The "hap=3" sites could contain ~50% FP sites, mostly "repeat" sites. When you don't have experimentally evaluated sites, it's ok to check ~100 hap=3 sites manually, converting the "hap=3" sites present in messy regions as "repeat" and covert "hap=3" sites present in clean regions as "mosaic".
 
 **Demo:**
 ```
