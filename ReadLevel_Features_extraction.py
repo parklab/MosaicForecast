@@ -783,6 +783,10 @@ def my_wilcox_statistics(a, b):
 	x1=[float(i) for i in a.split(',')[:-1]]
 	x2=[float(i) for i in b.split(',')[:-1]]
 	return (scipy.stats.ranksums(x1,x2)[0])
+def my_ttest_statistics(a, b):
+	x1=[float(i) for i in a.split(',')[:-1]]
+	x2=[float(i) for i in b.split(',')[:-1]]
+	return (scipy.stats.ttest_ind(x1,x2, equal_var = False)[0])
 def my_fisher_pvalue(a,b,c,d):
 	return (scipy.stats.fisher_exact([[int(a), int(b)], [int(c), int(d)]])[1])
 def my_fisher_statistics(a,b,c,d):
@@ -815,10 +819,11 @@ df['seqpos_p']=df.apply(lambda row: my_wilcox_pvalue(row['seqpos_major'], row['s
 df['mapq_p']=df.apply(lambda row: my_wilcox_pvalue(row['mapq_major'], row['mapq_minor']), axis=1)
 df['baseq_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_major'], row['baseq_minor']), axis=1)
 df['baseq_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_major'], row['baseq_minor']), axis=1)
+#df['baseq_t']=df.apply(lambda row: my_ttest_statistics(row['baseq_major'], row['baseq_minor']), axis=1)
 df['ref_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_major'], row['baseq_major_near1b']), axis=1)
 df['ref_baseq1b_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_major'], row['baseq_major_near1b']), axis=1)
 df['alt_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
-df['alt_baseq1b_t']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
+df['alt_baseq1b_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
 df['sb_p']=df.apply(lambda row: my_fisher_pvalue(row['major_plus'], row['major_minus'], row['minor_plus'], row['minor_minus']), axis=1)	
 df['context']=df.apply(lambda row: my_context_selection(row['context1_count'], row['context2_count'], row['context1'], row['context2']), axis=1)	
 df['major_mismatches_mean']=df.apply(lambda row: my_mean(row['mismatches_major']), axis=1)	
