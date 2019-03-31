@@ -757,7 +757,7 @@ df = df[df.baseq_minor_near1b != 'end,']
 df = df[df.leftpos_minor != ',']
 df = df[df.baseq_major_near1b != ',']
 df = df[df.baseq_major_near1b != 'end,']
-df = df[df.major_plus + df.major_minus + df.minor_plus + df.minor_minus<=1000,]
+df = df[df.major_plus + df.major_minus + df.minor_plus + df.minor_minus <= 1000]
 
 #input <- subset(input, ((((querypos_minor!="," & seqpos_minor!=",") & seqpos_major!="," )  & baseq_minor_near1b!=",") & leftpos_minor!=",") &  baseq_major_near1b!=",")
 
