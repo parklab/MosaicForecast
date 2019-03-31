@@ -234,14 +234,16 @@ def process_line(line):
 										#print seqpos_major[name]
 										if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
-										#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
-										#	baseq_major_near1b[name].append("end")
+										elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+											baseq_major_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 									##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 										seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
 										if pileupread.query_position >=1 :
 											baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
 											#print baseq_major_near1b[name]
+										if pileupread.query_position ==0 :
+											baseq_major_near1b[name].append("end")
 						
 							##elif pileupcolumn.pos==pos-1 and querybase==minor_allele and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
 								elif querybase==minor_allele:
@@ -270,6 +272,8 @@ def process_line(line):
 										seqpos_minor[name].append(pileupread.query_position)
 										if pileupread.query_position < len(pileupread.alignment.query_sequence)-1:
 											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+1])
+										elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
+											baseq_minor_near1b[name].append("end")
 				#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 				#       baseq_minor_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
@@ -277,6 +281,8 @@ def process_line(line):
 										seqpos_minor[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
 										if pileupread.query_position >=1 :
 											baseq_minor_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position-1])
+										elif pileupread.query_position ==0:
+											baseq_minor_near1b[name].append("end")
 			
 									if pileupread.alignment.is_proper_pair:
 									##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
@@ -394,12 +400,16 @@ def process_line(line):
 												baseq_average_leftbases=sum(qualities)/len(qualities)
 												baseq_major_near1b[name].append(baseq_average_leftbases)
 												#baseq_major_near1b[name].append(pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1])
+											elif pileupread.query_position == len(pileupread.alignment.query_sequence)-len(major_allele)-1:
+												baseq_major_near1b[name].append("end")
 										elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 											seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
 											if pileupread.query_position >=len(major_allele) :
 												qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
 												baseq_average_leftbases=sum(qualities)/len(qualities)
 												baseq_major_near1b[name].append(baseq_average_leftbases)
+											elif pileupread.query_position <len(major_allele) :
+												baseq_major_near1b[name].append("end")
 							
 #									elif int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024) and ((pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5)) or (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))): #and pileuperead.alignment.mapping_quality>=10:
 
@@ -446,6 +456,8 @@ def process_line(line):
 											qualities=pileupread.alignment.query_qualities[pileupread.query_position+len(major_allele)+1:len(pileupread.alignment.query_sequence)]
 											baseq_average_leftbases=sum(qualities)/len(qualities)
 											baseq_minor_near1b[name].append(baseq_average_leftbases)
+										elif pileupread.query_position == len(pileupread.alignment.query_sequence)-len(major_allele)-1:
+											baseq_minor_near1b[name].append("end")	
 				#      elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 				#       baseq_minor_near1b[name].append("end")
 									elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
@@ -458,7 +470,9 @@ def process_line(line):
 											qualities=pileupread.alignment.query_qualities[0:pileupread.query_position-len(major_allele)]
 											baseq_average_leftbases=sum(qualities)/len(qualities)
 											baseq_minor_near1b[name].append(baseq_average_leftbases)
-			
+										elif pileupread.query_position < len(major_allele) :
+											baseq_minor_near1b[name].append("end")
+
 									if pileupread.alignment.is_proper_pair:
 									##http://www.cureffi.org/2012/12/19/forward-and-reverse-reads-in-paired-end-sequencing/
 										if pileupread.alignment.flag & 64 and (not pileupread.alignment.is_reverse):
@@ -587,9 +601,8 @@ def process_line(line):
 												baseq_major_near1b[name].append(baseq_average_leftbases)
 											#elif pileupread.query_position == len(pileupread.alignment.query_sequence)-1:
 											#	baseq_major_near1b[name].append("end")
-	
-		
-	
+											elif pileupread.query_position == len(pileupread.alignment.query_sequence)-len(minor_allele)-1:
+												baseq_major_near1b[name].append("end")
 										elif pileupread.alignment.is_proper_pair and pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 										##elif pileupread.alignment.reference_start-pileupread.alignment.next_reference_start>0: 
 											seqpos_major[name].append(len(pileupread.alignment.query_sequence)-pileupread.query_position)
@@ -600,7 +613,8 @@ def process_line(line):
 												baseq_average_leftbases=sum(qualities)/len(qualities)
 												baseq_major_near1b[name].append(baseq_average_leftbases)
 												#print baseq_major_near1b[name]
-							
+											elif pileupread.query_position <len(minor_allele) :
+												baseq_major_near1b[name].append("end")
 #								if pileupread.indel > 0: ###ins>0
 #								elif pileupread.indel>0 or (pileupread.indel==0 and (int(pileupcolumn.pos)==int(pos)-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024) and ((pileupread.alignment.query_alignment_end<=int(pos) and (pileupread.alignment.cigar[-1][0]==4 or pileupread.alignment.cigar[-1][0]==5)) or (pileupread.alignment.query_alignment_start>=int(pos)-2 and (pileupread.alignment.cigar[0][0]==4 or pileupread.alignment.cigar[0][0]==5))))): #del <0 or clipped reads
 
@@ -739,8 +753,11 @@ df = df[df.querypos_minor != ',']
 df = df[df.seqpos_minor != ',']
 df = df[df.seqpos_major != ',']
 df = df[df.baseq_minor_near1b != ',']
+df = df[df.baseq_minor_near1b != 'end,']
 df = df[df.leftpos_minor != ',']
 df = df[df.baseq_major_near1b != ',']
+df = df[df.baseq_major_near1b != 'end,']
+df = df[df.dp<2000,]
 
 #input <- subset(input, ((((querypos_minor!="," & seqpos_minor!=",") & seqpos_major!="," )  & baseq_minor_near1b!=",") & leftpos_minor!=",") &  baseq_major_near1b!=",")
 
@@ -778,15 +795,45 @@ def my_althom_likelihod(a,b):
 def my_wilcox_pvalue(a, b):
 	x1=[float(i) for i in a.split(',')[:-1]]
 	x2=[float(i) for i in b.split(',')[:-1]]
-	return (scipy.stats.ranksums(x1,x2)[1])
+	if x1!=x2:
+		return (scipy.stats.ranksums(x1,x2)[1])
+	elif x1==x2:
+		return(float(1))
 def my_wilcox_statistics(a, b):
-	x1=[float(i) for i in a.split(',')[:-1]]
-	x2=[float(i) for i in b.split(',')[:-1]]
-	return (scipy.stats.ranksums(x1,x2)[0])
+	x1=[i for i in a.split(',')[:-1] if i!="end"]
+	x2=[i for i in b.split(',')[:-1] if i!="end"]
+	x1=[float(i) for i in x1]
+	x2=[float(i) for i in x2]
+	if x1!=x2:
+		return (scipy.stats.ranksums(x1,x2)[0])
+	elif x1==x2:
+		return(float(0))
+def my_wilcox_paired_pvalue(a, b):
+	x2_index = [x for x in range(len(b.split(','))) if b.split(',')[x]!="end"][:-1]
+	x2= [i for i in b.split(',') if i !="end"][:-1]
+	x1=[float(a.split(',')[i]) for i in x2_index]
+	x2=[float(i) for i in x2]
+	if x1!=x2:
+		return (scipy.stats.wilcoxon(x1,x2)[1])
+	elif x1==x2:
+		return(float(1))
+def my_wilcox_paired_statistics(a, b):
+	x2_index = [x for x in range(len(b.split(','))) if b.split(',')[x]!="end"][:-1]
+	x2= [i for i in b.split(',') if i !="end"][:-1]
+	x1=[float(a.split(',')[i]) for i in x2_index]
+	x2=[float(i) for i in x2]
+	if x1!=x2:
+		return (scipy.stats.wilcoxon(x1,x2)[0])
+	if x1==x2:
+		return(float(0))
+#	return (scipy.stats.mannwhitneyu(x1,x2)[0])
 def my_ttest_statistics(a, b):
-	x1=[float(i) for i in a.split(',')[:-1]]
-	x2=[float(i) for i in b.split(',')[:-1]]
-	return (scipy.stats.ttest_ind(x1,x2, equal_var = False)[0])
+	if a!=b:
+		x1=[float(i) for i in a.split(',')[:-1]]
+		x2=[float(i) for i in b.split(',')[:-1]]
+		return (scipy.stats.ttest_ind(x1,x2, equal_var = False)[0])
+	elif a==b:
+		return(float(0))
 def my_fisher_pvalue(a,b,c,d):
 	return (scipy.stats.fisher_exact([[int(a), int(b)], [int(c), int(d)]])[1])
 def my_fisher_statistics(a,b,c,d):
@@ -820,10 +867,16 @@ df['mapq_p']=df.apply(lambda row: my_wilcox_pvalue(row['mapq_major'], row['mapq_
 df['baseq_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_major'], row['baseq_minor']), axis=1)
 df['baseq_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_major'], row['baseq_minor']), axis=1)
 #df['baseq_t']=df.apply(lambda row: my_ttest_statistics(row['baseq_major'], row['baseq_minor']), axis=1)
-df['ref_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_major'], row['baseq_major_near1b']), axis=1)
+#df['ref_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_major'], row['baseq_major_near1b']), axis=1)
 df['ref_baseq1b_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_major'], row['baseq_major_near1b']), axis=1)
-df['alt_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
+#df['ref_baseq1b_t']=df.apply(lambda row: my_ttest_statistics(row['baseq_major'], row['baseq_major_near1b']), axis=1)
+#df['alt_baseq1b_p']=df.apply(lambda row: my_wilcox_pvalue(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
+df['ref_baseq1b_p']=df.apply(lambda row: my_wilcox_paired_pvalue(row['baseq_major'], row['baseq_major_near1b']), axis=1)
+#df['ref_baseq1b_t']=df.apply(lambda row: my_wilcox_paired_statistics(row['baseq_major'], row['baseq_major_near1b']), axis=1)
+df['alt_baseq1b_p']=df.apply(lambda row: my_wilcox_paired_pvalue(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
+#df['alt_baseq1b_t']=df.apply(lambda row: my_wilcox_paired_statistics(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
 df['alt_baseq1b_t']=df.apply(lambda row: my_wilcox_statistics(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
+#df['alt_baseq1b_t']=df.apply(lambda row: my_ttest_statistics(row['baseq_minor'], row['baseq_minor_near1b']), axis=1)	
 df['sb_p']=df.apply(lambda row: my_fisher_pvalue(row['major_plus'], row['major_minus'], row['minor_plus'], row['minor_minus']), axis=1)	
 df['context']=df.apply(lambda row: my_context_selection(row['context1_count'], row['context2_count'], row['context1'], row['context2']), axis=1)	
 df['major_mismatches_mean']=df.apply(lambda row: my_mean(row['mismatches_major']), axis=1)	
