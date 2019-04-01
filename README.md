@@ -109,7 +109,7 @@ python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
 
 **Demo:**
 ```
-python ReadLevel_Features_extraction.py demo/test.input demo/test.features_forR demo ${ref.fa} ${k24.umap.wg.bw} 150 2  
+python ReadLevel_Features_extraction.py demo/test.input demo/test.features demo ${ref.fa} ${k24.umap.wg.bw} 150 2  
 ```
 **Output:**
 ```
