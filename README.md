@@ -221,9 +221,9 @@ and here are some examples of "hap=3" sites experimentally evaluated as true pos
 
 **Demo:**
 ```
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase SNP  
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine DEL  
-Rscript Train_RFmodel.R demo/deletions_phasable_trainset demo/Deletions_Refine_model.rds Refine DEL    
+Rscript Train_RFmodel.R demo/trainset demo/Phase_model.rds Phase SNP  
+Rscript Train_RFmodel.R demo/trainset demo/Refine_model.rds Refine DEL  
+Rscript Train_RFmodel.R demo/deletions_trainset demo/Deletions_Refine_model.rds Refine DEL    
 ```
 **Output:**
 ```
@@ -239,7 +239,7 @@ Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotyp
 
 **Note:**
 
-1. The input file should be a list of pre-generated read-level features for all phasable sites, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
+1. The input file should be a list of pre-generated read-level features for all sites including phasable and non-phasable ones, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3, notphased), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
 2. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
 3. The "hap=3" sites could contain ~50% FP sites, mostly "repeat" sites. When you don't have experimentally evaluated sites, it's ok to check ~100 hap=3 sites manually, converting the "hap=3" sites present in messy regions as "repeat" and covert "hap=3" sites present in clean regions as "mosaic".
 

@@ -1,3 +1,0 @@
-sample chr pos ref alt pos_inforSNP het1 het2 conflicted_reads ref_het1_count ref_het2_count alt_het1_count alt_het2_count
-test 1 1004865 G C 1004957 G A 0 47 47 7 0
-test 1 1004865 G C 1004980 G A 0 37 26 2 0
