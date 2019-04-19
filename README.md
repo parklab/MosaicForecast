@@ -124,7 +124,7 @@ python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa)
 3. File format of the input.bed: chr pos-1 pos ref alt sample, sep=\t 
 4. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants
-5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
+5. The program to extract mappability score: "bigWigAverageOverBed" should be downloaded and installed, and its path should be added to the PATH environment variable.
 
 **Demo:**
 ```
