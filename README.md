@@ -32,15 +32,15 @@ A machine learning method that leverages read-based phasing and read-level featu
 * ggplot2 (2.3.0.0)
 ### Other softwares:
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
-* wigToBigWig (v4): 
-wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig
+* wigToBigWig (v4):  
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig  
 chmod +x wigToBigWig
-* bigWigAverageOverBed (v2): 
-wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigAverageOverBed
-chmod +x bigWigAverageOverBed
-* fetchChromSizes: 
-wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes
-chmod +x fetchChromSizes
+* bigWigAverageOverBed (v2):  
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigAverageOverBed  
+chmod +x bigWigAverageOverBed  
+* fetchChromSizes:  
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes  
+chmod +x fetchChromSizes  
 ### Installation of Dependencies:
 1. We have created a docker image with all dependencies installed:  
 	https://hub.docker.com/r/yanmei/mosaicforecast   
