@@ -48,6 +48,9 @@ chmod +x fetchChromSizes
 	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
 
 ## Resources:
+#### Human reference genome:  
+ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz   
+ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz.fai   
 #### Mappability score: 
 * Umap score (k=24):   
 wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
