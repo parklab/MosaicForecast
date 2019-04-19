@@ -56,9 +56,12 @@ cd hg19
 fetchChromSizes hg19> hg19.chrom.sizes  
 wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw  
 #### Regions to filter out:
-* Segmental Duplication regions: http://humanparalogy.gs.washington.edu/ 
-* Regions enriched for SNPs with >=3 haplotypes: https://github.com/parklab/MosaicForecast/tree/master/resources
-* Simple repeats (should be removed before calling mosaic INDELS): https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=716260999_jBJij5JXiQiuykIobdBExCLj0XEf
+* Segmental Duplication regions: http://humanparalogy.gs.washington.edu/  
+wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz  
+* Regions enriched for SNPs with >=3 haplotypes:  
+https://github.com/parklab/MosaicForecast/tree/master/resources/predictedhap3ormore_cluster.bed  
+* Simple repeats (should be removed before calling mosaic INDELS):  
+wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
 #### Population allale frequency
 * Gnomad datasets: https://gnomad.broadinstitute.org/downloads
 
