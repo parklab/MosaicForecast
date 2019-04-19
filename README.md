@@ -49,12 +49,12 @@ chmod +x fetchChromSizes
 
 ## Resources:
 #### Mappability score: 
-* Umap score (k=24): 
-wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz
-gunzip hg19.umap.tar.gz
-cd hg19
-fetchChromSizes hg19> hg19.chrom.sizes
-wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw
+* Umap score (k=24):   
+wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
+gunzip hg19.umap.tar.gz  
+cd hg19  
+fetchChromSizes hg19> hg19.chrom.sizes  
+wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw  
 #### Regions to filter out:
 * Segmental Duplication regions: http://humanparalogy.gs.washington.edu/ 
 * Regions enriched for SNPs with >=3 haplotypes: https://github.com/parklab/MosaicForecast/tree/master/resources
