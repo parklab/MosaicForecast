@@ -28,6 +28,7 @@ import regex as re
 from collections import defaultdict
 from pyfaidx import Fasta
 import pysam
+import pysamstats
 import scipy.stats
 from scipy.stats import mannwhitneyu
 from scipy.special import beta
@@ -90,7 +91,7 @@ subprocess.run("rm "+tmp_filename+".2", shell=True)
 
 
 fo=open(output+".tmp","w")
-header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far conflict_num mappability type length GCcontent ref_softclip alt_softclip indel_proportion_SNPonly'.split()
+header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far conflict_num mappability type length GCcontent ref_softclip alt_softclip indel_proportion_SNPonly alt2_proportion_SNPonly'.split()
 print (' '.join(header),file=fo)
 #print (' '.join(header))
 
@@ -180,6 +181,9 @@ def process_line(line):
 		context2_count[name]=context2_count.get(name,0)
 		mismatches_major[name]=list()
 		mismatches_minor[name]=list()
+		minor2_count=dict()
+#		minor2_count['A']=0
+		max_num_2ndallele=0
 		indels_count[name]=0
 		try:
 			if len(major_allele)==len(minor_allele) and not(major_allele==minor_allele):
@@ -196,6 +200,17 @@ def process_line(line):
 				GCcontent=(context_20bp.count('G')+context_20bp.count('C'))/len(context_20bp)
 				context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
 				context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
+
+				for rec in pysamstats.stat_variation(a, fafile=reference_fasta, min_mapq=0, min_baseq=0,chrom=chrom,start=pos-1,end=pos):
+					dp_allrec=0
+					if int(rec['pos'])+1==pos:
+						for item in ['A','T','C','G']:
+							dp_allrec =dp_allrec+int(rec[item])
+							if item !=major_allele[0] and item !=minor_allele[0]:
+								minor2_count[item]=rec[item]
+						max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
+						max_num_2ndallele=float(max_num_2ndallele)/float(dp_allrec)
+
 				for pileupcolumn in a.pileup(chrom, start, end):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel !=0:
@@ -204,6 +219,12 @@ def process_line(line):
 						try:
 							querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(major_allele)]
 							if pileupcolumn.pos==pos-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+#								try:
+#									if querybase!=major_allele and querybase!=minor_allele:
+#										minor2_count[querybase]=minor2_count.get(querybase,0)+1
+#										print (minor2_count[querybase],querybase)
+#								except:
+#									continue
 								#if sequencing_type="PE":
 								#print pileupcolumn.pos
 								if querybase==major_allele:
@@ -338,7 +359,9 @@ def process_line(line):
 					elif pileupcolumn.pos==pos+200:
 						dp_near[name].append(pileupcolumn.n)
 			
-				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state, str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), str(indels_count[name]/(major_num+minor_num+indels_count[name]))
+#				max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
+
+				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state, str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), str(indels_count[name]/(major_num+minor_num+indels_count[name])), max_num_2ndallele 
 	
 			#elif len(major_allele)>1 and len(minor_allele)==1:
 			elif len(major_allele) > len(minor_allele):
@@ -526,7 +549,7 @@ def process_line(line):
 						elif pileupcolumn.pos==pos+200:
 							dp_near[name].append(pileupcolumn.n)
 				
-					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA"
+					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA", "NA"
 			#print (fo)
 	
 	
@@ -553,7 +576,7 @@ def process_line(line):
 					if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp) or re.search(str(item),minor_allele)):
 						if_homopolymer="Yes"
 						break
-				if if_homopolymer=="No":			
+				if if_homopolymer=="No":		
 					for pileupcolumn in a.pileup(chrom, start, end):
 						for pileupread in pileupcolumn.pileups:
 							try:
@@ -722,7 +745,7 @@ def process_line(line):
 						elif pileupcolumn.pos==pos+200:
 							dp_near[name].append(pileupcolumn.n)
 				
-					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent),  str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA"
+					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent),  str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA", "NA"
 			#print (fo)
 		except:
 			print ("not enough alt reads: ",chrom, start,end)
@@ -905,7 +928,7 @@ df['alt_baseq1b_t'].fillna(0,inplace=True)
 #df['dp_p'].fillna(1,inplace=True)
 
 
-df_new=df[['id','conflict_num','mappability','type','length','GCcontent','ref_softclip','alt_softclip','querypos_p','leftpos_p','seqpos_p','mapq_p','baseq_p','baseq_t','ref_baseq1b_p','ref_baseq1b_t', 'alt_baseq1b_p','alt_baseq1b_t','sb_p','context','major_mismatches_mean','minor_mismatches_mean','mismatches_p','AF','dp','mosaic_likelihood','het_likelihood','refhom_likelihood','althom_likelihood', 'mapq_difference', 'sb_read12_p', 'dp_diff', 'indel_proportion_SNPonly']]
+df_new=df[['id','conflict_num','mappability','type','length','GCcontent','ref_softclip','alt_softclip','querypos_p','leftpos_p','seqpos_p','mapq_p','baseq_p','baseq_t','ref_baseq1b_p','ref_baseq1b_t', 'alt_baseq1b_p','alt_baseq1b_t','sb_p','context','major_mismatches_mean','minor_mismatches_mean','mismatches_p','AF','dp','mosaic_likelihood','het_likelihood','refhom_likelihood','althom_likelihood', 'mapq_difference', 'sb_read12_p', 'dp_diff', 'indel_proportion_SNPonly', 'alt2_proportion_SNPonly']]
 #id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability type length GCcontent ref_softclip alt_softclip
 fo2=open(output,"w")
 df_new.to_csv(fo2, index=False,sep="\t")
