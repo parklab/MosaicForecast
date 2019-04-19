@@ -78,7 +78,7 @@ python Phase.py bam_dir output_dir ref_fasta  input_positions min_dp_inforSNPs U
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).
 3. File format of the input\_positions: chr pos-1 pos ref alt sample, sep=\t 
 4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
-5. The program to extract mappability score: "bigWigAverageOverBed" shoule be downloaded and installed, and its path should be added to the PATH environment variable.
+5. The program to extract mappability score: "bigWigAverageOverBed" should be downloaded and installed, and its path should be added to the PATH environment variable.
 
 **Demo:**
 ```
@@ -255,7 +255,7 @@ Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotyp
 
 **Note:**
 
-1. The input file should be a list of pre-generated read-level features for all sites including phasable and non-phasable ones, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3, notphased), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
+1. The input file should be a list of pre-generated read-level features for all sites including phasable and non-phasable ones, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3, notphased), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites should be "NA" in the "validation" column.
 2. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
 3. The "hap=3" sites could contain ~50% FP sites, mostly "repeat" sites. When you don't have experimentally evaluated sites, it's ok to check ~100 hap=3 sites manually, converting the "hap=3" sites present in messy regions as "repeat" and covert "hap=3" sites present in clean regions as "mosaic".
 
