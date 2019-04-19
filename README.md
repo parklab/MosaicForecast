@@ -63,7 +63,8 @@ https://github.com/parklab/MosaicForecast/tree/master/resources/predictedhap3orm
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
 #### Population allale frequency
-* Gnomad datasets: https://gnomad.broadinstitute.org/downloads
+* Gnomad datasets (recommend to remove variants with population MAF>0.1%):  
+https://gnomad.broadinstitute.org/downloads
 
 # Usage:
 ## Phasing:
