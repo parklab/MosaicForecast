@@ -29,12 +29,17 @@ library(RColorBrewer)
 model_type="glmnet"
 type="pvalue"
 
+my_chrXY <- function(x){
+  !(strsplit(x,"~")[[1]][2]=="X"||strsplit(x,"~")[[1]][2]=="Y")
+}
+
 if (variant_type=="SNP") {
 	#head train_phasable_sites
 	#chr     pos     ref     alt     MAF     id      dp_p    querypos_p      leftpos_p       seqpos_p        mapq_p  baseq_p baseq_t ref_baseq1b_p   ref_baseq1b_t   alt_baseq1b_p   alt_baseq1b_t   sb_p    context     major_mismatches_mean   minor_mismatches_mean   mismatches_p    AF      dp      mosaic_likelihood       het_likelihood  refhom_likelihood       althom_likelihood       mapq_difference sb_read12_pdp_diff  repeats validation      phase conflicting_reads       phase_corrected
 	#10      10009041        G       T       0       fb0c6353-a90c-45e2-9355-7cd16cf756ff_10_10009041_G_T    0.243532076735  0.52723 0.51954 0.04323 0.31514 0.15322 -1.60007        0.93261 -0.40356        0.49078     0.36508 1       TCA     0.855   1.923   0.04837 0.339   115     0.954322027344281       0.0456779726557187      2.52244597973152e-116   2.97816045946957e-244   -1.57895        1       -4.89285700000001   rmsk    TP      hap=3   0       mosaic
 	
 	all_input <- read.delim(train_file,header=TRUE)
+	all_input <- all_input[apply(all_input,1,my_chrXY),]
 	all_input <-all_input[!is.na(all_input$mosaic_likelihood),]
 	all_input$mapq_p[is.na(all_input$mapq_p)]<-1
 	all_input <- all_input[complete.cases(all_input[,seq(1,28)]),]
@@ -116,6 +121,7 @@ if (variant_type=="SNP") {
 	#10      10009041        G       T       0       fb0c6353-a90c-45e2-9355-7cd16cf756ff_10_10009041_G_T    0.243532076735  0.52723 0.51954 0.04323 0.31514 0.15322 -1.60007        0.93261 -0.40356        0.49078     0.36508 1       TCA     0.855   1.923   0.04837 0.339   115     0.954322027344281       0.0456779726557187      2.52244597973152e-116   2.97816045946957e-244   -1.57895        1       -4.89285700000001   rmsk    TP      hap=3   0       mosaic
 	
 	all_input <- read.delim(train_file,header=TRUE)
+	all_input <- all_input[apply(all_input,1,my_chrXY),]
 	all_input <-all_input[!is.na(all_input$mosaic_likelihood),]
 	all_input$mapq_p[is.na(all_input$mapq_p)]<-1
 	all_input <- all_input[complete.cases(all_input[,seq(1,28)]),]
