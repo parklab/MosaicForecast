@@ -18,6 +18,7 @@ if (length(args)!=4) {
 
 library(caret)
 library(e1071)
+set.seed(123)
 
 my_chrXY <- function(x){
   !(strsplit(x,"~")[[1]][2]=="X"||strsplit(x,"~")[[1]][2]=="Y")
