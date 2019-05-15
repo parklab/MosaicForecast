@@ -228,9 +228,8 @@ Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phas
 1. You could choose to train your model based on Phasing (hap=2, hap=3, hap>3, type in "Phase") or Refined genotypes ("mosaic","het","refhom","repeat", type in "Refine").
 2. The input file should be a list of pre-generated read-level features, adding a column termed "phase" (Phase model) or "phase\_model\_corrected" (Refined genotypes model). 
 3. We stronly recommend using Refined genotypes instead of Phasing genotypes, since ~50% of hap=3 sites were validated as "repeat" variants in our dataset:  
-![website_pie](https://user-images.githubusercontent.com/8002850/57800088-8a07c500-771e-11e9-9693-c6f119b11412.png)
+![website_pie](https://user-images.githubusercontent.com/8002850/57800167-be7b8100-771e-11e9-9773-0e39249698a6.png)
 
-)
 
 In case you don't have experimentally-evaluated sites, it's ok to manually-check ~100 hap=3 sites with igv, and mark the sites in messy regions as "repeat". Here are some examples of "hap=3" sites experimentally evaluated as "repeat":  
    
