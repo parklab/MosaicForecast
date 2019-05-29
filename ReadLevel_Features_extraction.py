@@ -36,6 +36,8 @@ from subprocess import *
 from multiprocessing import Pool
 import subprocess
 import math
+from scipy.special import comb, perm
+
 base=dict()
 base['A']='T'
 base['T']='A'
@@ -780,7 +782,7 @@ df = df[df.baseq_minor_near1b != 'end,']
 df = df[df.leftpos_minor != ',']
 df = df[df.baseq_major_near1b != ',']
 df = df[df.baseq_major_near1b != 'end,']
-df = df[df.major_plus + df.major_minus + df.minor_plus + df.minor_minus <= 1000]
+##df = df[df.major_plus + df.major_minus + df.minor_plus + df.minor_minus <= 1000]
 
 #input <- subset(input, ((((querypos_minor!="," & seqpos_minor!=",") & seqpos_major!="," )  & baseq_minor_near1b!=",") & leftpos_minor!=",") &  baseq_major_near1b!=",")
 
@@ -793,27 +795,44 @@ def my_mosaic_likelihood(a,b,c,d,e,f):
 	baseq_minor=[float(i) for i in f.split(',')[:-1]]
 	r=sum([0.1**(float(i)/10) for i in baseq_major])
 	r=r+sum([1-0.1**(float(i)/10) for i in baseq_minor])
-	return(float(beta(r+1, depth-r+1)))
+	l=beta(r+1, depth-r+1)
+	if l >0:
+		l=math.log10(l)+math.log10(comb(depth,alt,exact=True))
+		l=10**l
+##	return(float(beta(r+1, depth-r+1)))
+	return(l)
 
 def my_het_likelihood(a,b,c,d):
 	depth=sum([int(a),int(b),int(c),int(d)])
-	return(0.5**depth)
+	alt=sum([int(c),int(d)])
+	l=math.log10(comb(depth,alt,exact=True))+math.log10(0.5)*depth
+	l=10**l
+	return(l)
+#	math.log10(comb(2000,1000,exact=True))+math.log10(0.5)*2000
+#	return(0.5**depth)
 
 def my_refhom_likelihod(a,b):
 	baseq_major=[float(i) for i in a.split(',')[:-1]]
 	baseq_minor=[float(i) for i in b.split(',')[:-1]]
+	depth=len(baseq_major)+len(baseq_minor)
+	alt=len(baseq_minor)
 	q=math.log10(1)
 	q=sum(math.log10(1-0.1**(i/10)) for i in baseq_major)
 	q=q+sum(math.log10(0.1**(i/10)) for i in baseq_minor)
-	return(10**q)	
+	l=math.log10(comb(depth,alt,exact=True))+q
+	#return(10**q)	
+	return(10**l)	
 
 def my_althom_likelihod(a,b):
 	baseq_major=[float(i) for i in a.split(',')[:-1]]
 	baseq_minor=[float(i) for i in b.split(',')[:-1]]
+	depth=len(baseq_major)+len(baseq_minor)
+	alt=len(baseq_minor)
 	q=math.log10(1)
 	q=sum(math.log10(1-0.1**(i/10)) for i in baseq_minor)
 	q=q+sum(math.log10(0.1**(i/10)) for i in baseq_major)
-	return(10**q)	
+	l=math.log10(comb(depth,alt,exact=True))+q
+	return(10**l)	
 
 def my_wilcox_pvalue(a, b):
 	x1=[float(i) for i in a.split(',')[:-1]]
