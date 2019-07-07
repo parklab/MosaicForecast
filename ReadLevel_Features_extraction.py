@@ -213,7 +213,7 @@ def process_line(line):
 						max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
 						max_num_2ndallele=float(max_num_2ndallele)/float(dp_allrec)
 
-				for pileupcolumn in a.pileup(chrom, start, end, max_depth=1000000):
+				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel !=0:
 							indels_count[name]=indels_count.get(name,0)+1
@@ -328,7 +328,7 @@ def process_line(line):
 				conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 				conflict_num[name]=len(conflict_reads)
 						
-				for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=1000000):
+				for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 					if pileupcolumn.pos==pos-2000:
 						dp_far[name].append(pileupcolumn.n)
 					elif pileupcolumn.pos==pos-1500:
@@ -387,7 +387,7 @@ def process_line(line):
 						if_homopolymer="Yes"
 						break
 				if if_homopolymer=="No":			
-					for pileupcolumn in a.pileup(chrom, start, end, max_depth=100000):
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel==0:
@@ -518,7 +518,7 @@ def process_line(line):
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
 							
-					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=100000):
+					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
 						elif pileupcolumn.pos==pos-1500:
@@ -579,7 +579,7 @@ def process_line(line):
 						if_homopolymer="Yes"
 						break
 				if if_homopolymer=="No":		
-					for pileupcolumn in a.pileup(chrom, start, end, max_depth=100000):
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel==0:
@@ -714,7 +714,7 @@ def process_line(line):
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
 							
-					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=100000):
+					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
 						elif pileupcolumn.pos==pos-1500:

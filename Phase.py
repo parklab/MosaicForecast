@@ -149,7 +149,7 @@ def process_line0(line):
 				length=0-length
 			if len(major_allele)==1 and len(minor_allele)==1:# and minor_allele!=".":
 				state="SNP"
-				for pileupcolumn in a.pileup(chrom, start, end, max_depth=1000000):
+				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel!=0:
 							continue
@@ -166,7 +166,7 @@ def process_line0(line):
 	
 			elif len(major_allele)>1 and len(major_allele)==len(minor_allele):
 				state="MNP"
-				for pileupcolumn in a.pileup(chrom, start, end, max_depth=100000):
+				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel!=0:
 							continue
@@ -211,7 +211,7 @@ def process_line0(line):
 						except:
 							continue	
 							#print (chrom, pos, read.query_name, read.cigar)
-					for pileupcolumn in a.pileup(chrom, start, end, max_depth=100000):
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel<0: #del <0
@@ -258,7 +258,7 @@ def process_line0(line):
 						except:
 							continue
 	#						print (chrom, pos, read.query_name, read.cigar)
-					for pileupcolumn in a.pileup(chrom, start, end, max_depth=100000):
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel > 0: ###ins>0
