@@ -198,8 +198,8 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 
 **Demo:**
 ```
-Rscript Prediction.R demo/test.SNP.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.SNP.predictions   
-Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.DEL.predictions
+Rscript Prediction.R demo/test.SNP.features models_trained/250xRFmodel_addRMSK_Refine.rds  demo/test.SNP.predictions   
+Rscript Prediction.R demo/test.DEL.features models_trained/250xRFmodel_addRMSK_Refine.rds  demo/test.DEL.predictions
 ```
 **Output:**
 ```
