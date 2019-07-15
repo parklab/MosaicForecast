@@ -46,8 +46,8 @@ chmod +x fetchChromSizes
 	https://hub.docker.com/r/yanmei/mosaicforecast  
 	Usage: 
 		docker image pull yanmei/mosaicforecast:0.0.1 
-		docker run -v ${your_MF_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash 
-		gunzip hs37d5.fa.gz  
+		docker run -v ${your_MF_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
+		gunzip hs37d5.fa.gz   
 		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
 	 
 2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
