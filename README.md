@@ -44,7 +44,7 @@ chmod +x fetchChromSizes
 ### Installation of Dependencies:
 1. We have created a docker image with all dependencies installed:  
 	https://hub.docker.com/r/yanmei/mosaicforecast  
-	Usage: 
+	Usage:  
 		docker image pull yanmei/mosaicforecast:0.0.1 
 		docker run -v ${your_MF_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
 		gunzip hs37d5.fa.gz   
