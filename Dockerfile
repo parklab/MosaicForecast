@@ -1,3 +1,5 @@
+# largely based on rocker r-base image
+
 FROM ubuntu:18.04
 
 # Add user to 'staff' group, granting them write privileges to /usr/local/lib/R/site.library
@@ -64,15 +66,17 @@ RUN conda install -c rdonnellyr r-base \
 ENV PATH /opt/conda/bin:$PATH
 RUN R -e 'install.packages("mlr", repos="http://cran.fiocruz.br/")' \ # mlr 
 
+# set path:
+ENV PATH=/usr/local/bin/samtools/:$PATH
+
 # download other tools
 WORKDIR /usr/local/bin
 COPY downloads.sh .
 RUN . downloads.sh
 
-# set path:
-ENV PATH=/usr/local/bin/samtools/:$PATH
-
 # 7. wrapper
 COPY *.py *.R *.md ./
-RUN chmod +x *py
-RUN chmod +x *.R
+RUN chmod +x *py && chmod +x *.R
+COPY k24.umap.wg.bw ./
+
+ 

@@ -43,14 +43,20 @@ wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes
 chmod +x fetchChromSizes  
 ### Installation of Dependencies:
 1. We have created a docker image with all dependencies installed:  
-	https://hub.docker.com/r/yanmei/mosaicforecast   
+	https://hub.docker.com/r/yanmei/mosaicforecast  
+	Usage:
+		docker image pull yanmei/mosaicforecast:0.0.1
+		docker run -v ${your_MF_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash
+		gunzip hs37d5.fa.gz
+		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4
+	 
 2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
 	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
 
 ## Resources:
 #### Human reference genome:  
-ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz   
-ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz.fai   
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz   
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz.fai   
 #### Mappability score: 
 * Umap score (k=24):   
 wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
@@ -85,7 +91,7 @@ python Phase.py bam_dir output_dir ref_fasta  input_positions min_dp_inforSNPs U
 
 **Demo:**
 ```
-python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 20 ${k24.umap.wg.bw} demo/test.input 2
+python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} demo/test.input 20 ${k24.umap.wg.bw} 2
 ```
 **Output:**
 ```
