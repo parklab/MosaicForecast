@@ -1,5 +1,5 @@
 # MosaicForecast
-A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic SNVs (SNPs, small indels) from NGS data.
+A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic SNVs (SNPs, small indels) from NGS data. It builds on existing algorithms to achieve a multifold increase in specificity.
 
 ![MF_pipeline](https://user-images.githubusercontent.com/8002850/55032948-61016880-4fe8-11e9-8cf8-343fd3cdd26e.png)
 
@@ -71,7 +71,7 @@ wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.tx
 https://github.com/parklab/MosaicForecast/tree/master/resources/predictedhap3ormore_cluster.bed  
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
-#### Population allale frequency
+#### Population allele frequency
 * Gnomad datasets (recommend to remove variants with population MAF>0.1%):  
 https://gnomad.broadinstitute.org/downloads
 
