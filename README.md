@@ -70,7 +70,7 @@ wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw
 #### Regions to filter out:
 * Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz  
-* Regions enriched for SNPs with >=3 haplotypes (should be removed before calling all kinds of mosaics): 
+* Regions enriched for SNPs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
 wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.bed   
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
