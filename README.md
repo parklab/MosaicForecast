@@ -47,11 +47,11 @@ chmod +x fetchChromSizes
 	Usage:  
 		docker image pull yanmei/mosaicforecast:0.0.1  
 		docker run -v ${your_local_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
+		gunzip hs37d5.fa.gz  
+		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
 ```
 PLease note that "${your\_local\_directory}:/MF" is your local mosaicforecast directory. After doing the step above, you would attach your local directory to the docker image, and the attached directory in the docker image would be "/MF".
 ```
-		gunzip hs37d5.fa.gz  
-		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
 		
 	 
 2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
