@@ -54,8 +54,7 @@ PLease note that "${your\_local\_directory}:/MF" is your local mosaicforecast di
 ```
 		
 	 
-2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
-	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
+2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then install the dependencies as described in the Dockerfile.
 
 ## Resources:
 #### Human reference genome:  
