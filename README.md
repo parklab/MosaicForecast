@@ -86,7 +86,7 @@ python Phase.py bam_dir output_dir ref_fasta  input_positions min_dp_inforSNPs U
 
 **Note:** 
 
-1. Name of bam files should be "sample.bam" under the bam\_dir. 
+1. Name of bam files should be "sample.bam" under the bam\_dir, and there should be index files under the same directory (samtools index sample.bam).   
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).
 3. File format of the input\_positions: chr pos-1 pos ref alt sample, sep=\t 
 4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
@@ -129,7 +129,7 @@ Intermediate files:
 python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) read_length n_jobs_parallel
 
 **Note:**
-1. Names of bam files should be "sample.bam" under the bam_dir.
+1. Names of bam files should be "sample.bam" under the bam_dir, and there should be index files under the same directory (samtools index sample.bam).
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa)
 3. File format of the input.bed: chr pos-1 pos ref alt sample, sep=\t 
 4. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants
@@ -236,7 +236,7 @@ Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phas
 
 1. You could choose to train your model based on Phasing (hap=2, hap=3, hap>3, type in "Phase") or Refined genotypes ("mosaic","het","refhom","repeat", type in "Refine").
 2. The input file should be a list of pre-generated read-level features, adding a column termed "phase" (Phase model) or "phase\_model\_corrected" (Refined genotypes model). 
-3. We stronly recommend using Refined genotypes instead of Phasing genotypes, since ~50% of hap=3 sites were validated as "repeat" variants in our dataset:  
+3. We strongly recommend using Refined genotypes instead of Phasing genotypes, since ~50% of hap=3 sites were validated as "repeat" variants in our dataset:  
 ![website_pie](https://user-images.githubusercontent.com/8002850/57800167-be7b8100-771e-11e9-9773-0e39249698a6.png)
 
 
