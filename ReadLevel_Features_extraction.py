@@ -9,7 +9,7 @@ arguments=sys.argv[1:]
 count=len(arguments)
 
 if count !=7:
-	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n")
+	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n")
 	sys.exit(1)
 elif count==7:
 	program_name = sys.argv[0]
@@ -156,6 +156,7 @@ def process_line(line):
 	fields=line.split('\t')
 	sample=fields[5]
 	chr=fields[0]
+	#if not re.search("MT",chr) and not re.search("GL",chr) and not re.search("hs37d5",chr) and not re.search("NC",chr):
 	if not re.search("MT",chr):
 		pos=int(fields[2])
 		pos1=max(0,int(pos)-1)
@@ -164,6 +165,12 @@ def process_line(line):
 		minor_allele=fields[4]
 		name=str(sample)+'~'+str(chr)+'~'+str(pos)+"~"+str(major_allele)+"~"+str(minor_allele)
 		input_bam=bam_dir+"/"+str(sample)+".bam"
+		bai_file=bam_dir+"/"+str(sample)+".bai"
+		bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
+		if not os.path.exists(input_bam):
+			print("no sample.bam under the bam_dir")
+		if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
+			print("no bam index files under the bam_dir")
 		a=pysam.AlignmentFile(input_bam, "rb")
 		chrom=str(chr)
 		start=int(pos)-1
