@@ -17,7 +17,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 * uuid
 * math 
 * numpy (1.16.1)
-* pandas (0.20.1)
+* pandas (0.25.0)
 * pyfaidx (0.5.3)
 * pysam (0.15.2)
 * pysamstats (1.1.2)
