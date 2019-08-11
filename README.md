@@ -274,7 +274,7 @@ Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotyp
 
 **Demo:**
 ```
-Rscript PhasingRefine.R demo/trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 demo/phasable_sites_Refine.pdf 
+Rscript PhasingRefine.R demo/trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 demo/phasable_sites_Refine.pdf SNP 
 ```
 **Output:**
 ```

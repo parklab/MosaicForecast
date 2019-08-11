@@ -4,11 +4,7 @@
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)!=6) {
-<<<<<<< HEAD
-	stop("Rscript PhasingRefine.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) pdf(PhasingRefine plot) variatn_type(SNP|INDEL)
-=======
 	stop("Rscript PhasingRefine.R trainset prediction_model_phasingcorrection output_file_phasingcorrected read_length(int) pdf(PhasingRefine plot) variant_type(SNP|INDEL)
->>>>>>> f09a802faeb00cb7707ca064571e3867835ce3fb
 ", call.=FALSE)
 } else if (length(args)==6) {
 	train_file <- args[1]
@@ -133,11 +129,7 @@ if (variant_type=="SNP") {
 	all_input$mapq_p[is.na(all_input$mapq_p)]<-1
 	all_input <- all_input[complete.cases(all_input[,seq(1,28)]),]
 	
-<<<<<<< HEAD
-	all_input.2 <- subset(all_input, select=c(querypos_p,leftpos_p, seqpos_p, mapq_p, baseq_p, baseq_t, ref_baseq1b_p, ref_baseq1b_t, alt_baseq1b_p, alt_baseq1b_t, sb_p, major_mismatches_mean, minor_mismatches_mean, mismatches_p, AF, dp, mosaic_likelihood, het_likelihood, refhom_likelihood, mapq_difference, sb_read12_p, dp_diff, conflict_num, mappability,ref_softclip, alt_softclip))
-=======
 	all_input.2 <- subset(all_input, select=c(querypos_p,leftpos_p, seqpos_p, mapq_p, baseq_p, baseq_t, ref_baseq1b_p, ref_baseq1b_t, alt_baseq1b_p, alt_baseq1b_t, sb_p, major_mismatches_mean, minor_mismatches_mean, mismatches_p, AF, dp, mosaic_likelihood, het_likelihood, refhom_likelihood, mapq_difference, sb_read12_p, dp_diff, conflict_num, mappability,ref_softclip, alt_softclip,length))
->>>>>>> f09a802faeb00cb7707ca064571e3867835ce3fb
 	all_input.3<- all_input.2
 	all_input.3$querypos_p=log(all_input.3$querypos_p+1e-7)
 	all_input.3$leftpos_p=log(all_input.3$leftpos_p+1e-7)
