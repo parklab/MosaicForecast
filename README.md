@@ -1,5 +1,5 @@
 # MosaicForecast
-A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic SNVs (SNPs, small indels) from NGS data.
+A machine learning method that leverages read-based phasing and read-level features to accurately detect mosaic SNVs (SNPs, small indels) from NGS data. It builds on existing algorithms to achieve a multifold increase in specificity.
 
 ![MF_pipeline](https://user-images.githubusercontent.com/8002850/55032948-61016880-4fe8-11e9-8cf8-343fd3cdd26e.png)
 
@@ -32,23 +32,51 @@ A machine learning method that leverages read-based phasing and read-level featu
 * ggplot2 (2.3.0.0)
 ### Other softwares:
 * samtools (1.9): https://sourceforge.net/projects/samtools/files/samtools/1.9/
-* wigToBigWig (v4): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
-* bigWigAverageOverBed (v2): http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/
+* wigToBigWig (v4):  
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/wigToBigWig  
+chmod +x wigToBigWig
+* bigWigAverageOverBed (v2):  
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigAverageOverBed  
+chmod +x bigWigAverageOverBed  
+* fetchChromSizes:  
+wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes  
+chmod +x fetchChromSizes  
 ### Installation of Dependencies:
 1. We have created a docker image with all dependencies installed:  
-	https://hub.docker.com/r/yanmei/mosaicforecast   
-2. You could also install conda first, and then install the dependencies as described in the Dockerfile.
-	https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  
+	https://hub.docker.com/r/yanmei/mosaicforecast  
+	Usage:  
+		docker image pull yanmei/mosaicforecast:0.0.1  
+		docker run -v ${your_local_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
+		gunzip hs37d5.fa.gz  
+		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
+```
+PLease note that "${your_local_directory}:/MF" is your local mosaicforecast directory. After attaching your local MF directory to the docker image, you would be able to read and write from that directory in your docker image. The attached directory in the docker image would be "/MF".
+```
+		
+	 
+2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then install the dependencies as described in the Dockerfile.
 
 ## Resources:
+#### Human reference genome:  
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz   
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz.fai   
 #### Mappability score: 
-* Umap score (k=24): https://bismap.hoffmanlab.org/
+* Umap score (k=24):   
+wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
+tar -zxvf hg19.umap.tar.gz  
+cd hg19  
+fetchChromSizes hg19> hg19.chrom.sizes  
+wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw  
 #### Regions to filter out:
-* Segmental Duplication regions: http://humanparalogy.gs.washington.edu/ 
-* Regions enriched for SNPs with >=3 haplotypes: https://github.com/parklab/MosaicForecast/tree/master/resources
-* Simple repeats (should be removed before calling mosaic INDELS): https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=716260999_jBJij5JXiQiuykIobdBExCLj0XEf
-#### Population allale frequency
-* Gnomad datasets: https://gnomad.broadinstitute.org/downloads
+* Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
+wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz  
+* Regions enriched for SNPs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
+wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.bed   
+* Simple repeats (should be removed before calling mosaic INDELS):  
+wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
+#### Population allele frequency
+* Gnomad datasets (recommend to remove variants with population MAF>0.01%):  
+https://gnomad.broadinstitute.org/downloads
 
 # Usage:
 ## Phasing:
@@ -58,15 +86,15 @@ python Phase.py bam_dir output_dir ref_fasta  input_positions min_dp_inforSNPs U
 
 **Note:** 
 
-1. Name of bam files should be "sample.bam" under the bam\_dir. 
+1. Name of bam files should be "sample.bam" under the bam\_dir, and there should be index files under the same directory (samtools index sample.bam).   
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).
 3. File format of the input\_positions: chr pos-1 pos ref alt sample, sep=\t 
 4. The "min\_dp\_inforSNPs" is the minimum depth of coverage of trustworthy neaby het SNPs, can be set to 20.
-5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
+5. The program to extract mappability score: "bigWigAverageOverBed" should be downloaded and installed, and its path should be added to the PATH environment variable.
 
 **Demo:**
 ```
-python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} 20 ${k24.umap.wg.bw} demo/test.input 2
+python Phase.py demo demo/phasing ${human_g1k_v37_decoy.fasta} demo/test.input 20 ${k24.umap.wg.bw} 2
 ```
 **Output:**
 ```
@@ -101,11 +129,11 @@ Intermediate files:
 python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) read_length n_jobs_parallel
 
 **Note:**
-1. Names of bam files should be "sample.bam" under the bam_dir.
+1. Names of bam files should be "sample.bam" under the bam_dir, and there should be index files under the same directory (samtools index sample.bam).
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa)
 3. File format of the input.bed: chr pos-1 pos ref alt sample, sep=\t 
 4. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants
-5. The program to extract mappability score: "bigWigAverageOverBed" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file "wigToBigWig", and the "fetchChromSizes" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/
+5. The program to extract mappability score: "bigWigAverageOverBed" should be downloaded and installed, and its path should be added to the PATH environment variable.
 
 **Demo:**
 ```
@@ -179,8 +207,8 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 
 **Demo:**
 ```
-Rscript Prediction.R demo/test.SNP.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.SNP.predictions   
-Rscript Prediction.R demo/test.DEL.features models\_trained/250xRFmodel\_addRMSK\_Refine.rds  demo/test.DEL.predictions
+Rscript Prediction.R demo/test.SNP.features models_trained/250xRFmodel_addRMSK_Refine.rds  demo/test.SNP.predictions   
+Rscript Prediction.R demo/test.DEL.features models_trained/deletions_250x.RF.rds demo/test.DEL.predictions
 ```
 **Output:**
 ```
@@ -208,8 +236,9 @@ Rscript Train_RFmodel.R input(trainset) output(prediction_model) type_model(Phas
 
 1. You could choose to train your model based on Phasing (hap=2, hap=3, hap>3, type in "Phase") or Refined genotypes ("mosaic","het","refhom","repeat", type in "Refine").
 2. The input file should be a list of pre-generated read-level features, adding a column termed "phase" (Phase model) or "phase\_model\_corrected" (Refined genotypes model). 
-3. We stronly recommend using Refined genotypes instead of Phasing genotypes, since ~50% of hap=3 sites were validated as "repeat" variants in our dataset:  
-![phasing_refine](https://user-images.githubusercontent.com/8002850/55193134-84f5b300-517c-11e9-9499-d79bc1027812.png)
+3. We strongly recommend using Refined genotypes instead of Phasing genotypes, since ~50% of hap=3 sites were validated as "repeat" variants in our dataset:  
+![website_pie](https://user-images.githubusercontent.com/8002850/57800167-be7b8100-771e-11e9-9773-0e39249698a6.png)
+
 
 In case you don't have experimentally-evaluated sites, it's ok to manually-check ~100 hap=3 sites with igv, and mark the sites in messy regions as "repeat". Here are some examples of "hap=3" sites experimentally evaluated as "repeat":  
    
@@ -221,9 +250,9 @@ and here are some examples of "hap=3" sites experimentally evaluated as true pos
 
 **Demo:**
 ```
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Phase_model.rds Phase SNP  
-Rscript Train_RFmodel.R demo/phasable_trainset demo/Refine_model.rds Refine DEL  
-Rscript Train_RFmodel.R demo/deletions_phasable_trainset demo/Deletions_Refine_model.rds Refine DEL    
+Rscript Train_RFmodel.R demo/trainset demo/Phase_model.rds Phase SNP  
+Rscript Train_RFmodel.R demo/trainset demo/Refine_model.rds Refine DEL  
+Rscript Train_RFmodel.R demo/deletions_trainset demo/Deletions_Refine_model.rds Refine DEL    
 ```
 **Output:**
 ```
@@ -239,13 +268,13 @@ Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotyp
 
 **Note:**
 
-1. The input file should be a list of pre-generated read-level features for all phasable sites, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites shoule be "NA" in the "validation" column.
+1. The input file should be a list of pre-generated read-level features for all sites including phasable and non-phasable ones, adding a column termed "phase", containing the pre-generated haplotype number for each site (hap=2, hap=3, hap>3, notphased), and a column termed "validation", containing the orthogonally validation results. The un-evalulated sites should be "NA" in the "validation" column.
 2. The output1 is the multinomial regression model, the output2 is the extraplolated four-category genotypes for all phasable sites.
 3. The "hap=3" sites could contain ~50% FP sites, mostly "repeat" sites. When you don't have experimentally evaluated sites, it's ok to check ~100 hap=3 sites manually, converting the "hap=3" sites present in messy regions as "repeat" and covert "hap=3" sites present in clean regions as "mosaic".
 
 **Demo:**
 ```
-Rscript PhasingRefine.R demo/phasable_trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 demo/phasable_sites_Refine.pdf 
+Rscript PhasingRefine.R demo/trainset demo/model_phasingcorrection.rds demo/phasable_sites_convertedgenotypes 150 demo/phasable_sites_Refine.pdf 
 ```
 **Output:**
 ```
