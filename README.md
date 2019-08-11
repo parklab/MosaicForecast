@@ -251,8 +251,8 @@ and here are some examples of "hap=3" sites experimentally evaluated as true pos
 **Demo:**
 ```
 Rscript Train_RFmodel.R demo/trainset demo/Phase_model.rds Phase SNP  
-Rscript Train_RFmodel.R demo/trainset demo/Refine_model.rds Refine DEL  
-Rscript Train_RFmodel.R demo/deletions_trainset demo/Deletions_Refine_model.rds Refine DEL    
+Rscript Train_RFmodel.R demo/trainset demo/Refine_model.rds Refine SNP  
+Rscript Train_RFmodel.R demo/deletions_trainset demo/Deletions_Refine_model.rds Phase DEL 
 ```
 **Output:**
 ```
