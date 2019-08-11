@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+import os
 import sys
 import uuid
 program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=7:
-	print ("Usage: python Phase.py bam_dir output_dir ref_fasta input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int) Umap_mappability(bigWig file,k=24) n_threads_parallel\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.")
+	print ("Usage: python Phase.py bam_dir output_dir ref_fasta input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int) Umap_mappability(bigWig file,k=24) n_threads_parallel\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.")
 #	1       1004864 1004865 G       C       test
 #1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
@@ -133,6 +134,12 @@ def process_line0(line):
 	if not (re.search("MT",chrom) or re.search(",",minor_allele) or major_allele==minor_allele):
 		try:
 			input_bam=bam_dir+"/"+sample+".bam"
+			bai_file=bam_dir+"/"+str(sample)+".bai"
+			bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
+			if not os.path.exists(input_bam):
+				print("no sample.bam under the bam_dir")
+			if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
+				print("no bam index files under the bam_dir")
 			a=pysam.AlignmentFile(input_bam, "rb")
 			f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
 			f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
@@ -149,7 +156,7 @@ def process_line0(line):
 				length=0-length
 			if len(major_allele)==1 and len(minor_allele)==1:# and minor_allele!=".":
 				state="SNP"
-				for pileupcolumn in a.pileup(chrom, start, end):
+				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel!=0:
 							continue
@@ -166,7 +173,7 @@ def process_line0(line):
 	
 			elif len(major_allele)>1 and len(major_allele)==len(minor_allele):
 				state="MNP"
-				for pileupcolumn in a.pileup(chrom, start, end):
+				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel!=0:
 							continue
@@ -211,7 +218,7 @@ def process_line0(line):
 						except:
 							continue	
 							#print (chrom, pos, read.query_name, read.cigar)
-					for pileupcolumn in a.pileup(chrom, start, end):
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel<0: #del <0
@@ -258,7 +265,7 @@ def process_line0(line):
 						except:
 							continue
 	#						print (chrom, pos, read.query_name, read.cigar)
-					for pileupcolumn in a.pileup(chrom, start, end):
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel > 0: ###ins>0

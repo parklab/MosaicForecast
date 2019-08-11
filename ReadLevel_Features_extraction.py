@@ -9,7 +9,7 @@ arguments=sys.argv[1:]
 count=len(arguments)
 
 if count !=7:
-	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n")
+	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n")
 	sys.exit(1)
 elif count==7:
 	program_name = sys.argv[0]
@@ -28,6 +28,7 @@ import regex as re
 from collections import defaultdict
 from pyfaidx import Fasta
 import pysam
+import pysamstats
 import scipy.stats
 from scipy.stats import mannwhitneyu
 from scipy.special import beta
@@ -35,6 +36,8 @@ from subprocess import *
 from multiprocessing import Pool
 import subprocess
 import math
+from scipy.special import comb, perm
+
 base=dict()
 base['A']='T'
 base['T']='A'
@@ -90,7 +93,7 @@ subprocess.run("rm "+tmp_filename+".2", shell=True)
 
 
 fo=open(output+".tmp","w")
-header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability type length GCcontent ref_softclip alt_softclip'.split()
+header='id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far conflict_num mappability type length GCcontent ref_softclip alt_softclip indel_proportion_SNPonly alt2_proportion_SNPonly'.split()
 print (' '.join(header),file=fo)
 #print (' '.join(header))
 
@@ -134,6 +137,7 @@ minor_read1=dict()
 minor_read2=dict()
 baseq_minor_near1b=defaultdict(list)
 seqpos_minor=defaultdict(list)
+indels_count=dict()
 
 #genome="/home/yd65/tools/MosaicHunter/resources/human_g1k_v37_decoy.fasta.fai"
 file0=open(genome)
@@ -152,6 +156,7 @@ def process_line(line):
 	fields=line.split('\t')
 	sample=fields[5]
 	chr=fields[0]
+	#if not re.search("MT",chr) and not re.search("GL",chr) and not re.search("hs37d5",chr) and not re.search("NC",chr):
 	if not re.search("MT",chr):
 		pos=int(fields[2])
 		pos1=max(0,int(pos)-1)
@@ -160,6 +165,12 @@ def process_line(line):
 		minor_allele=fields[4]
 		name=str(sample)+'~'+str(chr)+'~'+str(pos)+"~"+str(major_allele)+"~"+str(minor_allele)
 		input_bam=bam_dir+"/"+str(sample)+".bam"
+		bai_file=bam_dir+"/"+str(sample)+".bai"
+		bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
+		if not os.path.exists(input_bam):
+			print("no sample.bam under the bam_dir")
+		if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
+			print("no bam index files under the bam_dir")
 		a=pysam.AlignmentFile(input_bam, "rb")
 		chrom=str(chr)
 		start=int(pos)-1
@@ -179,6 +190,10 @@ def process_line(line):
 		context2_count[name]=context2_count.get(name,0)
 		mismatches_major[name]=list()
 		mismatches_minor[name]=list()
+		minor2_count=dict()
+#		minor2_count['A']=0
+		max_num_2ndallele=0
+		indels_count[name]=0
 		try:
 			if len(major_allele)==len(minor_allele) and not(major_allele==minor_allele):
 				if len(major_allele)==1:
@@ -194,13 +209,31 @@ def process_line(line):
 				GCcontent=(context_20bp.count('G')+context_20bp.count('C'))/len(context_20bp)
 				context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
 				context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
-				for pileupcolumn in a.pileup(chrom, start, end):
+
+				for rec in pysamstats.stat_variation(a, fafile=reference_fasta, min_mapq=0, min_baseq=0,chrom=chrom,start=pos-1,end=pos):
+					dp_allrec=0
+					if int(rec['pos'])+1==pos:
+						for item in ['A','T','C','G']:
+							dp_allrec =dp_allrec+int(rec[item])
+							if item !=major_allele[0] and item !=minor_allele[0]:
+								minor2_count[item]=rec[item]
+						max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
+						max_num_2ndallele=float(max_num_2ndallele)/float(dp_allrec)
+
+				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel !=0:
+							indels_count[name]=indels_count.get(name,0)+1
 							continue
 						try:
 							querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(major_allele)]
 							if pileupcolumn.pos==pos-1 and (not pileupread.alignment.flag & 256) and (not pileupread.alignment.flag & 1024):
+#								try:
+#									if querybase!=major_allele and querybase!=minor_allele:
+#										minor2_count[querybase]=minor2_count.get(querybase,0)+1
+#										print (minor2_count[querybase],querybase)
+#								except:
+#									continue
 								#if sequencing_type="PE":
 								#print pileupcolumn.pos
 								if querybase==major_allele:
@@ -302,7 +335,7 @@ def process_line(line):
 				conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 				conflict_num[name]=len(conflict_reads)
 						
-				for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)]))):
+				for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 					if pileupcolumn.pos==pos-2000:
 						dp_far[name].append(pileupcolumn.n)
 					elif pileupcolumn.pos==pos-1500:
@@ -335,8 +368,9 @@ def process_line(line):
 					elif pileupcolumn.pos==pos+200:
 						dp_near[name].append(pileupcolumn.n)
 			
-				u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
-				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state, str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num)
+#				max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
+
+				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state, str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), str(indels_count[name]/(major_num+minor_num+indels_count[name])), max_num_2ndallele 
 	
 			#elif len(major_allele)>1 and len(minor_allele)==1:
 			elif len(major_allele) > len(minor_allele):
@@ -360,7 +394,7 @@ def process_line(line):
 						if_homopolymer="Yes"
 						break
 				if if_homopolymer=="No":			
-					for pileupcolumn in a.pileup(chrom, start, end):
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel==0:
@@ -491,7 +525,7 @@ def process_line(line):
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
 							
-					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)]))):
+					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
 						elif pileupcolumn.pos==pos-1500:
@@ -524,8 +558,7 @@ def process_line(line):
 						elif pileupcolumn.pos==pos+200:
 							dp_near[name].append(pileupcolumn.n)
 				
-					u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
-					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state,str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num)
+					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA", "NA"
 			#print (fo)
 	
 	
@@ -552,8 +585,8 @@ def process_line(line):
 					if re.search(str(item), str(context1_10bp)) or re.search(str(item),str(context2_10bp) or re.search(str(item),minor_allele)):
 						if_homopolymer="Yes"
 						break
-				if if_homopolymer=="No":			
-					for pileupcolumn in a.pileup(chrom, start, end):
+				if if_homopolymer=="No":		
+					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
 								if pileupread.indel==0:
@@ -688,7 +721,7 @@ def process_line(line):
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
 							
-					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)]))):
+					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
 						elif pileupcolumn.pos==pos-1500:
@@ -721,8 +754,7 @@ def process_line(line):
 						elif pileupcolumn.pos==pos+200:
 							dp_near[name].append(pileupcolumn.n)
 				
-					u, p_value = mannwhitneyu(dp_far[name], dp_near[name])
-					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),p_value,conflict_num[name], mappability[name], state,str(length),str(GCcontent),  str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num)
+					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent),  str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA", "NA"
 			#print (fo)
 		except:
 			print ("not enough alt reads: ",chrom, start,end)
@@ -757,7 +789,7 @@ df = df[df.baseq_minor_near1b != 'end,']
 df = df[df.leftpos_minor != ',']
 df = df[df.baseq_major_near1b != ',']
 df = df[df.baseq_major_near1b != 'end,']
-df = df[df.major_plus + df.major_minus + df.minor_plus + df.minor_minus <= 1000]
+##df = df[df.major_plus + df.major_minus + df.minor_plus + df.minor_minus <= 1000]
 
 #input <- subset(input, ((((querypos_minor!="," & seqpos_minor!=",") & seqpos_major!="," )  & baseq_minor_near1b!=",") & leftpos_minor!=",") &  baseq_major_near1b!=",")
 
@@ -770,27 +802,44 @@ def my_mosaic_likelihood(a,b,c,d,e,f):
 	baseq_minor=[float(i) for i in f.split(',')[:-1]]
 	r=sum([0.1**(float(i)/10) for i in baseq_major])
 	r=r+sum([1-0.1**(float(i)/10) for i in baseq_minor])
-	return(float(beta(r+1, depth-r+1)))
+	l=beta(r+1, depth-r+1)
+	if l >0:
+		l=math.log10(l)+math.log10(comb(depth,alt,exact=True))
+		l=10**l
+##	return(float(beta(r+1, depth-r+1)))
+	return(l)
 
 def my_het_likelihood(a,b,c,d):
 	depth=sum([int(a),int(b),int(c),int(d)])
-	return(0.5**depth)
+	alt=sum([int(c),int(d)])
+	l=math.log10(comb(depth,alt,exact=True))+math.log10(0.5)*depth
+	l=10**l
+	return(l)
+#	math.log10(comb(2000,1000,exact=True))+math.log10(0.5)*2000
+#	return(0.5**depth)
 
 def my_refhom_likelihod(a,b):
 	baseq_major=[float(i) for i in a.split(',')[:-1]]
 	baseq_minor=[float(i) for i in b.split(',')[:-1]]
+	depth=len(baseq_major)+len(baseq_minor)
+	alt=len(baseq_minor)
 	q=math.log10(1)
 	q=sum(math.log10(1-0.1**(i/10)) for i in baseq_major)
 	q=q+sum(math.log10(0.1**(i/10)) for i in baseq_minor)
-	return(10**q)	
+	l=math.log10(comb(depth,alt,exact=True))+q
+	#return(10**q)	
+	return(10**l)	
 
 def my_althom_likelihod(a,b):
 	baseq_major=[float(i) for i in a.split(',')[:-1]]
 	baseq_minor=[float(i) for i in b.split(',')[:-1]]
+	depth=len(baseq_major)+len(baseq_minor)
+	alt=len(baseq_minor)
 	q=math.log10(1)
 	q=sum(math.log10(1-0.1**(i/10)) for i in baseq_minor)
 	q=q+sum(math.log10(0.1**(i/10)) for i in baseq_major)
-	return(10**q)	
+	l=math.log10(comb(depth,alt,exact=True))+q
+	return(10**l)	
 
 def my_wilcox_pvalue(a, b):
 	x1=[float(i) for i in a.split(',')[:-1]]
@@ -902,10 +951,10 @@ df['dp_diff']=df.apply(lambda row: my_difference(row['dp_near'], row['dp_far']),
 #df['alt_baseq1b_t'].replace('', np.nan, inplace=True)
 
 df['alt_baseq1b_t'].fillna(0,inplace=True)
-df['dp_p'].fillna(1,inplace=True)
+#df['dp_p'].fillna(1,inplace=True)
 
 
-df_new=df[['id','dp_p','conflict_num','mappability','type','length','GCcontent','ref_softclip','alt_softclip','querypos_p','leftpos_p','seqpos_p','mapq_p','baseq_p','baseq_t','ref_baseq1b_p','ref_baseq1b_t', 'alt_baseq1b_p','alt_baseq1b_t','sb_p','context','major_mismatches_mean','minor_mismatches_mean','mismatches_p','AF','dp','mosaic_likelihood','het_likelihood','refhom_likelihood','althom_likelihood', 'mapq_difference', 'sb_read12_p', 'dp_diff']]
+df_new=df[['id','conflict_num','mappability','type','length','GCcontent','ref_softclip','alt_softclip','querypos_p','leftpos_p','seqpos_p','mapq_p','baseq_p','baseq_t','ref_baseq1b_p','ref_baseq1b_t', 'alt_baseq1b_p','alt_baseq1b_t','sb_p','context','major_mismatches_mean','minor_mismatches_mean','mismatches_p','AF','dp','mosaic_likelihood','het_likelihood','refhom_likelihood','althom_likelihood', 'mapq_difference', 'sb_read12_p', 'dp_diff', 'indel_proportion_SNPonly', 'alt2_proportion_SNPonly']]
 #id querypos_major querypos_minor leftpos_major leftpos_minor seqpos_major seqpos_minor mapq_major mapq_minor baseq_major baseq_minor baseq_major_near1b baseq_minor_near1b major_plus major_minus minor_plus minor_minus context1 context2 context1_count context2_count mismatches_major mismatches_minor major_read1 major_read2 minor_read1 minor_read2 dp_near dp_far dp_p conflict_num mappability type length GCcontent ref_softclip alt_softclip
 fo2=open(output,"w")
 df_new.to_csv(fo2, index=False,sep="\t")
