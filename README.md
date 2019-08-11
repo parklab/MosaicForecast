@@ -264,7 +264,7 @@ Random Forest prediction model
 #### (Recommended when you have >=100 orthogonally-evaluated or manually-checked sites with hap=3)
 **Usage:**
 
-Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotypes) read_length(int) pdf(plot)
+Rscript PhasingRefine.R input(trainset) output1(model) output2(converted genotypes) read_length(int) pdf(plot) variant_type(SNP|INDEL)
 
 **Note:**
 
