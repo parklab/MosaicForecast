@@ -35,7 +35,11 @@ output<- input
 output$prediction <- predict(M,input)
 prediction_probs <- predict(M,input,type="prob")
 output <- cbind(output, prediction_probs)
+<<<<<<< HEAD
 output <- subset(output,mappability>0)
+=======
+#output <- subset(output,mappability>0)
+>>>>>>> f09a802faeb00cb7707ca064571e3867835ce3fb
 df1<- subset(output,(type=="SNP" | type=="MNP") & indel_proportion_SNPonly<0.3)
 df2 <- subset(output, type!="SNP" & type!="MNP")
 output <- rbind(df1,df2)

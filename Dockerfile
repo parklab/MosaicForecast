@@ -37,11 +37,11 @@ RUN apt-get -qq update && apt-get -qq -y install curl bzip2 \
     && curl -sSL https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \
     && bash /tmp/miniconda.sh -bfp /usr/local \
     && rm -rf /tmp/miniconda.sh \
-    && conda install -y python=3 \
+    && conda install -y python=3.6.7 \
     && conda config --add channels bioconda \
     && conda install pysam==0.15.2 -y \
     && conda install numpy==1.16.1 -y \
-    && conda install pandas=0.20.1 -y \
+    && conda install pandas -y \
     && conda install pyfaidx==0.5.3 -y \
     && conda install pysamstats==1.1.2 -y \
     && conda install regex -y \
@@ -57,6 +57,7 @@ RUN conda install -c rdonnellyr r-base \
     && conda install -c r r-xml \
     && conda install -c r r-ggplot2 \
     && conda install -c r r-caret \
+    && conda install -c r r-randomForest \
     && conda install -c r r-e1071 \
     && conda install -c r r-glmnet \
     && conda install -c r r-rcolorbrewer \
