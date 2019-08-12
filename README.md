@@ -50,7 +50,7 @@ chmod +x fetchChromSizes
 		gunzip hs37d5.fa.gz  
 		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
 ```
-PLease note that "${your_local_directory}:/MF" is your local mosaicforecast directory. After attaching your local MF directory to the docker image, you would be able to read and write from that directory in your docker image. The attached directory in the docker image would be "/MF".
+Please note that "${your_local_directory}:/MF" is the absolute path of your local mosaicforecast directory. After attaching your local MF directory to the docker image, you would be able to read and write from that directory in your docker image. The attached directory in the docker image would be "/MF".
 ```
 		
 	 
