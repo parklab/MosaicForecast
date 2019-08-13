@@ -75,7 +75,7 @@ wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/p
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
 #### Population allele frequency
-* Gnomad datasets (recommend to remove variants with population MAF>0.01%):  
+* gnomAD datasets (recommend to remove variants with population MAF>0.001%):  
 https://gnomad.broadinstitute.org/downloads
 
 # Usage:
