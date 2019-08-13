@@ -47,6 +47,7 @@ RUN apt-get -qq update && apt-get -qq -y install curl bzip2 \
     && conda install regex -y \
     && conda install scipy==1.2.1 -y \
     && conda update conda \
+    && conda install bedtools==2.25.0 \
     && apt-get -qq -y remove curl bzip2 \
     && apt-get -qq -y autoremove \
     && apt-get autoclean \
