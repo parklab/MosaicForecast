@@ -1,6 +1,21 @@
 #! /usr/bin/env python3
 
+__format_spec__ = '.3g'
+
+__info__ = {\
+        'mappability':
+        {'ID': 'MAPPABILITY', 'Number': 1, 'Type': 'Float', 'Description': 'NA'},
+        'type':
+        {'ID': 'TYPE', 'Number': 1, 'Type': 'String', 'Description': 'NA'},
+        'length':
+        {'ID': 'LENGTH', 'Number': 1, 'Type': 'Integer', 'Description': 'NA'},
+        'GCcontent':
+        {'ID': 'GCCONTENT', 'Number': 1, 'Type': 'Float', 'Description': 'NA'},
+        'context':
+        {'ID': 'CONTEXT', 'Number': 1, 'Type': 'String', 'Description': 'NA'}}
+
 import pandas as pd
+
 
 def read_mf_predictions(mfpred_path):
     mfpred = pd.read_csv(mfpred_path, sep='\t')
@@ -55,6 +70,38 @@ def qual_filter_fields(mfpred):
     Returns:
     a pandas DataFrame containing the fields mentioned
     '''
-    F = [y.replace('mosaic', 'PASS') for y in mfpred['prediction']]
-    df = pd.DataFrame({'QUAL': 'MISSING', 'FILTER': F})
+    FILTER = [y.replace('mosaic', 'PASS') for y in mfpred['prediction']]
+    df = pd.DataFrame({'QUAL': 'MISSING', 'FILTER': FILTER})
     return(df.astype('category'))
+
+
+def info_fields(mfpred):
+    fields = __info__.keys()
+    val = [one_info_field(mfpred, mfid=f) for f in fields]
+    val = [[row[i] for row in val] for i in range(len(fields))]
+    val = [';'.join(y) for y in val]
+    df = pd.DataFrame({'INFO': val})
+    return(df)
+
+
+def one_info_field(mfpred, mfid='mappability'):
+    ID = __info__[mfid]['ID']
+    Type = __info__[mfid]['Type']
+    def info_float(x):
+        val = ID + '=' + str(format(x, __format_spec__))
+        return(val)
+    def info_integer(x):
+        val = ID + '=' + str(x)
+        return(val)
+    def info_string(x):
+        val = ID + '=' + x
+        return(val)
+    if Type == 'Float':
+        helper = info_float
+    elif Type == 'Integer':
+        helper = info_integer
+    elif Type == 'String':
+        helper = info_string
+    data = [helper(y) for y in mfpred[mfid]]
+    return(data)
+
