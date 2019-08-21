@@ -76,32 +76,62 @@ def qual_filter_fields(mfpred):
 
 
 def info_fields(mfpred):
+    '''
+    Create the INFO fields from mfpred
+
+    Parameter:
+    mfpred: the pandas DataFrame from read_mf_predictions
+
+    Returns:
+    a pandas DataFrame containing the INFO fields separated by a ";"
+
+    Details:
+    The __info__  variable (a dict) is used to define the ID, Number, Type and
+    Description of a particular INFO field.  The __format_spec__ variable is
+    used to format all INFO fields of Type "float".
+    '''
+    def one_info_field(mfid='mappability'):
+        ID = __info__[mfid]['ID']
+        Type = __info__[mfid]['Type']
+        def info_float(x):
+            val = ID + '=' + str(format(x, __format_spec__))
+            return(val)
+        def info_integer(x):
+            val = ID + '=' + str(x)
+            return(val)
+        def info_string(x):
+            val = ID + '=' + x
+            return(val)
+        if Type == 'Float':
+            helper = info_float
+        elif Type == 'Integer':
+            helper = info_integer
+        elif Type == 'String':
+            helper = info_string
+        elif Type == 'Flag':
+            raise ValueError('Flag INFO field type is not yet implemented')
+        data = [helper(y) for y in mfpred[mfid]]
+        return(data)
     fields = __info__.keys()
-    val = [one_info_field(mfpred, mfid=f) for f in fields]
+    val = [one_info_field(mfid=f) for f in fields]
     val = [[row[i] for row in val] for i in range(len(fields))]
     val = [';'.join(y) for y in val]
     df = pd.DataFrame({'INFO': val})
     return(df)
 
 
-def one_info_field(mfpred, mfid='mappability'):
-    ID = __info__[mfid]['ID']
-    Type = __info__[mfid]['Type']
-    def info_float(x):
-        val = ID + '=' + str(format(x, __format_spec__))
-        return(val)
-    def info_integer(x):
-        val = ID + '=' + str(x)
-        return(val)
-    def info_string(x):
-        val = ID + '=' + x
-        return(val)
-    if Type == 'Float':
-        helper = info_float
-    elif Type == 'Integer':
-        helper = info_integer
-    elif Type == 'String':
-        helper = info_string
-    data = [helper(y) for y in mfpred[mfid]]
-    return(data)
+def data_lines(mfpred):
+    '''
+    Creates all data lines (i.e. the body) of the VCF
 
+    Parameter:
+    mfpred: the pandas DataFrame from read_mf_predictions
+
+    Returns:
+    a pandas DataFrame containing all fields
+    '''
+    funs = [chrom_alt_fields, qual_filter_fields, info_fields]
+    l = [f(mfpred) for f in funs]
+    df = pd.concat(l, axis=1)
+    val = df[df.columns[1:]]
+    return(val)
