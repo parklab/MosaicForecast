@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-__format_spec__ = '.3g'
+__format_spec__ = '.4g'
 
 __info__ = {\
         'mappability':
@@ -13,6 +13,12 @@ __info__ = {\
         {'ID': 'GCCONTENT', 'Number': 1, 'Type': 'Float', 'Description': 'NA'},
         'context':
         {'ID': 'CONTEXT', 'Number': 1, 'Type': 'String', 'Description': 'NA'}}
+
+__format__ = {\
+        'AF':
+        {'ID': 'AF', 'Number': 1, 'Type': 'Float', 'Description': 'NA'},
+        'dp':
+        {'ID': 'DP', 'Number': 1, 'Type': 'Integer', 'Description': 'NA'}}
 
 import pandas as pd
 
@@ -120,6 +126,30 @@ def info_fields(mfpred):
     return(df)
 
 
+def format_sample_fields(mfpred):
+    def one_sample_field(mfpred, mfid='AF'):
+        ID = __format__[mfid]['ID']
+        Type = __format__[mfid]['Type']
+        def sample_float(x):
+            return(str(format(x, __format_spec__)))
+        def sample_general(x):
+            return(str(x))
+        if Type == 'Float':
+            helper = sample_float
+        else:
+            helper = sample_general
+        val = [helper(y) for y in mfpred[mfid]]
+        return(val)
+    fields = __format__.keys()
+    ids = [__format__[f]['ID'] for f in fields]
+    FORMAT = ':'.join(ids)
+    vals = [one_sample_field(mfpred, mfid=f) for f in fields]
+    vals = [':'.join(y) for y in zip(*vals)]
+    df = pd.DataFrame({'FORMAT': FORMAT, 'SAMPLE': vals})
+    return(df)
+
+
+
 def data_lines(mfpred):
     '''
     Creates all data lines (i.e. the body) of the VCF
@@ -130,8 +160,13 @@ def data_lines(mfpred):
     Returns:
     a pandas DataFrame containing all fields
     '''
-    funs = [chrom_alt_fields, qual_filter_fields, info_fields]
+    funs = [chrom_alt_fields, qual_filter_fields, info_fields, format_sample_fields]
     l = [f(mfpred) for f in funs]
     df = pd.concat(l, axis=1)
-    val = df[df.columns[1:]]
+    sample = df['sample'][0]
+    df1 = df[df.columns[1:-1]]
+    df2 = pd.DataFrame({sample: df['SAMPLE']}, index=range(len(df)))
+    val = pd.concat([df1, df2], axis=1)
     return(val)
+
+
