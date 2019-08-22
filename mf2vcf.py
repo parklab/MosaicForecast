@@ -4,23 +4,107 @@ __format_spec__ = '.4g'
 
 __info__ = {\
         'mappability':
-        {'ID': 'MAPPABILITY', 'Number': 1, 'Type': 'Float', 'Description': 'NA'},
+        {'ID': 'MAPPABILITY', 'Number': 1, 'Type': 'Float', 'Description': '"To be specified"'},
         'type':
-        {'ID': 'TYPE', 'Number': 1, 'Type': 'String', 'Description': 'NA'},
+        {'ID': 'TYPE', 'Number': 1, 'Type': 'String', 'Description': '"To be specified"'},
         'length':
-        {'ID': 'LENGTH', 'Number': 1, 'Type': 'Integer', 'Description': 'NA'},
+        {'ID': 'LENGTH', 'Number': 1, 'Type': 'Integer', 'Description': '"To be specified"'},
         'GCcontent':
-        {'ID': 'GCCONTENT', 'Number': 1, 'Type': 'Float', 'Description': 'NA'},
+        {'ID': 'GCCONTENT', 'Number': 1, 'Type': 'Float', 'Description': '"To be specified"'},
         'context':
-        {'ID': 'CONTEXT', 'Number': 1, 'Type': 'String', 'Description': 'NA'}}
+        {'ID': 'CONTEXT', 'Number': 1, 'Type': 'String', 'Description': '"To be specified"'}}
+
+__filter__ = {\
+        'het':
+        {'ID': 'het', 'Description': '"To be specified"'},
+        'repeat':
+        {'ID': 'repeat', 'Description': '"To be specified"'}}
 
 __format__ = {\
         'AF':
-        {'ID': 'AF', 'Number': 1, 'Type': 'Float', 'Description': 'NA'},
+        {'ID': 'AF', 'Number': 1, 'Type': 'Float', 'Description': '"To be specified"'},
         'dp':
-        {'ID': 'DP', 'Number': 1, 'Type': 'Integer', 'Description': 'NA'}}
+        {'ID': 'DP', 'Number': 1, 'Type': 'Integer', 'Description': '"To be specified"'}}
 
 import pandas as pd
+import os.path
+
+
+def file_format_metainfo():
+    fileformat='VCFv4.3'
+    val = '##fileformat=' + fileformat
+    return(val)
+
+
+def reference_metainfo(refpath='/home/attila/data/refgenome/GRCh37/dna/hs37d5.fa'):
+    refpath = os.path.realpath(refpath)
+    val = '##reference=file://' + refpath
+    return(val)
+
+
+def source_metainfo():
+    val = '##source=MosaicForecast'
+    return(val)
+
+
+def contig_metainfo(reffaipath='/home/attila/data/refgenome/GRCh37/dna/hs37d5.fa.fai'):
+    fai = pd.read_csv(reffaipath, sep='\t', names=['ID', 'length'], usecols=[0, 1])
+    def helper(ix):
+        ID = str(fai.iloc[ix, 0])
+        length = str(fai.iloc[ix, 1])
+        res = '##contig=<ID=' + ID + ',length=' + length + '>'
+        return(res)
+    val = [helper(i) for i in fai.index]
+    val = '\n'.join(val)
+    return(val)
+
+
+def info_format_metainfo(kind='info'):
+    if kind == 'info':
+        dic = __info__
+    elif kind == 'filter':
+        dic = __filter__
+    elif kind == 'format':
+        dic = __format__
+    def one_info_metainfo(mfid):
+        def one_part(part):
+            return(part + '=' + str(dic[mfid][part]))
+        res = [one_part(y) for y in dic[mfid].keys()]
+        res = ','.join(res)
+        res = '##' + kind.upper() + '=<' + res + '>'
+        return(res)
+    res = [one_info_metainfo(k) for k in dic.keys()]
+    res = '\n'.join(res)
+    return(res)
+
+
+def metainfo(refpath='/home/attila/data/refgenome/GRCh37/dna/hs37d5.fa'):
+    '''
+    Create meta-information lines (i.e. the header) of VCF
+
+    Parameter(s):
+    refpath: filepath to reference sequence
+
+    Returns:
+    all meta-information lines, separated by \n, in a single str
+    '''
+    if not os.path.isfile(refpath):
+        error = 'Cannot find reference sequence at path: "' + refpath + '"'
+        raise ValueError(error)
+    reffaipath = refpath + '.fai'
+    if not os.path.isfile(reffaipath):
+        error = 'Cannot find reference sequence index at path: "' + reffaipath + '"'
+        raise ValueError(error)
+    reference = lambda : reference_metainfo(refpath)
+    contig = lambda: contig_metainfo(reffaipath=reffaipath)
+    infofun = lambda : info_format_metainfo(kind='info')
+    filterfun = lambda : info_format_metainfo(kind='filter')
+    formatfun = lambda : info_format_metainfo(kind='format')
+    funs = [file_format_metainfo, source_metainfo, reference, contig, infofun,
+            filterfun, formatfun]
+    val = [f() for f in funs]
+    val = '\n'.join(val)
+    return(val)
 
 
 def read_mf_predictions(mfpred_path):
@@ -170,3 +254,5 @@ def data_lines(mfpred):
     return(val)
 
 
+def main():
+    pass
