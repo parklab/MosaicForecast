@@ -17,6 +17,8 @@ __info__ = {\
 __filter__ = {\
         'het':
         {'ID': 'het', 'Description': '"To be specified"'},
+        'refhom':
+        {'ID': 'refhom', 'Description': '"To be specified"'},
         'repeat':
         {'ID': 'repeat', 'Description': '"To be specified"'}}
 

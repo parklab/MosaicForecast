@@ -10,8 +10,9 @@ MFdir=`dirname $0`
 mf2vcfpy=$MFdir/mf2vcf.py
 MFpred=$1
 refseq=$2
-vcfgz=${3:-$MFpred.vcf.gz}
+bn=`basename $MFpred .MF.predictions`
+vcfgz=${3:-$bn.vcf.gz}
 
 $mf2vcfpy $refseq < $MFpred |
-    bcftools view -Oz -o $vcfgz
+    bcftools sort -Oz -o $vcfgz
 bcftools index --tbi $vcfgz
