@@ -28,6 +28,14 @@ __format__ = {\
 
 import pandas as pd
 import os.path
+import subprocess
+import tempfile
+import os
+
+
+def read_mf_predictions(mfpred_path):
+    mfpred = pd.read_csv(mfpred_path, sep='\t')
+    return(mfpred)
 
 
 def file_format_metainfo():
@@ -93,7 +101,7 @@ def metainfo(refpath='/home/attila/data/refgenome/GRCh37/dna/hs37d5.fa'):
         raise ValueError(error)
     reffaipath = refpath + '.fai'
     if not os.path.isfile(reffaipath):
-        error = 'Cannot find reference sequence index at path: "' + reffaipath + '"'
+        error = 'Cannot find reference sequence index at expected path: "' + reffaipath + '"'
         raise ValueError(error)
     reference = lambda : reference_metainfo(refpath)
     contig = lambda: contig_metainfo(reffaipath=reffaipath)
@@ -103,13 +111,8 @@ def metainfo(refpath='/home/attila/data/refgenome/GRCh37/dna/hs37d5.fa'):
     funs = [file_format_metainfo, source_metainfo, reference, contig, infofun,
             filterfun, formatfun]
     val = [f() for f in funs]
-    val = '\n'.join(val)
+    val = '\n'.join(val) + '\n'
     return(val)
-
-
-def read_mf_predictions(mfpred_path):
-    mfpred = pd.read_csv(mfpred_path, sep='\t')
-    return(mfpred)
 
 
 def chrom_alt_fields(mfpred):
@@ -204,13 +207,27 @@ def info_fields(mfpred):
         return(data)
     fields = __info__.keys()
     val = [one_info_field(mfid=f) for f in fields]
-    val = [[row[i] for row in val] for i in range(len(fields))]
-    val = [';'.join(y) for y in val]
+    val = [';'.join(y) for y in zip(*val)]
     df = pd.DataFrame({'INFO': val})
     return(df)
 
 
 def format_sample_fields(mfpred):
+    '''
+    Create the FORMAT and sample fields from mfpred
+
+    Parameter:
+    mfpred: the pandas DataFrame from read_mf_predictions
+
+    Returns:
+    a pandas DataFrame containing the FORMAT fields separated by a ";" and the
+    corresponding sample field
+
+    Details:
+    The __format__  variable (a dict) is used to define the ID, Number, Type and
+    Description of a particular FORMAT field.  The __format_spec__ variable is
+    used to format all FORMAT fields of Type "float".
+    '''
     def one_sample_field(mfpred, mfid='AF'):
         ID = __format__[mfid]['ID']
         Type = __format__[mfid]['Type']
@@ -254,5 +271,18 @@ def data_lines(mfpred):
     return(val)
 
 
-def main():
-    pass
+def main(mfpred_path, refpath):
+    head = metainfo(refpath=refpath)
+    mfpred = read_mf_predictions(mfpred_path=mfpred_path)
+    body_df = data_lines(mfpred)
+    body = body_df.to_csv(sep='\t', header=True, index=False)
+    VCF = head + body
+    print(VCF, end='')
+    return(None)
+
+
+if __name__ == '__main__':
+    import sys
+    mfpred_path = str(sys.argv[1])
+    refpath = str(sys.argv[2])
+    main(mfpred_path, refpath)
