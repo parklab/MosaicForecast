@@ -31,6 +31,7 @@ import os.path
 import subprocess
 import tempfile
 import os
+import sys
 
 
 def read_mf_predictions(mfpred_path):
@@ -272,8 +273,8 @@ def data_lines(mfpred):
 
 
 def main(mfpred_path, refpath):
-    head = metainfo(refpath=refpath)
     mfpred = read_mf_predictions(mfpred_path=mfpred_path)
+    head = metainfo(refpath=refpath)
     body_df = data_lines(mfpred)
     body = body_df.to_csv(sep='\t', header=True, index=False)
     VCF = head + body
@@ -282,7 +283,6 @@ def main(mfpred_path, refpath):
 
 
 if __name__ == '__main__':
-    import sys
-    mfpred_path = str(sys.argv[1])
-    refpath = str(sys.argv[2])
+    mfpred_path = sys.stdin
+    refpath = str(sys.argv[1])
     main(mfpred_path, refpath)
