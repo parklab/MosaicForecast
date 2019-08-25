@@ -274,17 +274,21 @@ def data_lines(mfpred):
     return(val)
 
 
-def main(mfpred_path, refpath):
+def main(mfpred_path, refpath, vcfgz_path):
     mfpred = read_mf_predictions(mfpred_path=mfpred_path)
     head = metainfo(refpath=refpath)
     body_df = data_lines(mfpred)
     body = body_df.to_csv(sep='\t', header=True, index=False)
     VCF = head + body
-    print(VCF, end='')
+    args0 = ['bcftools', 'sort', '-Oz', '-o', vcfgz_path]
+    subprocess.run(args0, input=VCF, encoding="utf-8")
+    args1 = ['bcftools', 'index', '--tbi', vcfgz_path]
+    subprocess.run(args1)
     return(None)
 
 
 if __name__ == '__main__':
     mfpred_path = sys.stdin
     refpath = str(sys.argv[1])
-    main(mfpred_path, refpath)
+    vcfgz_path = str(sys.argv[2])
+    main(mfpred_path, refpath, vcfgz_path)
