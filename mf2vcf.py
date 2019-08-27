@@ -4,15 +4,34 @@ __format_spec__ = '.4g'
 
 __info__ = {\
         'mappability':
-        {'ID': 'MAPPABILITY', 'Number': 1, 'Type': 'Float', 'Description': '"To be specified"'},
+        {'ID': 'MAPPABILITY', 'Number': 1, 'Type': 'Float', 'Description': '"UMAP mappability score at the candidate site (k=24)"'},
         'type':
-        {'ID': 'TYPE', 'Number': 1, 'Type': 'String', 'Description': '"To be specified"'},
+        {'ID': 'TYPE', 'Number': 1, 'Type': 'String', 'Description': '"type of the candidate mutation (SNP, MNP, INS or DEL)"'},
         'length':
-        {'ID': 'LENGTH', 'Number': 1, 'Type': 'Integer', 'Description': '"To be specified"'},
+        {'ID': 'LENGTH', 'Number': 1, 'Type': 'Integer', 'Description': '"difference of base pair lengh of ref and alt allele for candidate sites"'},
         'GCcontent':
-        {'ID': 'GCCONTENT', 'Number': 1, 'Type': 'Float', 'Description': '"To be specified"'},
+        {'ID': 'GCCONTENT', 'Number': 1, 'Type': 'Float', 'Description': '"20-bp local GCcontent"'},
+        'querypos_p':
+        {'ID': 'QUERYPOS_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by wilcoxon's rank sum test of base query positions of ref and alt alleles\""},
+        'seqpos_p':
+        {'ID': 'SEQPOS_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by wilcoxon's rank sum test of base sequencing cycles of ref and alt alleles\""},
+        'baseq_p':
+        {'ID': 'BASEQ_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Wilcoxon's rank sum test of base qualities of ref and alt alleles\""},
+        'baseq_t':
+        {'ID': 'BASEQ_T', 'Number': 1, 'Type': 'Float', 'Description': "\"The test statistic under the large-sample approximation that the rank sum statistic is normally distributed (wilcox rank sum test of base qualites of alt alleles vs. ref alleles)\""},
         'context':
-        {'ID': 'CONTEXT', 'Number': 1, 'Type': 'String', 'Description': '"To be specified"'}}
+        {'ID': 'CONTEXT', 'Number': 1, 'Type': 'String', 'Description': '"three-nucleotide base context on the reads surrounding the mutant position"'},
+        'sb_p':
+        {'ID': 'SB_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Fisher's exact test of strand bias for ref and alt alleles\""},
+        'sb_read12_p':
+        {'ID': 'SB_READ12_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Fisher's exact test of read1/read2 bias for ref and alt alleles\""},
+        'mosaic_likelihood':
+        {'ID': 'MOSAIC_LIKELIHOOD', 'Number': 1, 'Type': 'Float', 'Description': '"mosaic genotype likelihood calculated (assuming uniform distribution of mosaics allele fraction from 0-1)"'},
+        'het_likelihood':
+        {'ID': 'HET_LIKELIHOOD', 'Number': 1, 'Type': 'Float', 'Description': '"Genotype likelihood of the variant being germline heterozygous"'},
+        'refhom_likelihood':
+        {'ID': 'REFHOM_LIKELIHOOD', 'Number': 1, 'Type': 'Float', 'Description': '"reference-homozygous genotype likelihood"'}
+        }
 
 __filter__ = {\
         'het':
@@ -23,10 +42,41 @@ __filter__ = {\
         {'ID': 'repeat', 'Description': '"To be specified"'}}
 
 __format__ = {\
+        'ref_softclip':
+        {'ID': 'REF_SOFTCLIP', 'Number': 1, 'Type': 'Float', 'Description': '"proportion of soft-clipped reads for ref reads"'},
+        'alt_softclip':
+        {'ID': 'ALT_SOFTCLIP', 'Number': 1, 'Type': 'Float', 'Description': '"proportion of soft-clipped reads for alt reads"'},
+        'leftpos_p':
+        {'ID': 'LEFTPOS_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by wilcoxon's rank sum test of left-most positions of ref and alt reads\""},
+        'ref_baseq1b_p':
+        {'ID': 'REF_BASEQ1B_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Wilcoxon's rank sum test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position\""},
+        'ref_baseq1b_t':
+        {'ID': 'REF_BASEQ1B_T', 'Number': 1, 'Type': 'Float', 'Description': "\"The test statistic under the large-sample approximation that the rank sum statistic is normally distributed (wilcox rank sum test of base qualities from ref reads at mutant position, compared with base qualities from ref reads at 1bp downtream of the mutant position)\""},
+        'alt_baseq1b_p':
+        {'ID': 'ALT_BASEQ1B_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Wilcoxon's rank sum test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position\""},
+        'alt_baseq1b_t':
+        {'ID': 'ALT_BASEQ1B_T', 'Number': 1, 'Type': 'Float', 'Description': "\"The test statistic under the large-sample approximation that the rank sum statistic is normally distributed (wilcox rank sum test of base qualities from alt reads at mutant position, compared with base qualities from alt reads at 1bp downtream of the mutant position)\""},
+        'major_mismatches_mean':
+        {'ID': 'MAJOR_MISMATCHES_MEAN', 'Number': 1, 'Type': 'Float', 'Description': '"average mismatches per ref reads"'},
+        'minor_mismatches_mean':
+        {'ID': 'MINOR_MISMATCHES_MEAN', 'Number': 1, 'Type': 'Float', 'Description': '"average mismatches per alt reads"'},
+        'mismatches_p':
+        {'ID': 'MISMATCHES_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Wilcoxon's rank sum test of mismatches per ref reads vs. mismatches per alt reads\""},
+        'mapq_p':
+        {'ID': 'MAPQ_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Wilcoxon's rank sum test of mapping qualities of ref and alt reads\""},
+        'mapq_difference':
+        {'ID': 'MAPQ_DIFFERENCE', 'Number': 1, 'Type': 'Float', 'Description': "\"difference of average map quality per alt reads vs. average map quality per ref reads\""},
         'AF':
-        {'ID': 'AF', 'Number': 1, 'Type': 'Float', 'Description': '"To be specified"'},
+        {'ID': 'AF', 'Number': 1, 'Type': 'Float', 'Description': '"variant allele fraction"'},
         'dp':
-        {'ID': 'DP', 'Number': 1, 'Type': 'Integer', 'Description': '"To be specified"'}}
+        {'ID': 'DP', 'Number': 1, 'Type': 'Integer', 'Description': '"read depth at mutant position"'},
+        'dp_diff':
+        {'ID': 'DP_DIFF', 'Number': 1, 'Type': 'Float', 'Description': '"difference of average read depths of local (<200bp) and distant (>2kb) regions"'},
+        #'dp_p':
+        #{'ID': 'DP_P', 'Number': 1, 'Type': 'Float', 'Description': "\"p-value or effect size by Wilcoxon's rank sum test of read depths sampled within 200bp window surrounding the mutant position vs. read depths sampled in distant regions from the mutant position (>2kb)\""},
+        'conflict_num':
+        {'ID': 'CONFLICT_NUM', 'Number': 1, 'Type': 'Integer', 'Description': "\"number of read pairs supporting both ref and alt alleles\""}
+        }
 
 import pandas as pd
 import os.path
@@ -289,6 +339,30 @@ def main(mfpred_path, refpath, vcfgz_path):
 
 if __name__ == '__main__':
     mfpred_path = sys.stdin
-    refpath = str(sys.argv[1])
-    vcfgz_path = str(sys.argv[2])
-    main(mfpred_path, refpath, vcfgz_path)
+    if len(sys.argv) != 3:
+        print(
+    '''
+    Convert MosaicForecast output MF.predictions into a sorted, gzipped, indexed VCF
+
+    Usage:
+
+    mf2vcf.py <input.MF.predictions refseq.fa output.vcf.gz
+    or
+    cat input.MF.predictions | mf2vcf.py refseq.fa output.vcf.gz
+
+
+    Details:
+
+    Currently gzip compressed VCF is the only supported output type.
+
+    For each INFO, FILTER, and FORMAT field the appropriate ID,
+    Number, Type, and 'Description' must be specified by editing the __info__,
+    __filter__, and __format__ dictionaries in mf2vcf.py.
+
+    The pandas Python package must be installed.
+    '''
+        )
+    else:
+        refpath = str(sys.argv[1])
+        vcfgz_path = str(sys.argv[2])
+        main(mfpred_path, refpath, vcfgz_path)
