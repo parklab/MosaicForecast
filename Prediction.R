@@ -38,9 +38,16 @@ output <- cbind(output, prediction_probs)
 output <- subset(output,mappability>0)
 output <- subset(output,AF>=0.01)
 output <- subset(output,AF*dp>=2)
-df1<- subset(output,(type=="SNP" | type=="MNP") & indel_proportion_SNPonly<0.3 & ref_softclip<0.1)
-df2 <- subset(output, type!="SNP" & type!="MNP")
+df1 <- subset(output,(type=="SNP" | type=="MNP") & indel_proportion_SNPonly<0.3 & ref_softclip<0.1)
+df2 <- subset(output, (type!="SNP" & type!="MNP") )
 output <- rbind(df1,df2)
+
+predictedmosaics <- subset(output, prediction=="mosaic")
+predictedothers <- subset(output, prediction !="mosaic")
+predictedmosaics <- subset(predictedmosaics, dp < mean(output$dp)*2)
+predictedmosaics <- subset(predictedmosaics, !(dp >= mean(output$dp)*1.5 & AF>0.2))
+predictedmosaics <- subset(predictedmosaics, ref_softclip<0.1)
+output <- rbind(predictedmosaics, predictedothers)
 
 write.table(output,row.names=FALSE, col.names=TRUE,sep="\t",file=output_file,quote=FALSE)
 
