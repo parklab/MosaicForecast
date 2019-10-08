@@ -45,7 +45,7 @@ output <- rbind(df1,df2)
 predictedmosaics <- subset(output, prediction=="mosaic")
 predictedothers <- subset(output, prediction !="mosaic")
 predictedmosaics <- subset(predictedmosaics, dp < mean(output$dp)*2)
-predictedmosaics <- subset(predictedmosaics, !(dp >= mean(output$dp)*1.5 & AF>0.2))
+predictedmosaics <- subset(predictedmosaics, !(dp >= mean(output$dp)*1.5 & AF>=0.2))
 predictedmosaics <- subset(predictedmosaics, ref_softclip<0.1)
 output <- rbind(predictedmosaics, predictedothers)
 
