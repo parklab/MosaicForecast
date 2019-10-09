@@ -36,18 +36,31 @@ output$prediction <- predict(M,input)
 prediction_probs <- predict(M,input,type="prob")
 output <- cbind(output, prediction_probs)
 output <- subset(output,mappability>0)
-output <- subset(output,AF>=0.01)
-output <- subset(output,AF*dp>=2)
-df1 <- subset(output,(type=="SNP" | type=="MNP") & indel_proportion_SNPonly<0.3 & ref_softclip<0.1)
+
+df1 <- subset(output,(type=="SNP" | type=="MNP") & indel_proportion_SNPonly<0.3)
 df2 <- subset(output, (type!="SNP" & type!="MNP") )
 output <- rbind(df1,df2)
-
-predictedmosaics <- subset(output, prediction=="mosaic")
 predictedothers <- subset(output, prediction !="mosaic")
-predictedmosaics <- subset(predictedmosaics, dp < mean(output$dp)*2)
-predictedmosaics <- subset(predictedmosaics, !(dp >= mean(output$dp)*1.5 & AF>=0.2))
+predictedmosaics <- subset(output, prediction=="mosaic")
 predictedmosaics <- subset(predictedmosaics, ref_softclip<0.1)
-output <- rbind(predictedmosaics, predictedothers)
+predictedmosaics$prediction <- as.character(predictedmosaics$prediction)
+
+##optional filters (i.e., ultra-high depth):
+if (nrow(predictedmosaics[predictedmosaics$AF<0.01,])>=1){
+	predictedmosaics[predictedmosaics$AF<0.01,]$prediction <- paste0(subset(predictedmosaics,AF<0.01)$prediction,";low-confidence:AF<0.01")
+}
+if (nrow(predictedmosaics[predictedmosaics$AF*predictedmosaics$dp<2,])>=1){
+	predictedmosaics[predictedmosaics$AF*predictedmosaics$dp<2,]$prediction <- paste0(subset(predictedmosaics,AF*dp<2)$prediction,";low-confidence:only-1-altallele")
+}
+if (nrow(predictedmosaics[predictedmosaics$dp>=mean(output$dp)*2,])>=1){
+	predictedmosaics[predictedmosaics$dp>=mean(output$dp)*2,]$prediction <- paste0(subset(predictedmosaics,dp>=mean(output$dp)*2)$prediction,";low-confidence:extra-high-coverage")
+}
+df1 <- subset(predictedmosaics, !(dp >= mean(output$dp)*1.5 & AF>=0.2))
+df2 <- subset(predictedmosaics, (dp >= mean(output$dp)*1.5 & AF>=0.2))
+if(nrow(df2)>=1){
+	df2$prediction <- paste0(df2$prediction,";low-confidence:likelyCNV")
+}
+output <- rbind(df1,df2, predictedothers)
 
 write.table(output,row.names=FALSE, col.names=TRUE,sep="\t",file=output_file,quote=FALSE)
 
