@@ -73,8 +73,8 @@ ENV PATH=/usr/local/bin/samtools/:$PATH
 
 # download other tools
 WORKDIR /usr/local/bin
-COPY downloads.sh .
-RUN . downloads.sh
+COPY downloads_docker.sh .
+RUN . downloads_docker.sh
 
 # 7. wrapper
 COPY *.py *.R *.md ./
