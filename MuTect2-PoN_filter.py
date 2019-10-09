@@ -56,7 +56,7 @@ for line in file:
 				if AF>=0.03 and AF<0.4 and alt_count>=2:
 					print(chr,pos-1,pos,ref,alt,sample,depth, AF, file=fo,sep="\t")
 fo.close()
-
 my_cmd="subtractBed -a "+tmp_filename+" -b "+repeat_file+" > "+sample+".bed"
 Popen(my_cmd, shell=True, stdout=PIPE).communicate()
 
+subprocess.run("rm "+tmp_filename, shell=True)
