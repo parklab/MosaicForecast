@@ -25,7 +25,7 @@ elif count==3:
 
 
 if input_vcf.endswith('.vcf.gz'):
-	file=gzip.open(input_vcf)
+	file=gzip.open(input_vcf,'rt')
 elif input_vcf.endswith('.vcf'):
 	file=open(input_vcf)
 else:
@@ -56,6 +56,7 @@ for line in file:
 			elif not re.search(":0|1:", line):
 				if AF>=0.03 and AF<0.4 and alt_count>=2:
 					print(chr,pos-1,pos,ref,alt,sample,depth, AF, file=fo,sep="\t")
+
 fo.close()
 my_cmd="subtractBed -a "+tmp_filename+" -b "+repeat_file+" > "+sample+".bed"
 Popen(my_cmd, shell=True, stdout=PIPE).communicate()
