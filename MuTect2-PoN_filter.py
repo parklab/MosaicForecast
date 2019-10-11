@@ -6,6 +6,7 @@ import uuid
 import re
 import subprocess
 from subprocess import *
+import gzip
 
 def run_cmd(cmd):
 	Popen(cmd, shell=True, stdout=PIPE).communicate()
