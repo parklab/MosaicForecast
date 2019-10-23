@@ -6,7 +6,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 
 ## Dependency:
 ### Required Interpreter Versions:
-* Python version 3.4+
+* Python version 3.6+
 * R version 3.5+
 ### Python packages:
 * collections
