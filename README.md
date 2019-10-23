@@ -6,7 +6,7 @@ A machine learning method that leverages read-based phasing and read-level featu
 
 ## Dependency:
 ### Required Interpreter Versions:
-* Python version 3.4+
+* Python version 3.6+
 * R version 3.5+
 ### Python packages:
 * collections
@@ -54,7 +54,13 @@ Please note that "${your_local_directory}:/MF" is the absolute path of your loca
 ```
 		
 	 
-2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then install the dependencies as described in the Dockerfile.
+2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then create an environment using conda through this command:  
+conda env create --name MF --file environment.yaml  
+The environment 'MF' could be activated through this command:  
+conda activate MF  
+Other dependencies and resources could be downloaded though running:  
+bash downloads.sh 
+
 
 ## Resources:
 #### Human reference genome:  
