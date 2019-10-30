@@ -42,6 +42,25 @@ df1 <- subset(output,(type=="SNP" | type=="MNP") & indel_proportion_SNPonly<0.3)
 df2 <- subset(output, (type!="SNP" & type!="MNP") )
 output <- rbind(df1,df2)
 
+autosomal <- c(seq(1,23),paste0("chr",seq(1,22)))
+chrX <- c("chrX","X")
+chrY <- c("chrY","Y")
+
+my_classify <- function(x){
+	chr=unlist(strsplit(as.character(x[1]),"~"))[2]
+	##if(grepl("X",chr)){
+	if(chr %in% chrX){
+		return("X")
+	}else if(chr %in% chrY){
+		return("Y")
+	}else if(chr %in% autosomal){
+		return("autosomal")
+	}else{
+		return("others")
+	}
+}
+output$chromosome <- apply(output,1,my_classify)
+
 if(model_type=="Refine"){
 	predictedothers <- subset(output, prediction !="mosaic")
 	predictedmosaics <- subset(output, prediction=="mosaic")
