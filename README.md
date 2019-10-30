@@ -194,11 +194,12 @@ A list of read-level features for each input site.
 
 **Usage:**
 
-Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(predictions)
+Rscript Prediction.R input\_file(feature\_list) model\_trained model\_type(Phase|Refine) output\_file(predictions)
 
 **Note:**
 1. The "input\_file" is a list of read-level features obtained in the last step.
 2. The "model\_trained" is the pre-trained RF model to predict genotypes.
+3. If you trained model with refined-genotypes (mosaic, het, refhom, repeat), then the "model\_type" is "Refine"; otherwise if you trained model with Phasing (hap=2, hap=3, hap>3), then the "model\_type" is "Phase".  
 
 > You may use our models trained with brain WGS data for SNPs (paired-end read at 50-250X read depths, we train our models based on Mutect2-PON callings. To our experience, the models were pretty robust across different depths, but the best strategy would be using a model with similar depth with your data):
 >
@@ -213,8 +214,8 @@ Rscript Prediction.R input\_file(feature\_list) model\_trained output\_file(pred
 
 **Demo:**
 ```
-Rscript Prediction.R demo/test.SNP.features models_trained/250xRFmodel_addRMSK_Refine.rds  demo/test.SNP.predictions   
-Rscript Prediction.R demo/test.DEL.features models_trained/deletions_250x.RF.rds demo/test.DEL.predictions
+Rscript Prediction.R demo/test.SNP.features models_trained/250xRFmodel_addRMSK_Refine.rds Refine demo/test.SNP.predictions   
+Rscript Prediction.R demo/test.DEL.features models_trained/deletions_250x.RF.rds Phase demo/test.DEL.predictions
 ```
 **Output:**
 ```
