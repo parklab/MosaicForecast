@@ -9,7 +9,7 @@ arguments=sys.argv[1:]
 count=len(arguments)
 
 if count !=8:
-	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir(could also be cram) reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n\n5. bam file format is preferred than cram file format, the program would run much slowlier if using cram format.\n")
+	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir(could also be cram) reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n\n5. bam file format is preferred than cram file format, the program would run much more slowly if using cram format.\n")
 	sys.exit(1)
 elif count==8:
 	program_name = sys.argv[0]
@@ -385,7 +385,7 @@ def process_line(line):
 						dp_near[name].append(pileupcolumn.n)
 			
 #				max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
-				print(indels_count[name],major_num, minor_num)
+				#print(indels_count[name],major_num, minor_num)
 				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state, str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), str(indels_count[name]/(major_num+minor_num+indels_count[name])), max_num_2ndallele 
 	
 			#elif len(major_allele)>1 and len(minor_allele)==1:
@@ -540,7 +540,7 @@ def process_line(line):
 								continue   
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
-							
+					print (baseq_major[name], baseq_minor[name])
 					if seq_file_format=="cram":
 						a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
 					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
@@ -738,6 +738,7 @@ def process_line(line):
 								continue   
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
+					print (baseq_major[name], baseq_minor[name])
 							
 					if seq_file_format=="cram":
 						a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
