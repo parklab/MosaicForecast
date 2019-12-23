@@ -223,8 +223,8 @@ def process_line(line):
 				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel !=0:
-						#	if pileupcolumn.pos==pos-1:
-							indels_count[name]=indels_count.get(name,0)+1
+							if pileupcolumn.pos==pos-1:
+								indels_count[name]=indels_count.get(name,0)+1
 							continue
 						try:
 							querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(major_allele)]
