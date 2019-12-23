@@ -8,10 +8,10 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 
-if count !=7:
-	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n")
+if count !=8:
+	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir(could also be cram) reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n\n5. bam file format is preferred than cram file format, the program would run much slowlier if using cram format.\n")
 	sys.exit(1)
-elif count==7:
+elif count==8:
 	program_name = sys.argv[0]
 	input_pos=sys.argv[1] #walsh.nocluster.noalt_allele_in_normal.norepeat.bed 1       1015256 1015257 A       G       Walsh
 	output=sys.argv[2]
@@ -20,6 +20,7 @@ elif count==7:
 	unimap_mappability_BigWigfile=sys.argv[5]
 	read_length=int(sys.argv[6])
 	n_jobs=sys.argv[7]
+	seq_file_format=sys.argv[8]
 	#sequencing_type=sys.argv[5]
 
 import numpy as np
@@ -164,14 +165,24 @@ def process_line(line):
 		major_allele=fields[3]
 		minor_allele=fields[4]
 		name=str(sample)+'~'+str(chr)+'~'+str(pos)+"~"+str(major_allele)+"~"+str(minor_allele)
-		input_bam=bam_dir+"/"+str(sample)+".bam"
-		bai_file=bam_dir+"/"+str(sample)+".bai"
-		bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
-		if not os.path.exists(input_bam):
-			print("no sample.bam under the bam_dir")
-		if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
-			print("no bam index files under the bam_dir")
-		a=pysam.AlignmentFile(input_bam, "rb",reference_filename=reference_fasta)
+		if seq_file_format=="bam":
+			input_bam=bam_dir+"/"+str(sample)+".bam"
+			bai_file=bam_dir+"/"+str(sample)+".bai"
+			bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
+			if not os.path.exists(input_bam):
+				print("no sample.bam under the bam_dir")
+			if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
+				print("no bam index files under the bam_dir")
+			a=pysam.AlignmentFile(input_bam, "rb",reference_filename=reference_fasta)
+		elif seq_file_format=="cram":
+			input_cram=bam_dir+"/"+str(sample)+".cram"
+			crai_file=bam_dir+"/"+str(sample)+".crai"
+			crai_file2=bam_dir+"/"+str(sample)+".cram.crai"
+			if not os.path.exists(input_cram):
+				print("no sample.cram under the cram_dir")
+			if not os.path.exists(crai_file) and not os.path.exists(crai_file2):
+				print("no cram index files under the cram_dir")
+			a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
 		chrom=str(chr)
 		start=int(pos)-1
 		end=int(pos)
@@ -219,12 +230,14 @@ def process_line(line):
 								minor2_count[item]=rec[item]
 						max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
 						max_num_2ndallele=float(max_num_2ndallele)/float(dp_allrec)
+				if seq_file_format=="cram":
+					a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
 
 				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel !=0:
-						#	if pileupcolumn.pos==pos-1:
-							indels_count[name]=indels_count.get(name,0)+1
+							if pileupcolumn.pos==pos-1:
+								indels_count[name]=indels_count.get(name,0)+1
 							continue
 						try:
 							querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(major_allele)]
@@ -336,6 +349,8 @@ def process_line(line):
 				conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 				conflict_num[name]=len(conflict_reads)
 						
+				if seq_file_format=="cram":
+					a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
 				for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 					if pileupcolumn.pos==pos-2000:
 						dp_far[name].append(pileupcolumn.n)
@@ -526,6 +541,8 @@ def process_line(line):
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
 							
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
 					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
@@ -722,6 +739,8 @@ def process_line(line):
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
 							
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
 					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
