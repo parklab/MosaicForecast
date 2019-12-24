@@ -6,7 +6,7 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 if count !=8:
-	print ("Usage: python Phase.py bam_dir output_dir ref_fasta input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int) Umap_mappability(bigWig file,k=24) n_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.\n4. Bam file is preferred than cram file, the program would run much more slowly if using cram format.\n")
+	print ("Usage: python Phase.py bam_dir output_dir ref_fasta input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int) Umap_mappability(bigWig file,k=24) n_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.\n4. Bam file is preferred than cram file, as the program would run much more slowly if using cram format.\n")
 #	1       1004864 1004865 G       C       test
 #1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
@@ -132,10 +132,15 @@ def process_line0(line):
 	major_allele=fields[3]
 	minor_allele=fields[4]
 	pos=int(fields[2])
+	start=int(pos)-1
+	end=int(pos)
+	length=len(major_allele)-len(minor_allele)
+	if length<0:
+		length=0-length
 	if not (re.search("MT",chrom) or re.search(",",minor_allele) or major_allele==minor_allele):
 		try:
 			if seq_file_format=="bam":
-				print ("ok here")
+				#print ("ok here")
 				input_bam=bam_dir+"/"+sample+".bam"
 				bai_file=bam_dir+"/"+str(sample)+".bai"
 				bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
@@ -145,7 +150,7 @@ def process_line0(line):
 					print("no bam index files under the bam_dir")
 				a=pysam.AlignmentFile(input_bam, "rb", reference_filename=ref_fasta)
 				f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
-				print("ok here")
+				#print("ok here")
 				f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
 				f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
 			elif seq_file_format=="cram":
@@ -158,19 +163,26 @@ def process_line0(line):
 					print("no cram index files under the cram_dir")
 				a=pysam.AlignmentFile(input_cram, "rc", reference_filename=ref_fasta)
 				f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.cram","wc",template=a, reference_filename=ref_fasta)
-				print("ok here")
 				f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.cram","wc",template=a, reference_filename=ref_fasta)
 				f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.cram","wc",template=a, reference_filename=ref_fasta)
+
+
+				tmp1_localcram_filename=output_dir+"/tmp/"+sample+"_"+str(chr)+"_"+str(pos)+"_"+str(uuid.uuid4())+".cram"
+				a_local=pysam.AlignmentFile(tmp1_localcram_filename,'wc',template=a,reference_filename=ref_fasta)
+				for read in a.fetch(chrom,start-2001,end+2001):
+					a_local.write(read)
+				a_local.close()
+				pysam.index(tmp1_localcram_filename,tmp1_localcram_filename+".crai")
+
 			name=sample+'_'+chr+'_'+str(pos)
 			major_ids=list()
 			minor_ids=list()
-			start=int(pos)-1
-			end=int(pos)
 			major_num=int(0)
 			minor_num=int(0)
-			length=len(major_allele)-len(minor_allele)
-			if length<0:
-				length=0-length
+			
+			if seq_file_format=="cram":
+				a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=ref_fasta)
+
 			if len(major_allele)==1 and len(minor_allele)==1:# and minor_allele!=".":
 				state="SNP"
 				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
@@ -235,7 +247,9 @@ def process_line0(line):
 						except:
 							continue	
 							#print (chrom, pos, read.query_name, read.cigar)
-					a=pysam.AlignmentFile(input_cram, "rc", reference_filename=ref_fasta)
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=ref_fasta)
+#					print("DEL here:ok")
 					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
@@ -283,7 +297,9 @@ def process_line0(line):
 						except:
 							continue
 	#						print (chrom, pos, read.query_name, read.cigar)
-					a=pysam.AlignmentFile(input_cram, "rc", reference_filename=ref_fasta)
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=ref_fasta)
+#					print("INS here:ok")
 					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
@@ -304,7 +320,7 @@ def process_line0(line):
 											major_num+=1
 							except:
 								continue						
-	
+					#print(major_num,minor_num)	
 	
 								
 		
@@ -448,7 +464,7 @@ def process_line(line):
 
 	x=list()
 	if major_num>=3 and minor_num>=3:
-		##print (chr,pos, major_num, minor_num)
+		print (chr,pos, major_allele,minor_allele,major_num, minor_num)
 		##print (f3_sorted_name)
 		if seq_file_format=="bam":
 			f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rb',reference_filename=ref_fasta)
@@ -470,6 +486,7 @@ def process_line(line):
 				if alt_num>=int(3) and max_num>=int(3) and max_num+alt_num>=int(min_dp_inforSNPs) and scipy.stats.binom_test(alt_num, max_num+alt_num)>0.05 and rec['pos']!=int(pos):
 					x.append((sample,chr,pos,major_allele,minor_allele,chr,int(rec['pos'])+1,max_base,alt_base,conflictnum,variant_type))
 					#return sample,chr,pos,major_allele,minor_allele,chr,str(int(rec['pos'])+1),max_base,alt_base,str(conflictnum)
+		print(x)
 		return x 	
 #file.close()
 #merged_inforSNPs.close()
