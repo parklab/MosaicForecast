@@ -9,7 +9,7 @@ arguments=sys.argv[1:]
 count=len(arguments)
 
 if count !=8:
-	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir(could also be cram) reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n\n5. bam file format is preferred than cram file format, the program would run much more slowly if using cram format.\n")
+	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir(could also be cram) reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n\n")
 	sys.exit(1)
 elif count==8:
 	program_name = sys.argv[0]
@@ -165,6 +165,9 @@ def process_line(line):
 		major_allele=fields[3]
 		minor_allele=fields[4]
 		name=str(sample)+'~'+str(chr)+'~'+str(pos)+"~"+str(major_allele)+"~"+str(minor_allele)
+		chrom=str(chr)
+		start=int(pos)-1
+		end=int(pos)
 		if seq_file_format=="bam":
 			input_bam=bam_dir+"/"+str(sample)+".bam"
 			bai_file=bam_dir+"/"+str(sample)+".bai"
@@ -183,9 +186,20 @@ def process_line(line):
 			if not os.path.exists(crai_file) and not os.path.exists(crai_file2):
 				print("no cram index files under the cram_dir")
 			a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
-		chrom=str(chr)
-		start=int(pos)-1
-		end=int(pos)
+			subprocess.run("mkdir -p tmp/", shell=True)
+			tmp1_localcram_filename="tmp/"+sample+"_"+chrom+"_"+str(pos)+"_"+str(uuid.uuid4())+".cram"
+			a_local=pysam.AlignmentFile(tmp1_localcram_filename,'wc',template=a,reference_filename=reference_fasta)
+			for read in a.fetch(chrom,start,end):
+				a_local.write(read)
+			a_local.close()
+			pysam.index(tmp1_localcram_filename,tmp1_localcram_filename+".crai")
+
+			tmp2_localcram_filename="tmp/"+sample+"_"+chrom+"_"+str(pos)+"_"+str(uuid.uuid4())+".cram"
+			a_local=pysam.AlignmentFile(tmp2_localcram_filename,'wc',template=a,reference_filename=reference_fasta)
+			for read in a.fetch(chrom,start-2001,end+2001):
+				a_local.write(read)
+			a_local.close()
+			pysam.index(tmp2_localcram_filename,tmp2_localcram_filename+".crai")
 		major_plus[name]=0
 		minor_plus[name]=0
 		major_minus[name]=0
@@ -204,7 +218,6 @@ def process_line(line):
 		minor2_count=dict()
 #		minor2_count['A']=0
 		max_num_2ndallele=0
-		indels_count[name]=0
 		try:
 			if len(major_allele)==len(minor_allele) and not(major_allele==minor_allele):
 				if len(major_allele)==1:
@@ -216,11 +229,14 @@ def process_line(line):
 				minor_softclippedreads=0
 				major_num=0
 				minor_num=0
+				indels_count[name]=0
 				context_20bp=str(reference[chrom][max(1,int(pos)-11):min(int(pos)+10,int(chr_sizes[chrom]))])
 				GCcontent=(context_20bp.count('G')+context_20bp.count('C'))/len(context_20bp)
 				context1[name]=reference[chrom][int(pos)-2:int(pos)+1]
 				context2[name]=(base[str(reference[chrom][int(pos)-2:int(pos)-1])]+base[str(reference[chrom][int(pos)-1:int(pos)])]+base[str(reference[chrom][int(pos):int(pos)+1])])[::-1]
 
+				if seq_file_format=="cram":
+					a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=reference_fasta)
 				for rec in pysamstats.stat_variation(a, fafile=reference_fasta, min_mapq=0, min_baseq=0,chrom=chrom,start=pos-1,end=pos):
 					dp_allrec=0
 					if int(rec['pos'])+1==pos:
@@ -230,14 +246,15 @@ def process_line(line):
 								minor2_count[item]=rec[item]
 						max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
 						max_num_2ndallele=float(max_num_2ndallele)/float(dp_allrec)
+
 				if seq_file_format=="cram":
-					a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
+					a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=reference_fasta)
 
 				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 					for pileupread in pileupcolumn.pileups:
 						if pileupread.indel !=0:
-							if pileupcolumn.pos==pos-1:
-								indels_count[name]=indels_count.get(name,0)+1
+							indels_count[name]=indels_count.get(name,0)+1
+							print(name,pileupread.indel,indels_count[name],pileupcolumn.pos)
 							continue
 						try:
 							querybase=pileupread.alignment.query_sequence[pileupread.query_position:pileupread.query_position+len(major_allele)]
@@ -350,7 +367,7 @@ def process_line(line):
 				conflict_num[name]=len(conflict_reads)
 						
 				if seq_file_format=="cram":
-					a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
+					a=pysam.AlignmentFile(tmp2_localcram_filename, "rc",reference_filename=reference_fasta)
 				for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 					if pileupcolumn.pos==pos-2000:
 						dp_far[name].append(pileupcolumn.n)
@@ -384,6 +401,11 @@ def process_line(line):
 					elif pileupcolumn.pos==pos+200:
 						dp_near[name].append(pileupcolumn.n)
 			
+				if seq_file_format=="cram":
+					subprocess.run("rm "+tmp1_localcram_filename, shell=True)
+					subprocess.run("rm "+tmp1_localcram_filename+".crai", shell=True)
+					subprocess.run("rm "+tmp2_localcram_filename, shell=True)
+					subprocess.run("rm "+tmp2_localcram_filename+".crai", shell=True)
 #				max_num_2ndallele=minor2_count[max(minor2_count,key=minor2_count.get)]
 				#print(indels_count[name],major_num, minor_num)
 				return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state, str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), str(indels_count[name]/(major_num+minor_num+indels_count[name])), max_num_2ndallele 
@@ -410,6 +432,8 @@ def process_line(line):
 						if_homopolymer="Yes"
 						break
 				if if_homopolymer=="No":			
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=reference_fasta)
 					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
@@ -540,9 +564,9 @@ def process_line(line):
 								continue   
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
-					print (baseq_major[name], baseq_minor[name])
+					#print (baseq_major[name], baseq_minor[name])
 					if seq_file_format=="cram":
-						a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
+						a=pysam.AlignmentFile(tmp2_localcram_filename, "rc",reference_filename=reference_fasta)
 					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
@@ -575,6 +599,11 @@ def process_line(line):
 							dp_near[name].append(pileupcolumn.n)
 						elif pileupcolumn.pos==pos+200:
 							dp_near[name].append(pileupcolumn.n)
+					if seq_file_format=="cram":
+						subprocess.run("rm "+tmp1_localcram_filename, shell=True)
+						subprocess.run("rm "+tmp1_localcram_filename+".crai", shell=True)
+						subprocess.run("rm "+tmp2_localcram_filename, shell=True)
+						subprocess.run("rm "+tmp2_localcram_filename+".crai", shell=True)
 				
 					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent), str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA", "NA"
 			#print (fo)
@@ -604,6 +633,8 @@ def process_line(line):
 						if_homopolymer="Yes"
 						break
 				if if_homopolymer=="No":		
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=reference_fasta)
 					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
@@ -738,10 +769,10 @@ def process_line(line):
 								continue   
 					conflict_reads=set(major_ids[name]) & set(minor_ids[name])
 					conflict_num[name]=len(conflict_reads)
-					print (baseq_major[name], baseq_minor[name])
+					#print (baseq_major[name], baseq_minor[name])
 							
 					if seq_file_format=="cram":
-						a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
+						a=pysam.AlignmentFile(tmp2_localcram_filename, "rc",reference_filename=reference_fasta)
 					for pileupcolumn in a.pileup(str(chrom), max(0,int(start)-2000), min(int(end)+2000,int(chr_sizes[str(chr)])), max_depth=8000):
 						if pileupcolumn.pos==pos-2000:
 							dp_far[name].append(pileupcolumn.n)
@@ -759,7 +790,6 @@ def process_line(line):
 							dp_far[name].append(pileupcolumn.n)
 						elif pileupcolumn.pos==pos+2000:
 							dp_far[name].append(pileupcolumn.n)
-						
 						elif pileupcolumn.pos==pos-200:
 							dp_near[name].append(pileupcolumn.n)
 						elif pileupcolumn.pos==pos-100:
@@ -775,8 +805,13 @@ def process_line(line):
 						elif pileupcolumn.pos==pos+200:
 							dp_near[name].append(pileupcolumn.n)
 				
+					if seq_file_format=="cram":
+						subprocess.run("rm "+tmp1_localcram_filename, shell=True)
+						subprocess.run("rm "+tmp1_localcram_filename+".crai", shell=True)
+						subprocess.run("rm "+tmp2_localcram_filename, shell=True)
+						subprocess.run("rm "+tmp2_localcram_filename+".crai", shell=True)
 					return name,','.join(str(x) for x in querypos_major[name])+",",  ','.join(str(x) for x in querypos_minor[name])+",",  ','.join(str(x) for x in leftpos_major[name])+",",  ','.join(str(x) for x in leftpos_minor[name])+",",  ','.join(str(x) for x in seqpos_major[name])+",",  ','.join(str(x) for x in seqpos_minor[name])+",",  ','.join(str(x) for x in mapq_major[name])+",",  ','.join(str(x) for x in mapq_minor[name])+",", ','.join(str(x) for x in baseq_major[name])+",",  ','.join(str(x) for x in baseq_minor[name])+",",  ','.join(str(x) for x in baseq_major_near1b[name])+",", ','.join(str(x) for x in baseq_minor_near1b[name])+",", major_plus[name],major_minus[name],minor_plus[name],minor_minus[name], str(context1[name]), str(context2[name]), context1_count[name],context2_count[name],','.join(str(x) for x in mismatches_major[name])+",",','.join(str(x) for x in mismatches_minor[name])+",", major_read1[name],major_read2[name],minor_read1[name],minor_read2[name],np.mean(dp_near[name]),np.mean(dp_far[name]),conflict_num[name], mappability[name], state,str(length),str(GCcontent),  str(major_softclippedreads/major_num), str(minor_softclippedreads/minor_num), "NA", "NA"
-			#print (fo)
+				#print (fo)
 		except:
 			print ("not enough alt reads: ",chrom, start,end)
 	
@@ -799,6 +834,7 @@ if __name__ == "__main__":
 
 
 fo.close()
+
 
 df=pd.read_csv(output+".tmp",sep=" ")
 
