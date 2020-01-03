@@ -8,6 +8,26 @@ A machine learning method that leverages read-based phasing and read-level featu
 ### Required Interpreter Versions:
 * Python version 3.6+
 * R version 3.5+
+### Installation of Dependencies:
+1. We have created a docker image with all dependencies installed:  
+	https://hub.docker.com/r/yanmei/mosaicforecast  
+	Usage:  
+		docker image pull yanmei/mosaicforecast:0.0.1  
+		docker run -v ${your_local_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
+		gunzip hs37d5.fa.gz  
+		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
+```
+Please note that "${your_local_directory}:/MF" is the absolute path of your local mosaicforecast directory. After attaching your local MF directory to the docker image, you would be able to read and write from that directory in your docker image. The attached directory in the docker image would be "/MF".
+```
+		
+	 
+2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then create an environment using conda through this command:  
+conda env create --name MF --file environment.yaml  
+The environment 'MF' could be activated through this command:  
+conda activate MF  
+Other dependencies and resources could be downloaded though running:  
+bash downloads.sh 
+
 ### Python packages:
 * collections
 * itertools
@@ -41,26 +61,6 @@ chmod +x bigWigAverageOverBed
 * fetchChromSizes:  
 wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes  
 chmod +x fetchChromSizes  
-### Installation of Dependencies:
-1. We have created a docker image with all dependencies installed:  
-	https://hub.docker.com/r/yanmei/mosaicforecast  
-	Usage:  
-		docker image pull yanmei/mosaicforecast:0.0.1  
-		docker run -v ${your_local_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
-		gunzip hs37d5.fa.gz  
-		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
-```
-Please note that "${your_local_directory}:/MF" is the absolute path of your local mosaicforecast directory. After attaching your local MF directory to the docker image, you would be able to read and write from that directory in your docker image. The attached directory in the docker image would be "/MF".
-```
-		
-	 
-2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then create an environment using conda through this command:  
-conda env create --name MF --file environment.yaml  
-The environment 'MF' could be activated through this command:  
-conda activate MF  
-Other dependencies and resources could be downloaded though running:  
-bash downloads.sh 
-
 
 ## Resources:
 #### Human reference genome:  
