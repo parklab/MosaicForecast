@@ -8,6 +8,26 @@ A machine learning method that leverages read-based phasing and read-level featu
 ### Required Interpreter Versions:
 * Python version 3.6+
 * R version 3.5+
+### Installation of Dependencies:
+1. We have created a docker image with all dependencies installed:  
+	https://hub.docker.com/r/yanmei/mosaicforecast  
+	Usage:  
+		docker image pull yanmei/mosaicforecast:0.0.1  
+		docker run -v ${your_local_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
+		gunzip hs37d5.fa.gz  
+		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
+```
+Please note that "${your_local_directory}:/MF" is the absolute path of your local mosaicforecast directory. After attaching your local MF directory to the docker image, you would be able to read and write from that directory in your docker image. The attached directory in the docker image would be "/MF".
+```
+		
+	 
+2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then create an environment using conda through this command:  
+conda env create --name MF --file environment.yaml  
+The environment 'MF' could be activated through this command:  
+conda activate MF  
+Other dependencies and resources could be downloaded though running:  
+bash downloads.sh 
+
 ### Python packages:
 * collections
 * itertools
@@ -41,26 +61,6 @@ chmod +x bigWigAverageOverBed
 * fetchChromSizes:  
 wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes  
 chmod +x fetchChromSizes  
-### Installation of Dependencies:
-1. We have created a docker image with all dependencies installed:  
-	https://hub.docker.com/r/yanmei/mosaicforecast  
-	Usage:  
-		docker image pull yanmei/mosaicforecast:0.0.1  
-		docker run -v ${your_local_directory}:/MF --rm -it yanmei/mosaicforecast:0.0.1 /bin/bash  
-		gunzip hs37d5.fa.gz  
-		Phase.py /MF/demo/ /MF/demo/phasing hs37d5.fa /MF/demo/test.input 20 k24.umap.wg.bw 4 
-```
-Please note that "${your_local_directory}:/MF" is the absolute path of your local mosaicforecast directory. After attaching your local MF directory to the docker image, you would be able to read and write from that directory in your docker image. The attached directory in the docker image would be "/MF".
-```
-		
-	 
-2. You could also install conda first (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh), and then create an environment using conda through this command:  
-conda env create --name MF --file environment.yaml  
-The environment 'MF' could be activated through this command:  
-conda activate MF  
-Other dependencies and resources could be downloaded though running:  
-bash downloads.sh 
-
 
 ## Resources:
 #### Human reference genome:  
@@ -88,7 +88,7 @@ https://gnomad.broadinstitute.org/downloads
 ## Phasing:
 **Usage:** 
 
-python Phase.py bam_dir output_dir ref_fasta  input_positions min_dp_inforSNPs Umap_mappability(bigWig file,k=24) n_threads_parallel
+python Phase.py bam_dir output_dir ref_fasta  input_positions min_dp_inforSNPs Umap_mappability(bigWig file,k=24) n_threads_parallel sequencing_file_format(bam/cram)
 
 **Note:** 
 
@@ -132,10 +132,10 @@ Intermediate files:
 ## Extraction of read-level features:
 **Usage:**
 
-python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) read_length n_jobs_parallel
+python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) read_length n_jobs_parallel sequencing_file_format(bam/cram)
 
 **Note:**
-1. Names of bam files should be "sample.bam" under the bam_dir, and there should be index files under the same directory (samtools index sample.bam).
+1. Names of bam files should be "sample.bam" under the bam_dir, and there should be index files under the same directory (samtools index sample.bam). Cram files are also supported.
 2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa)
 3. File format of the input.bed: chr pos-1 pos ref alt sample, sep=\t 
 4. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants

@@ -5,12 +5,12 @@ import uuid
 program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
-if count !=7:
-	print ("Usage: python Phase.py bam_dir output_dir ref_fasta input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int) Umap_mappability(bigWig file,k=24) n_threads_parallel\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.")
+if count !=8:
+	print ("Usage: python Phase.py bam_dir output_dir ref_fasta input_positions(file format:chr pos-1 pos ref alt sample, sep=\\t) min_dp_inforSNPs(int) Umap_mappability(bigWig file,k=24) n_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Name of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files.\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa).\n3. The \"min_dp_inforSNPs\" is the minimum depth of coverage of trustworthy neaby het SNPs.\n4. Bam file is preferred than cram file, as the program would run much more slowly if using cram format.\n")
 #	1       1004864 1004865 G       C       test
 #1       13799   T       G       0/1     236     8       0.033   5       3       0.625   8447    282     146     90
 	sys.exit(1)
-elif count==7:
+elif count==8:
 	#sample=sys.argv[1]
 	bam_dir_tmp=sys.argv[1]
 	output_dir_tmp=sys.argv[2]
@@ -19,6 +19,7 @@ elif count==7:
 	min_dp_inforSNPs=int(sys.argv[5])
 	unimap_mappability_BigWigfile=sys.argv[6]	
 	n_threads=int(sys.argv[7])
+	seq_file_format=sys.argv[8]
 	log_file='multiple_inforSNPs.log'
 
 import regex as re
@@ -131,29 +132,57 @@ def process_line0(line):
 	major_allele=fields[3]
 	minor_allele=fields[4]
 	pos=int(fields[2])
+	start=int(pos)-1
+	end=int(pos)
+	length=len(major_allele)-len(minor_allele)
+	if length<0:
+		length=0-length
 	if not (re.search("MT",chrom) or re.search(",",minor_allele) or major_allele==minor_allele):
 		try:
-			input_bam=bam_dir+"/"+sample+".bam"
-			bai_file=bam_dir+"/"+str(sample)+".bai"
-			bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
-			if not os.path.exists(input_bam):
-				print("no sample.bam under the bam_dir")
-			if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
-				print("no bam index files under the bam_dir")
-			a=pysam.AlignmentFile(input_bam, "rb")
-			f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
-			f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
-			f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
+			if seq_file_format=="bam":
+				#print ("ok here")
+				input_bam=bam_dir+"/"+sample+".bam"
+				bai_file=bam_dir+"/"+str(sample)+".bai"
+				bai_file2=bam_dir+"/"+str(sample)+".bam.bai"
+				if not os.path.exists(input_bam):
+					print("no sample.bam under the bam_dir")
+				if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
+					print("no bam index files under the bam_dir")
+				a=pysam.AlignmentFile(input_bam, "rb", reference_filename=ref_fasta)
+				f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam","wb",template=a)
+				#print("ok here")
+				f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam","wb",template=a)
+				f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam","wb",template=a)
+			elif seq_file_format=="cram":
+				input_cram=bam_dir+"/"+sample+".cram"
+				crai_file=bam_dir+"/"+str(sample)+".crai"
+				crai_file2=bam_dir+"/"+str(sample)+".cram.crai"
+				if not os.path.exists(input_cram):
+					print("no sample.cram under the cram_dir")
+				if not os.path.exists(crai_file) and not os.path.exists(crai_file2):
+					print("no cram index files under the cram_dir")
+				a=pysam.AlignmentFile(input_cram, "rc", reference_filename=ref_fasta)
+				f1=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.cram","wc",template=a, reference_filename=ref_fasta)
+				f2=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.cram","wc",template=a, reference_filename=ref_fasta)
+				f3=pysam.AlignmentFile(output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.cram","wc",template=a, reference_filename=ref_fasta)
+
+
+				tmp1_localcram_filename=output_dir+"/tmp/"+sample+"_"+str(chr)+"_"+str(pos)+"_"+str(uuid.uuid4())+".cram"
+				a_local=pysam.AlignmentFile(tmp1_localcram_filename,'wc',template=a,reference_filename=ref_fasta)
+				for read in a.fetch(chrom,start-2001,end+2001):
+					a_local.write(read)
+				a_local.close()
+				pysam.index(tmp1_localcram_filename,tmp1_localcram_filename+".crai")
+
 			name=sample+'_'+chr+'_'+str(pos)
 			major_ids=list()
 			minor_ids=list()
-			start=int(pos)-1
-			end=int(pos)
 			major_num=int(0)
 			minor_num=int(0)
-			length=len(major_allele)-len(minor_allele)
-			if length<0:
-				length=0-length
+			
+			if seq_file_format=="cram":
+				a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=ref_fasta)
+
 			if len(major_allele)==1 and len(minor_allele)==1:# and minor_allele!=".":
 				state="SNP"
 				for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
@@ -218,6 +247,9 @@ def process_line0(line):
 						except:
 							continue	
 							#print (chrom, pos, read.query_name, read.cigar)
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=ref_fasta)
+#					print("DEL here:ok")
 					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
@@ -265,6 +297,9 @@ def process_line0(line):
 						except:
 							continue
 	#						print (chrom, pos, read.query_name, read.cigar)
+					if seq_file_format=="cram":
+						a=pysam.AlignmentFile(tmp1_localcram_filename, "rc",reference_filename=ref_fasta)
+#					print("INS here:ok")
 					for pileupcolumn in a.pileup(chrom, start, end, max_depth=8000):
 						for pileupread in pileupcolumn.pileups:
 							try:
@@ -285,7 +320,7 @@ def process_line0(line):
 											major_num+=1
 							except:
 								continue						
-	
+					#print(major_num,minor_num)	
 	
 								
 		
@@ -308,22 +343,39 @@ def process_line0(line):
 			f1.close()
 			f2.close() 
 			f3.close()
-		
-			f1_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
-			f2_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
-			f3_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+			if seq_file_format=="bam":	
+				f1_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.bam"
+				f2_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.bam"
+				f3_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.bam"
+				
+				f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+				f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+				f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
 			
-			f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-			f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
-			f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
-		
-			run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
-			run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
-			run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
-		
-			run_cmd("samtools index "+f1_sorted_name)	
-			run_cmd("samtools index "+f2_sorted_name)	
-			run_cmd("samtools index "+f3_sorted_name)	
+				run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
+				run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
+				run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
+			
+				run_cmd("samtools index "+f1_sorted_name)	
+				run_cmd("samtools index "+f2_sorted_name)	
+				run_cmd("samtools index "+f3_sorted_name)
+			elif seq_file_format=="cram":
+				f1_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.cram"
+				f2_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.cram"
+				f3_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.cram"
+				
+				f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.cram"
+				f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.cram"
+				f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.cram"
+			
+				run_cmd("samtools sort "+f1_name+" -o "+f1_sorted_name)
+				run_cmd("samtools sort "+f2_name+" -o "+f2_sorted_name)
+				run_cmd("samtools sort "+f3_name+" -o "+f3_sorted_name)
+			
+				run_cmd("samtools index "+f1_sorted_name)	
+				run_cmd("samtools index "+f2_sorted_name)	
+				run_cmd("samtools index "+f3_sorted_name)
+					
 		
 		#	cmd_list1.append("samtools sort "+f1_name+" -o "+f1_sorted_name)
 		#	cmd_list1.append("samtools sort "+f2_name+" -o "+f2_sorted_name)
@@ -405,12 +457,19 @@ def process_line(line):
 	conflict_mosaic[mosaic_name]=conflictnum
 	start=int(pos)-1
 	end=int(pos)
-	f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+	if seq_file_format=="bam":
+		f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.bam"
+	elif seq_file_format=="cram":
+		f3_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.merged.sorted.cram"
+
 	x=list()
 	if major_num>=3 and minor_num>=3:
-		##print (chr,pos, major_num, minor_num)
+		print (chr,pos, major_allele,minor_allele,major_num, minor_num)
 		##print (f3_sorted_name)
-		f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rb')
+		if seq_file_format=="bam":
+			f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rb',reference_filename=ref_fasta)
+		elif seq_file_format=="cram":
+			f3_alignment_file =pysam.AlignmentFile(f3_sorted_name,'rc',reference_filename=ref_fasta)
 		for rec in pysamstats.stat_variation(f3_alignment_file, fafile=ref_fasta, min_mapq=20, min_baseq=20):
 			if  ([rec['A'],rec['C'],rec['G'],rec['T']].count(0)<=2) and (rec['reads_pp']>10):
 				bases=['A','C','G','T']
@@ -427,6 +486,7 @@ def process_line(line):
 				if alt_num>=int(3) and max_num>=int(3) and max_num+alt_num>=int(min_dp_inforSNPs) and scipy.stats.binom_test(alt_num, max_num+alt_num)>0.05 and rec['pos']!=int(pos):
 					x.append((sample,chr,pos,major_allele,minor_allele,chr,int(rec['pos'])+1,max_base,alt_base,conflictnum,variant_type))
 					#return sample,chr,pos,major_allele,minor_allele,chr,str(int(rec['pos'])+1),max_base,alt_base,str(conflictnum)
+		print(x)
 		return x 	
 #file.close()
 #merged_inforSNPs.close()
@@ -482,10 +542,16 @@ def process_line2(line):
 	conflict=fields[9]
 	variant_type=fields[10]
 	if pos != inforSNP_pos:
-		f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
-		f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
-		a1=pysam.AlignmentFile(f1_sorted_name,"rb")
-		a2=pysam.AlignmentFile(f2_sorted_name,"rb")
+		if seq_file_format=="bam":
+			f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.bam"
+			f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.bam"
+			a1=pysam.AlignmentFile(f1_sorted_name,"rb", reference_filename=ref_fasta)
+			a2=pysam.AlignmentFile(f2_sorted_name,"rb", reference_filename=ref_fasta)
+		elif seq_file_format=="cram":
+			f1_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.major.sorted.cram"
+			f2_sorted_name=output_dir+"/tmp/"+sample+"."+str(chr)+"_"+str(pos)+".mosaic.minor.sorted.cram"
+			a1=pysam.AlignmentFile(f1_sorted_name,"rc", reference_filename=ref_fasta)
+			a2=pysam.AlignmentFile(f2_sorted_name,"rc", reference_filename=ref_fasta)
 		start_pos=max(int(inforSNP_pos)-1000,0)
 		end_pos=min(int(inforSNP_pos)+1000,int(chr_sizes[chrom]))
 	
@@ -626,7 +692,10 @@ for k,v in sorted(inforSNPs.items()):
 		for i in range(0,len(v)):
 			inforSNPs_pos_list.append(int(inforSNPs[k][i].split(';')[2]))
 			inforSNPs_alleles_list.append([inforSNPs[k][i].split(';')[3],inforSNPs[k][i].split(';')[4]])
-		samfile=pysam.AlignmentFile(bam_dir+"/"+sample+".bam", "rb")
+		if seq_file_format=="bam":
+			samfile=pysam.AlignmentFile(bam_dir+"/"+sample+".bam", "rb",reference_filename=ref_fasta)
+		elif seq_file_format=="cram":
+			samfile=pysam.AlignmentFile(bam_dir+"/"+sample+".bam", "rc",reference_filename=ref_fasta)
 		M=defaultdict(dict)
 		for read in samfile.fetch(chr, min(inforSNPs_pos_list),max(inforSNPs_pos_list)):
 			readID=read.query_name
