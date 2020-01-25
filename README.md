@@ -87,7 +87,7 @@ wigToBigWig <(zcat k24.umap.wg.gz) hg38.chrom.sizes k24.umap.wg.bw
 * GRCh37/hg19: 
 * Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz  
-* Regions enriched for SNPs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
+* Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
 wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh37.bed    
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
@@ -95,8 +95,8 @@ wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz
 * GRCh38/hg38 (please note that our model is trained under GRCh37 and the file "predictedhap3ormore_cluster.GRCh38.bed" is simply a liftover from the GRCh37 file above, hence could be un-optimized for GRCh38):  
 * Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/genomicSuperDups.txt.gz  
-* Regions enriched for SNPs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
-wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.bed   
+* Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
+wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh38.bed   
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz  
  
