@@ -28,7 +28,7 @@ conda activate MF
 Other dependencies and resources could be downloaded though running:  
 bash downloads.sh 
 
-### Python packages:
+### Python packages (if you want to set up the environment mannually):
 * collections
 * itertools
 * subprocess
@@ -42,7 +42,7 @@ bash downloads.sh
 * pysam (0.15.2)
 * pysamstats (1.1.2)
 * scipy (1.2.1)
-### R packages:
+### R packages (if you want to set up the environment mannually):
 * caret (6.0-80)
 * e1071 (1.7-0)
 * glmnet (2.0-16)
@@ -73,7 +73,7 @@ tar -zxvf hg19.umap.tar.gz
 cd hg19  
 fetchChromSizes hg19> hg19.chrom.sizes  
 wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw  
-
+  
 * Umap score (k=24, GRCh38/hg38):   
 wget https://bismap.hoffmanlab.org/raw/hg38.umap.tar.gz  
 tar -zxvf hg38.umap.tar.gz  
@@ -91,6 +91,7 @@ wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.tx
 wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh37.bed    
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
+
 * GRCh38/hg38 (please note that our model is trained under GRCh37 and the file "predictedhap3ormore_cluster.GRCh38.bed" is simply a liftover from the GRCh37 file above, hence could be un-optimized for GRCh38):  
 * Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/genomicSuperDups.txt.gz  
