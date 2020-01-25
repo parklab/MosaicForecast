@@ -63,9 +63,14 @@ wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/fetchChromSizes
 chmod +x fetchChromSizes  
 
 ## Resources:
-#### Human reference genome:  
+#### Human reference genome: 
+GRCh37/hg19:  
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz   
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz.fai   
+
+GRCh38/hg38:
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai
 #### Mappability score: 
 * Umap score (k=24, GRCh37/hg19):   
 wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
