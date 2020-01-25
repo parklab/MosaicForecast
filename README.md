@@ -67,19 +67,38 @@ chmod +x fetchChromSizes
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz   
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz.fai   
 #### Mappability score: 
-* Umap score (k=24):   
+* Umap score (k=24, GRCh37/hg19):   
 wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
 tar -zxvf hg19.umap.tar.gz  
 cd hg19  
 fetchChromSizes hg19> hg19.chrom.sizes  
 wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw  
+
+* Umap score (k=24, GRCh38/hg38):   
+wget https://bismap.hoffmanlab.org/raw/hg38.umap.tar.gz  
+tar -zxvf hg38.umap.tar.gz  
+cd hg38  
+fetchChromSizes hg38> hg38.chrom.sizes  
+wigToBigWig <(zcat k24.umap.wg.gz) hg38.chrom.sizes k24.umap.wg.bw  
+
+* The wigToBigWig command line above take ~30GB memory, please make sure you requires enought memory before running.
+
 #### Regions to filter out:
+* GRCh37/hg19: 
 * Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz  
 * Regions enriched for SNPs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
-wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.bed   
+wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh37.bed    
 * Simple repeats (should be removed before calling mosaic INDELS):  
 wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
+* GRCh38/hg38 (please note that our model is trained under GRCh37 and the file "predictedhap3ormore_cluster.GRCh38.bed" is simply a liftover from the GRCh37 file above, hence could be un-optimized for GRCh38):  
+* Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
+wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/genomicSuperDups.txt.gz  
+* Regions enriched for SNPs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
+wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.bed   
+* Simple repeats (should be removed before calling mosaic INDELS):  
+wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz  
+ 
 #### Population allele frequency
 * gnomAD datasets (recommend to remove variants with population MAF>0.001%):  
 https://gnomad.broadinstitute.org/downloads
