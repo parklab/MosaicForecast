@@ -28,7 +28,7 @@ conda activate MF
 Other dependencies and resources could be downloaded though running:  
 bash downloads.sh 
 
-### Python packages (if you want to set up the environment mannually):
+### Python packages (set up the environment mannually, not recommended):
 * collections
 * itertools
 * subprocess
@@ -42,7 +42,7 @@ bash downloads.sh
 * pysam (0.15.2)
 * pysamstats (1.1.2)
 * scipy (1.2.1)
-### R packages (if you want to set up the environment mannually):
+### R packages (set up the environment mannually, not recommended):
 * caret (6.0-80)
 * e1071 (1.7-0)
 * glmnet (2.0-16)
