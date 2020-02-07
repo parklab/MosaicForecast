@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 18 of /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Snakemake/Snakefile:
+Missing input files for rule scatter_MT2_PON:
+/home/yd65/resources/human_g1k_v37_decoy.fasta

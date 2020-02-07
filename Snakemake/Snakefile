@@ -1,0 +1,183 @@
+##GATK: v4.1.0.0
+#https://groups.google.com/forum/#!topic/snakemake/e0XNmXqL7Bg
+import socket
+shell.prefix("module load gcc; module load java; module load vcftools; source /n/data1/hms/dbmi/park/yanmei/anaconda3/etc/profile.d/conda.sh; conda activate MF; ")
+
+PON_IDs, = glob_wildcards("bam_links_PON/{id}.bam")
+intervals, = glob_wildcards("intervals/{num}.intervals.list")
+case_IDs, = glob_wildcards("bam_links_case/{sample}.bam")
+depth="100x"
+#python split_line.py /n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta.fai 55000000 intervals/	
+
+# a pseudo-rule that collects the target files
+rule all:
+	input:
+		expand("MF/{sample}.{cov}.predictions",sample=case_IDs, cov=depth),
+		expand("MF_allsites/allsites.{cov}.predictions",cov=depth)
+	
+rule scatter_MT2_PON:
+	input:
+		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		interval="intervals/{num}.intervals.list",
+		bam="bam_links_PON/{id}.bam",
+		germline_resource="/n/data1/hms/dbmi/park/yanmei/resources/af-only-gnomad.raw.sites.b37.vcf.gz"
+	output:
+		"pon/{id}_{num}_pon.vcf.gz"
+	shell:
+		"gatk Mutect2 -R {input.fa} -I {input.bam} -tumor {wildcards.id} --germline-resource {input.germline_resource} -L {input.interval} -O {output}"
+
+##generate a list of args files:
+##python args_generator.py
+rule generate_args:
+	input:
+		input_dir="intervals",
+		bam_dir="bam_links_PON"
+	output:
+		protected(expand("pon/{num}.args",num=intervals))
+	shell:
+		"python args_generator.py {input.input_dir} {input.bam_dir} pon"
+
+
+rule combine_PONs:
+	input:
+		args="pon/{num}.args",
+		input3=expand("pon/{id}_{num}_pon.vcf.gz",id=PON_IDs,num=intervals)
+	output:
+		"pon2/ASD75_{num}_pon.vcf.gz"
+	shell:
+		"gatk CreateSomaticPanelOfNormals -vcfs {input.args} -O {output}"
+
+rule MT2:
+	input:
+		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		bam="bam_links_case/{sample}.bam",
+		interval="intervals/{num}.intervals.list",
+		germline_resource="/n/data1/hms/dbmi/park/yanmei/resources/af-only-gnomad.raw.sites.b37.vcf.gz",
+		PON="pon2/ASD75_{num}_pon.vcf.gz"
+	output:
+		"vcfs/{sample}_{num}.MT2PON_snvs_indels.vcf.gz"
+	shell:
+		"gatk Mutect2 -R {input.fa} -I {input.bam} -tumor {wildcards.sample} --germline-resource {input.germline_resource} --pon {input.PON} -L {input.interval} --interval-padding 100 -O {output}"
+
+
+rule tumor_args:
+	input:
+		expand("vcfs/{sample}_{num}.MT2PON_snvs_indels.vcf.gz",sample=case_IDs,num=intervals)
+	output:
+		"vcfs/{sample}.args"
+	shell:
+		"ls vcfs/{wildcards.sample}_*.MT2PON_snvs_indels.vcf.gz > {output}"
+
+rule vcf_concat:
+	input:
+		args="vcfs/{sample}.args"
+	output:
+		"vcfs_combined/{sample}_MT2pon.vcf.gz"
+	shell:
+		"vcf-concat -f {input.args} | bgzip > {output}"
+
+rule vcf_index:
+	input:
+		"vcfs_combined/{sample}_MT2pon.vcf.gz"
+	output:
+		protected("vcfs_combined/{sample}_MT2pon.vcf.gz.tbi")
+	shell:
+		"tabix -p vcf {input}"
+
+rule GATK4_filter:
+	input:
+		vcf="vcfs_combined/{sample}_MT2pon.vcf.gz",
+		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta"
+	output:
+		"vcfs_combined/{sample}_MT2pon.filtered.vcf.gz"
+	shell:
+		"gatk FilterMutectCalls -R {input.fa} -V {input.vcf} -O {output}"
+
+rule MT2_initial_filter:
+	input:
+		"vcfs_combined/{sample}_MT2pon.filtered.vcf.gz"
+		
+	output:
+		"MF/{sample}.mt2pon.AF0.02.bed"
+	shell:
+		"cat <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.03 && $8<0.4'\''|grep -v \"0|1\") <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.02 && $8<0.4'\''|grep \"0|1\")|cut -f 1-4,6-8|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$3,$4,\"{wildcards.sample}\",$5,$6,$7}}'\'' >{output}"
+
+
+rule repeat_filter:
+	input:
+		file1="MF/{sample}.mt2pon.AF0.02.bed",
+		file2="/n/data1/hms/dbmi/park/yanmei/resources/repeats/Segmental_Dups.bed",
+		file3="/n/data1/hms/dbmi/park/yanmei/resources/MT2.uniq.cluster.bed"
+	output:
+		"MF/{sample}.mt2pon.AF0.02.noSegDup.bed"
+	shell:
+		"subtractBed -a <(subtractBed -a {input.file1} -b {input.file2}) -b {input.file3} > {output}"
+
+rule annovar_formatter:
+	input:
+		"MF/{sample}.mt2pon.AF0.02.noSegDup.bed"
+	output:
+		"MF/{sample}.mt2pon.AF0.02.ANNOVAR.list"
+	shell:
+		"cat {input}|awk '\''{{OFS=\"\\t\";len=length($4)-length($5);if(len<=0){{print $1,$3,$3,$4,$5,$6}}if(len>0){{print $1,$3,$3+len,$4,$5,$6}}}}'\''> {output}"
+
+rule annovar_MAF:
+	input:
+		"MF/{sample}.mt2pon.AF0.02.ANNOVAR.list"
+	output:
+		protected("MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered"),
+		protected("MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped")
+	shell:
+		"annotate_variation.pl -filter -buildver hg19 -dbtype gnomad_genome {input} /n/data1/hms/dbmi/park/yanmei/tools/annovar/humandb/ --outfile MF/{wildcards.sample}.mt2pon.AF0.02.ANNOVAR.list"
+	
+rule MAF0_extraction:
+	input:
+		file1="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered",
+		file2="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped"
+	output:
+		"MF/{sample}.MAF0.bed"
+	shell:
+		"cat <(cat {input.file1}|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$4,$5,$6}}'\'') <(cat {input.file2}|awk '\''{{OFS=\"\\t\";if($2==0){{print $3,$4-1,$4,$6,$7,$8}}}}'\'')|awk '\''length($4)==1 && length($5)==1'\'' > {output}"
+		
+	
+rule feature_extraction:
+	input:
+		file1="MF/{sample}.MAF0.bed",
+		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+	output:
+		"MF/{sample}.features"
+	shell:
+		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 150 4 bam"
+
+		
+rule Prediction:
+	input:
+		file1="MF/{sample}.features",
+		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
+	output:
+		"MF/{sample}.{cov}.predictions"
+	shell:
+		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+
+
+rule gather_all_features:
+	input:
+		expand("MF/{sample}.features",sample=case_IDs)
+	output:
+		"MF_allsites/allsites.features"
+	shell:
+		"cat <(cat {input}|grep '\''^id'\''|head -1)  <(cat {input}|grep -v '\''^id'\'') > {output}"
+
+rule Prediction_allsites:
+	input:
+		file1="MF_allsites/allsites.features",
+		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
+	output:
+		"MF_allsites/allsites.{cov}.predictions"
+	shell:
+		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+
+
+
+

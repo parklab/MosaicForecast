@@ -1,0 +1,19 @@
+{
+    "__default__" :
+    {
+        "queue"     : "your queue",
+        "nCPUs"     : "4",
+        "memory"    : 16G,
+        "resources" : "\"select[mem>16G] rusage[mem=16G] span[hosts=1]\"",
+        "name"      : "JOBNAME.{rule}.{wildcards}",
+        "output"    : "logs/cluster/{rule}.{wildcards}.out",
+        "error"     : "logs/cluster/{rule}.{wildcards}.err"
+    },
+
+
+    "trimming_PE" :
+    {
+        "memory"    : 32G,
+        "resources" : "\"select[mem>32G] rusage[mem=32G] span[hosts=1]\"",
+    }
+}

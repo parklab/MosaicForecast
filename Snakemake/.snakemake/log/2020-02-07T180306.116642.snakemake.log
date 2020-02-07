@@ -1,0 +1,12 @@
+Building DAG of jobs...
+AmbiguousRuleException:
+Rules Prediction_allsites and Prediction are ambiguous for the file MF/allsites.100x.predictions.
+Consider starting rule output with a unique prefix, constrain your wildcards, or use the ruleorder directive.
+Wildcards:
+	Prediction_allsites: cov=100x
+	Prediction: cov=100x,sample=allsites
+Expected input files:
+	Prediction_allsites: MF/allsites.features /n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/100xRFmodel_addRMSK_Refine.rds
+	Prediction: MF/allsites.features /n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/100xRFmodel_addRMSK_Refine.rdsExpected output files:
+	Prediction_allsites: MF/allsites.100x.predictions
+	Prediction: MF/allsites.100x.predictions

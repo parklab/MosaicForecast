@@ -1,0 +1,4 @@
+Building DAG of jobs...
+WildcardError in line 172 of /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Snakemake/Snakefile:
+Wildcards in input files cannot be determined from output files:
+'cov'
