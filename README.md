@@ -70,7 +70,7 @@ wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_ref
 
 GRCh38/hg38:
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa
-wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai 
 #### Mappability score: 
 * Umap score (k=24, GRCh37/hg19):   
 wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
@@ -108,6 +108,9 @@ wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz
 #### Population allele frequency
 * gnomAD datasets (recommend to remove variants with population MAF>0.001%):  
 https://gnomad.broadinstitute.org/downloads
+
+## How to run Mutect2-PON:
+* Please refer to FAQ.pdf, we also have a Snakemake pipeline.
 
 # Usage:
 ## Phasing:
