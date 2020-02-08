@@ -87,6 +87,7 @@ rule vcf_index:
 rule GATK4_filter:
 	input:
 		vcf="vcfs_combined/{sample}_MT2pon.vcf.gz",
+		tbi="vcfs_combined/{sample}_MT2pon.vcf.gz.tbi",
 		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta"
 	output:
 		"vcfs_combined/{sample}_MT2pon.filtered.vcf.gz"
