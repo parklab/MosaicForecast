@@ -13,7 +13,8 @@ depth="100x"
 rule all:
 	input:
 		expand("MF/{sample}.{cov}.predictions",sample=case_IDs, cov=depth),
-		expand("MF_allsites/allsites.{cov}.predictions",cov=depth)
+		expand("MF_allsites/allsites.{cov}.predictions",cov=depth),
+		expand("MF_Phase/{sample}.phase",sample=case_IDs)
 	
 rule scatter_MT2_PON:
 	input:
@@ -180,5 +181,14 @@ rule Prediction_allsites:
 		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
 
+rule Phase:
+	input:
+		bed="MF/{sample}.MAF0.bed",
+		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		umap="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+	output:
+		dir=directory("MF_Phase/{sample}.phase")
+	shell:
+		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Phase.py bam_links_normal {output.dir} {input.fa} {input.bed} 20 {input.umap} 4 bam"
 
 
