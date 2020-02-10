@@ -72,6 +72,8 @@ GRCh38/hg38:
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai 
 #### Mappability score: 
+`The wigToBigWig command line above take ~30GB memory, please make sure you requires enought memory before running.`
+
 * Umap score (k=24, GRCh37/hg19):   
 wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz  
 tar -zxvf hg19.umap.tar.gz  
@@ -86,7 +88,6 @@ cd hg38
 fetchChromSizes hg38> hg38.chrom.sizes  
 wigToBigWig <(zcat k24.umap.wg.gz) hg38.chrom.sizes k24.umap.wg.bw  
 
-* The wigToBigWig command line above take ~30GB memory, please make sure you requires enought memory before running.
 
 #### Regions to filter out:
 * GRCh37/hg19: 
