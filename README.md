@@ -64,12 +64,12 @@ chmod +x fetchChromSizes
 
 ## Resources:
 #### Human reference genome: 
-GRCh37/hg19:  
+* GRCh37/hg19:   
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz   
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz.fai   
 
-GRCh38/hg38:
-wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa
+* GRCh38/hg38: 
+wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa 
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai 
 #### Mappability score: 
 `The wigToBigWig command line above take ~30GB memory, please make sure you requires enought memory before running.`
@@ -91,24 +91,31 @@ wigToBigWig <(zcat k24.umap.wg.gz) hg38.chrom.sizes k24.umap.wg.bw
 
 #### Regions to filter out:
 * GRCh37/hg19: 
-* Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz  
-* Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
-wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh37.bed    
-* Simple repeats (should be removed before calling mosaic INDELS):  
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz  
+Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
+`wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz` 
 
-* GRCh38/hg38 (please note that our model is trained under GRCh37 and the file "predictedhap3ormore_cluster.GRCh38.bed" is simply a liftover from the GRCh37 file above, hence could be un-optimized for GRCh38):  
-* Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/genomicSuperDups.txt.gz  
-* Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
-wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh38.bed   
-* Simple repeats (should be removed before calling mosaic INDELS):  
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz  
+Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
+`wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh37.bed`
+
+Simple repeats (should be removed before calling mosaic INDELS):  
+`wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz`
+
+GRCh38/hg38 (please note that our model is trained under GRCh37 and the file "predictedhap3ormore_cluster.GRCh38.bed" is simply a liftover from the GRCh37 file above, hence could be un-optimized for GRCh38):  
+Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
+`wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/genomicSuperDups.txt.gz`
+
+Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
+`wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh38.bed`
+
+Simple repeats (should be removed before calling mosaic INDELS):  
+`wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz`
+
  
 #### Population allele frequency
 * gnomAD datasets (recommend to remove variants with population MAF>0.001%):  
 https://gnomad.broadinstitute.org/downloads
+from GATK bundle:
+`ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/`
 
 ## How to run Mutect2-PON:
 * Please refer to FAQ.pdf, we also have a Snakemake pipeline.
