@@ -127,8 +127,8 @@ wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz
 ```
 #### Population allele frequency
 * gnomAD datasets (recommend to remove variants with population MAF>0.001%):  
-https://gnomad.broadinstitute.org/downloads
-from GATK bundle:
+https://gnomad.broadinstitute.org/downloads 
+* from GATK bundle:
 ```
 ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/
 ```
