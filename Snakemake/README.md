@@ -1,4 +1,4 @@
-##before running:
+## before running:
 1. Install snakemake by using conda:
 	source {your_dir}/miniconda3/etc/profile.d/conda.sh
 	conda activete MF
@@ -12,18 +12,18 @@ snakemake --dag -np |dot -Tpng > pipeline.png
 ## dry run test:
 snakemake -np
 
-##actual run:
+## actual run:
 snakemake
 
-##run on cluster:
+## run on cluster:
 
-#on LSF:
+# on LSF:
 source {your_dir}/miniconda3/etc/profile.d/conda.sh
 conda activate MF
 snakemake --unlock
 snakemake --rerun-incomplete -j {job_num} --cluster-config LSF.json --cluster "bsub -n 4 --latency-wait 120 -W 60:00 -M 15G -q {queue} -o logs/%J.out -e logs/%J.err"
 
-#on slurm:
+# on slurm:
 source {your_dir}/miniconda3/etc/profile.d/conda.sh
 conda activate MF
 snakemake --unlock
