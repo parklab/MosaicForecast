@@ -73,7 +73,7 @@ for k,v in sorted(sites_chr_dict.items()):
 	if not re.search('^chr',v):
 		print("chr"+v,sites_pos_dict[k],int(sites_pos_dict[k])+1,k,file=input_mappability,sep="\t")
 	else:
-		print("chr"+v,sites_pos_dict[k],int(sites_pos_dict[k])+1,k,file=input_mappability,sep="\t")
+		print(v,sites_pos_dict[k],int(sites_pos_dict[k])+1,k,file=input_mappability,sep="\t")
 input_mappability.close()
 
 
