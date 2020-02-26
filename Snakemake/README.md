@@ -1,8 +1,8 @@
 ## before running:
-1. Install snakemake by using conda:
-	source {your_dir}/miniconda3/etc/profile.d/conda.sh
-	conda activete MF
-	conda install -c bioconda -c conda-forge snakemake
+1. Install snakemake by using conda:  
+	source {your_dir}/miniconda3/etc/profile.d/conda.sh  
+	conda activete MF  
+	conda install -c bioconda -c conda-forge snakemake  
 2. Soft-link your case .bam and .bai files under "bam_links_case", and soft-link your panel-of-normal file under "bam_links_PON".
 3. Change all directory names and fasta file names in the "Snakefile".
 
