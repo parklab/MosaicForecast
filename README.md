@@ -75,7 +75,7 @@ wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_ref
 wget ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai 
 ```
 #### Mappability score: 
-`The wigToBigWig command line above take ~30GB memory, please make sure you requires enought memory before running.`
+`The wigToBigWig command line below take ~30GB memory, please make sure you requires enought memory before running.`
 
 * Umap score (k=24, GRCh37/hg19):   
 ```
