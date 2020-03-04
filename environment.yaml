@@ -25,5 +25,5 @@ dependencies:
   - r-nnet
   - r-ParamHelpers
   - r-mlr
-
+  - snakemake
 
