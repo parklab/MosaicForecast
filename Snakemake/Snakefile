@@ -108,12 +108,11 @@ rule MT2_initial_filter:
 rule repeat_filter:
 	input:
 		file1="MF/{sample}.mt2pon.AF0.02.bed",
-		file2="/n/data1/hms/dbmi/park/yanmei/resources/repeats/Segmental_Dups.bed",
-		file3="/n/data1/hms/dbmi/park/yanmei/resources/MT2.uniq.cluster.bed"
+		file2="/n/data1/hms/dbmi/park/yanmei/resources/SegDup_and_clustered.GRCh37.bed"
 	output:
 		"MF/{sample}.mt2pon.AF0.02.noSegDup.bed"
 	shell:
-		"subtractBed -a <(subtractBed -a {input.file1} -b {input.file2}) -b {input.file3} > {output}"
+		"subtractBed -a {input.file1} -b {input.file2} > {output}"
 
 rule annovar_formatter:
 	input:
