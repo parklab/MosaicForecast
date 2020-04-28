@@ -44,7 +44,7 @@ rule combine_PONs:
 		args="pon/{num}.args",
 		input3=expand("pon/{id}_{num}_pon.vcf.gz",id=PON_IDs,num=intervals)
 	output:
-		"pon2/ASD75_{num}_pon.vcf.gz"
+		"pon2/PON_{num}_pon.vcf.gz"
 	shell:
 		"gatk CreateSomaticPanelOfNormals -vcfs {input.args} -O {output}"
 
@@ -54,7 +54,7 @@ rule MT2:
 		bam="bam_links_case/{sample}.bam",
 		interval="intervals/{num}.intervals.list",
 		germline_resource="/n/data1/hms/dbmi/park/yanmei/resources/af-only-gnomad.raw.sites.b37.vcf.gz",
-		PON="pon2/ASD75_{num}_pon.vcf.gz"
+		PON="pon2/PON_{num}_pon.vcf.gz"
 	output:
 		"vcfs/{sample}_{num}.MT2PON_snvs_indels.vcf.gz"
 	shell:
@@ -102,7 +102,7 @@ rule MT2_initial_filter:
 	output:
 		"MF/{sample}.mt2pon.AF0.02.bed"
 	shell:
-		"cat <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.03 && $8<0.4'\''|grep -v \"0|1\") <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.02 && $8<0.4'\''|grep \"0|1\")|cut -f 1-4,6-8|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$3,$4,\"{wildcards.sample}\",$5,$6,$7}}'\'' >{output}"
+		"cat <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v PON|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.03 && $8<0.4'\''|grep -v \"0|1\") <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v PON|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.02 && $8<0.4'\''|grep \"0|1\")|cut -f 1-4,6-8|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$3,$4,\"{wildcards.sample}\",$5,$6,$7}}'\'' >{output}"
 
 
 rule repeat_filter:
