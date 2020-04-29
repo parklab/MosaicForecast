@@ -149,7 +149,7 @@ rule feature_extraction:
 	output:
 		"MF/{sample}.features"
 	shell:
-		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 150 4 bam"
+		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
 
 		
 rule Prediction:
