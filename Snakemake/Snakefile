@@ -188,6 +188,6 @@ rule Phase:
 	output:
 		dir=directory("MF_Phase/{sample}.phase")
 	shell:
-		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Phase.py bam_links_normal {output.dir} {input.fa} {input.bed} 20 {input.umap} 4 bam"
+		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Phase.py bam_links_case {output.dir} {input.fa} {input.bed} 20 {input.umap} 4 bam"
 
 
