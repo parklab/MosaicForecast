@@ -134,7 +134,7 @@ ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/
 ```
 
 ## How to run Mutect2-PON:
-* Please refer to FAQ.pdf, we also have a Snakemake pipeline.
+* Please refer to FAQ.md, we also have a Snakemake pipeline.
 
 # Usage:
 ## Phasing:
@@ -184,7 +184,7 @@ Intermediate files:
 ## Extraction of read-level features:
 **Usage:**
 
-python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) read_length n_jobs_parallel sequencing_file_format(bam/cram)
+python ReadLevel_Features_extraction.py input.bed output_features bam_dir ref.fa Umap_mappability(bigWig file,k=24) n_jobs_parallel sequencing_file_format(bam/cram)
 
 **Note:**
 1. Names of bam files should be "sample.bam" under the bam_dir, and there should be index files under the same directory (samtools index sample.bam). Cram files are also supported.

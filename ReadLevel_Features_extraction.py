@@ -8,20 +8,21 @@ program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
 
-if count !=8:
-	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir(cram is also supported) reference_fasta Umap_mappability(bigWig file,k=24) read_length num_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n\n")
+if count !=7:
+	print ("Usage: python(v3) ReadLevel_Features_extraction.py input_bed(file_format: chr pos-1 pos ref alt sample, sep=\"\\t\") output_features bam_dir(cram is also supported) reference_fasta Umap_mappability(bigWig file,k=24) num_threads_parallel sequencing_file_format(bam/cram)\n\nNote:\n1. Names of bam files should be \"sample.bam\" under the bam_dir, and there should be corresponding index files. \n\n2. There should be a fai file under the same dir of the fasta file (samtools faidx input.fa) \n\n3. We did not use gnomad population AF as an feature (instead we use it to filter), but you can use it to train your model if you have interest in common variants\n\n4. The program to extract mappability score: \"bigWigAverageOverBed\" could be downloaded here at http://hgdownload.soe.ucsc.edu/admin/exe/, the program to convert wiggle file to BigWig file \"wigToBigWig\", and the \"fetchChromSizes\" script to create the chrom.sizes file for the UCSC database with which you are working (e.g., hg19) could be downloaded from the same directory. The wiggle file containing mappability score (Umap,k=24) could be downloaded here: https://bismap.hoffmanlab.org/\n\n")
 	sys.exit(1)
-elif count==8:
+elif count==7:
 	program_name = sys.argv[0]
 	input_pos=sys.argv[1] #walsh.nocluster.noalt_allele_in_normal.norepeat.bed 1       1015256 1015257 A       G       Walsh
 	output=sys.argv[2]
 	bam_dir_tmp=sys.argv[3]
 	reference_fasta=sys.argv[4]
 	unimap_mappability_BigWigfile=sys.argv[5]
-	read_length=int(sys.argv[6])
-	n_jobs=sys.argv[7]
-	seq_file_format=sys.argv[8]
+	#read_length=int(sys.argv[6])
+	n_jobs=sys.argv[6]
+	seq_file_format=sys.argv[7]
 	#sequencing_type=sys.argv[5]
+
 
 import numpy as np
 import pandas as pd
@@ -180,6 +181,8 @@ def process_line(line):
 			if not os.path.exists(bai_file) and not os.path.exists(bai_file2):
 				print("no bam index files under the bam_dir")
 			a=pysam.AlignmentFile(input_bam, "rb",reference_filename=reference_fasta)
+			read_length=int(subprocess.check_output("samtools view "+ input_bam+"|head -1000|awk '{print length($10)}'|sort|uniq -c|awk '{OFS=\"\\t\";print $1,$2}'|sort -k1,1nr|head -1|cut -f2",shell=True).decode('ascii'))
+			#print(read_length)
 		elif seq_file_format=="cram":
 			input_cram=bam_dir+"/"+str(sample)+".cram"
 			crai_file=bam_dir+"/"+str(sample)+".crai"
@@ -188,6 +191,8 @@ def process_line(line):
 				print("no sample.cram under the cram_dir")
 			if not os.path.exists(crai_file) and not os.path.exists(crai_file2):
 				print("no cram index files under the cram_dir")
+			read_length=int(subprocess.check_output("samtools view "+ input_cram+"|head -1000|awk '{print length($10)}'|sort|uniq -c|awk '{OFS=\"\\t\";print $1,$2}'|sort -k1,1nr|head -1|cut -f2",shell=True).decode('ascii'))
+			#print(read_length)
 			a=pysam.AlignmentFile(input_cram, "rc",reference_filename=reference_fasta)
 			subprocess.run("mkdir -p tmp/", shell=True)
 			tmp1_localcram_filename="tmp/"+sample+"_"+chrom+"_"+str(pos)+"_"+str(uuid.uuid4())+".cram"
@@ -281,7 +286,8 @@ def process_line(line):
 									baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
 									leftpos_major[name].append(pileupread.alignment.reference_start)
 									#mismatches_major[name].append(filterPick(pileupread.alignment.tags,'NM'))
-									mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+									#mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+									mismatches_major[name].append(int(pileupread.alignment.get_tag('NM'))/read_length)
 									#print mismatches_major[name]
 									#print mismatches_major[name]
 									if not pileupread.alignment.is_reverse:
@@ -323,7 +329,8 @@ def process_line(line):
 									baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
 									leftpos_minor[name].append(pileupread.alignment.reference_start)
 									#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
-									mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+									#mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+									mismatches_minor[name].append(int(pileupread.alignment.get_tag('NM'))/read_length)
 									if not pileupread.alignment.is_reverse:
 										minor_plus[name]=minor_plus.get(name,0)+1
 									elif pileupread.alignment.is_reverse:
@@ -456,7 +463,8 @@ def process_line(line):
 										mapq_major[name].append(pileupread.alignment.mapping_quality)
 										baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
 										leftpos_major[name].append(pileupread.alignment.reference_start)
-										mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+										#mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+										mismatches_major[name].append(int(pileupread.alignment.get_tag('NM'))/read_length)
 	
 										if not pileupread.alignment.is_reverse:
 											major_plus[name]=major_plus.get(name,0)+1
@@ -508,7 +516,8 @@ def process_line(line):
 									baseq_minor[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
 									leftpos_minor[name].append(pileupread.alignment.reference_start)
 									#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
-									mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+									#mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+									mismatches_minor[name].append(int(pileupread.alignment.get_tag('NM'))/read_length)
 									if not pileupread.alignment.is_reverse:
 										minor_plus[name]=minor_plus.get(name,0)+1
 									elif pileupread.alignment.is_reverse:
@@ -660,7 +669,8 @@ def process_line(line):
 										mapq_major[name].append(pileupread.alignment.mapping_quality)
 										baseq_major[name].append(pileupread.alignment.query_qualities[pileupread.query_position])
 										leftpos_major[name].append(pileupread.alignment.reference_start)
-										mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+										#mismatches_major[name].append(pileupread.alignment.get_tag('NM'))
+										mismatches_major[name].append(int(pileupread.alignment.get_tag('NM'))/read_length)
 	
 										if not pileupread.alignment.is_reverse:
 											major_plus[name]=major_plus.get(name,0)+1
@@ -721,7 +731,8 @@ def process_line(line):
 									baseq_minor[name].append(baseq_mean)
 									leftpos_minor[name].append(pileupread.alignment.reference_start)
 									#mismatches_minor[name].append(filterPick(pileupread.alignment.tags,'NM'))
-									mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+									#mismatches_minor[name].append(pileupread.alignment.get_tag('NM'))
+									mismatches_minor[name].append(int(pileupread.alignment.get_tag('NM'))/read_length)
 									if not pileupread.alignment.is_reverse:
 										minor_plus[name]=minor_plus.get(name,0)+1
 									elif pileupread.alignment.is_reverse:
@@ -954,7 +965,8 @@ def my_context_selection(a,b,c,d):
 		return(d)
 def my_mean(a):
 	x=[float(i) for i in a.split(',')[:-1]]	
-	return(sum(x)/len(x)/float(read_length))
+	#return(sum(x)/len(x)/float(read_length))
+	return(sum(x)/len(x))
 def my_AF(a,b,c,d):
 	depth=sum([int(a),int(b),int(c),int(d)])
 	alt=sum([int(c),int(d)])
