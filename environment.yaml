@@ -11,14 +11,13 @@ dependencies:
   - regex
   - scipy =1.2.1
   - bedtools =2.25.0
-  - r-base
+  - r-base =3.5.1
   - pyfaidx =0.5.3
   - r-xml
   - r-ggplot2
   - r-caret
   - r-e1071
   - r-randomForest
-  - r-e1071
   - r-glmnet
   - r-rcolorbrewer
   - r-devtools
