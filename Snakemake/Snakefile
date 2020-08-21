@@ -12,8 +12,11 @@ depth="100x"
 # a pseudo-rule that collects the target files
 rule all:
 	input:
-		expand("MF/{sample}.{cov}.predictions",sample=case_IDs, cov=depth),
-		expand("MF_allsites/allsites.{cov}.predictions",cov=depth),
+		expand("MF/{sample}.{cov}.SNV.predictions",sample=case_IDs, cov=depth),
+		expand("MF_allsites/allsites.SNV.{cov}.predictions",cov=depth),
+		expand("MF_allsites/allsites.INS.predictions",cov=depth),
+		expand("MF_allsites/allsites.DEL.predictions",cov=depth),
+		expand("MF_allsites/allsites.SNV.{cov}.predictions",cov=depth),
 		expand("MF_Phase/{sample}.phase",sample=case_IDs)
 	
 rule scatter_MT2_PON:
@@ -131,7 +134,129 @@ rule annovar_MAF:
 	shell:
 		"annotate_variation.pl -filter -buildver hg19 -dbtype gnomad_genome {input} /n/data1/hms/dbmi/park/yanmei/tools/annovar/humandb/ --outfile MF/{wildcards.sample}.mt2pon.AF0.02.ANNOVAR.list"
 	
-rule MAF0_extraction:
+rule MAF0_extraction_SNV:
+	input:
+		file1="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered",
+		file2="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped"
+	output:
+		"MF/{sample}.MAF0.SNV.bed"
+	shell:
+		"cat <(cat {input.file1}|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$4,$5,$6}}'\'') <(cat {input.file2}|awk '\''{{OFS=\"\\t\";if($2==0){{print $3,$4-1,$4,$6,$7,$8}}}}'\'')|awk '\''length($4)==1 && length($5)==1'\'' > {output}"
+		
+rule MAF0_extraction_INS:
+	input:
+		file1="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered",
+		file2="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped",
+		file3="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/resources/allrepeats_forindel.GRCh37.bed"
+	output:
+		"MF/{sample}.MAF0.INS.bed"
+	shell:
+		"subtractBed -a <(cat <(cat {input.file1}|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$4,$5,$6}}'\'') <(cat {input.file2}|awk '\''{{OFS=\"\\t\";if($2==0){{print $3,$4-1,$4,$6,$7,$8}}}}'\'')|awk '\''length($4)< length($5)'\'') -b {input.file3} > {output}"
+		
+rule MAF0_extraction_DEL:
+	input:
+		file1="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered",
+		file2="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped",
+		file3="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/resources/allrepeats_forindel.GRCh37.bed"
+	output:
+		"MF/{sample}.MAF0.DEL.bed"
+	shell:
+		"subtractBed -a <(cat <(cat {input.file1}|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$4,$5,$6}}'\'') <(cat {input.file2}|awk '\''{{OFS=\"\\t\";if($2==0){{print $3,$4-1,$4,$6,$7,$8}}}}'\'')|awk '\''length($4)< length($5)'\'') -b {input.file3} > {output}"
+		
+	
+rule feature_extraction_SNV:
+	input:
+		file1="MF/{sample}.MAF0.SNV.bed",
+		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+	output:
+		"MF/{sample}.SNV.features"
+	shell:
+		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
+
+rule feature_extraction_INS:
+	input:
+		file1="MF/{sample}.MAF0.INS.bed",
+		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+	output:
+		"MF/{sample}.INS.features"
+	shell:
+		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
+
+rule feature_extraction_DEL:
+	input:
+		file1="MF/{sample}.MAF0.DEL.bed",
+		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+	output:
+		"MF/{sample}.DEL.features"
+	shell:
+		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
+
+
+rule Prediction_SNV:
+	input:
+		file1="MF/{sample}.SNV.features",
+		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
+	output:
+		"MF/{sample}.{cov}.SNV.predictions"
+	shell:
+		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+
+rule gather_all_features_SNV:
+	input:
+		expand("MF/{sample}.SNV.features",sample=case_IDs)
+	output:
+		"MF_allsites/allsites.SNV.features"
+	shell:
+		"cat <(cat {input}|grep '\''^id'\''|head -1)  <(cat {input}|grep -v '\''^id'\'') > {output}"
+
+rule gather_all_features_INS:
+	input:
+		expand("MF/{sample}.INS.features",sample=case_IDs)
+	output:
+		"MF_allsites/allsites.INS.features"
+	shell:
+		"cat <(cat {input}|grep '\''^id'\''|head -1)  <(cat {input}|grep -v '\''^id'\'') > {output}"
+
+rule gather_all_features_DEL:
+	input:
+		expand("MF/{sample}.DEL.features",sample=case_IDs)
+	output:
+		"MF_allsites/allsites.DEL.features"
+	shell:
+		"cat <(cat {input}|grep '\''^id'\''|head -1)  <(cat {input}|grep -v '\''^id'\'') > {output}"
+
+rule Prediction_allSNVs:
+	input:
+		file1="MF_allsites/allsites.SNV.features",
+		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
+	output:
+		"MF_allsites/allsites.SNV.{cov}.predictions"
+	shell:
+		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+
+rule Prediction_allINSs:
+	input:
+		file1="MF_allsites/allsites.INS.features",
+		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/insertions_250x.RF.rds"
+	output:
+		"MF_allsites/allsites.INS.predictions"
+	shell:
+		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+
+rule Prediction_allDELs:
+	input:
+		file1="MF_allsites/allsites.DEL.features",
+		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/deletions_250x.RF.rds"
+	output:
+		"MF_allsites/allsites.DEL.predictions"
+	shell:
+		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+
+
+rule MAF0_extraction_all:
 	input:
 		file1="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered",
 		file2="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped"
@@ -140,46 +265,6 @@ rule MAF0_extraction:
 	shell:
 		"cat <(cat {input.file1}|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$4,$5,$6}}'\'') <(cat {input.file2}|awk '\''{{OFS=\"\\t\";if($2==0){{print $3,$4-1,$4,$6,$7,$8}}}}'\'')|awk '\''length($4)==1 && length($5)==1'\'' > {output}"
 		
-	
-rule feature_extraction:
-	input:
-		file1="MF/{sample}.MAF0.bed",
-		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
-		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
-	output:
-		"MF/{sample}.features"
-	shell:
-		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
-
-		
-rule Prediction:
-	input:
-		file1="MF/{sample}.features",
-		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
-	output:
-		"MF/{sample}.{cov}.predictions"
-	shell:
-		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
-
-
-rule gather_all_features:
-	input:
-		expand("MF/{sample}.features",sample=case_IDs)
-	output:
-		"MF_allsites/allsites.features"
-	shell:
-		"cat <(cat {input}|grep '\''^id'\''|head -1)  <(cat {input}|grep -v '\''^id'\'') > {output}"
-
-rule Prediction_allsites:
-	input:
-		file1="MF_allsites/allsites.features",
-		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
-	output:
-		"MF_allsites/allsites.{cov}.predictions"
-	shell:
-		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
-
-
 rule Phase:
 	input:
 		bed="MF/{sample}.MAF0.bed",
