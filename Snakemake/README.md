@@ -21,10 +21,10 @@ snakemake
 source {your_dir}/miniconda3/etc/profile.d/conda.sh
 conda activate MF
 snakemake --unlock
-snakemake --rerun-incomplete -j {job_num} --cluster-config LSF.json --cluster "bsub -n 4 --latency-wait 120 -W 60:00 -M 15G -q {queue} -o logs/%J.out -e logs/%J.err"
+snakemake --rerun-incomplete -j {job_num} --latency-wait 120 --cluster-config LSF.json --cluster "bsub -n 4 -W 60:00 -M 15G -q {queue} -o logs/%J.out -e logs/%J.err"
 
 # on slurm:
 source {your_dir}/miniconda3/etc/profile.d/conda.sh
 conda activate MF
 snakemake --unlock
-snakemake --rerun-incomplete -j {job_num} --cluster-config cluster.json --cluster "sbatch -p {queue} --account={accountID} -c 1 -t 2-12:00 --latency-wait 120 --mem=5000 -o logs/%j.out -e logs/%j.err "
+snakemake --rerun-incomplete -j {job_num} --latency-wait 120 --cluster-config slurm.json --cluster "sbatch -p {queue} --account={accountID} -c 1 -t 2-12:00 --mem=5000 -o logs/%j.out -e logs/%j.err "
