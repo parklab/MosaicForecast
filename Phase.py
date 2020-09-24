@@ -719,6 +719,7 @@ for k,v in sorted(inforSNPs.items()):
 			                                        ##print cigar_patt[l],sum
 							elif cigar_patt[l]=="I":
 								sum+=int(cigar_num[l-1])
+								offset=offset-int(cigar_num[l-1])
 			                                        #print cigar_patt[l],sum
 							elif cigar_patt[l]=="N" or cigar_patt[l]=="D":
 								offset+=int(cigar_num[l-1])
