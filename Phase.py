@@ -89,6 +89,9 @@ file.close()
 tmp_filename=str(uuid.uuid4())
 input_mappability=open(tmp_filename,'w')
 for k,v in sorted(sites_chr_dict.items()):
+	print(k)
+	print(v)
+	print(sites_pos_dict[k])
 	if not re.search('^chr',v):
 		print("chr"+v,sites_pos_dict[k],int(sites_pos_dict[k])+1,k,file=input_mappability,sep="\t")
 	else:

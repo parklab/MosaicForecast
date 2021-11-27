@@ -161,7 +161,7 @@ rule MAF0_extraction_DEL:
 	output:
 		"MF/{sample}.MAF0.DEL.bed"
 	shell:
-		"subtractBed -a <(cat <(cat {input.file1}|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$4,$5,$6}}'\'') <(cat {input.file2}|awk '\''{{OFS=\"\\t\";if($2==0){{print $3,$4-1,$4,$6,$7,$8}}}}'\'')|awk '\''length($4)< length($5)'\'') -b {input.file3} > {output}"
+		"subtractBed -a <(cat <(cat {input.file1}|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$4,$5,$6}}'\'') <(cat {input.file2}|awk '\''{{OFS=\"\\t\";if($2==0){{print $3,$4-1,$4,$6,$7,$8}}}}'\'')|awk '\''length($4)> length($5)'\'') -b {input.file3} > {output}"
 		
 	
 rule feature_extraction_SNV:
