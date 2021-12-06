@@ -34,7 +34,8 @@ else:
 
 
 for interval in glob.glob(os.path.join(interval_dir+"/","*.list")):
-	pattern=re.compile(r'([0-9]+)\.intervals\.list')
+	# pattern=re.compile(r'([0-9]+)\.intervals\.list')
+	pattern=re.compile(r'([0-9XY]+)\.intervals\.list')
 	num=re.search(pattern, interval).group(1)
 	fo=open(output_dir+"/"+str(num)+".args","w")
 #	num=interval.str.extract(pattern)
