@@ -1,0 +1,7 @@
+depth: 250x
+fasta: /n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta
+germline: /n/data1/hms/dbmi/park/yanmei/resources/af-only-gnomad.raw.sites.b37.vcf.gz
+repeats: /n/data1/hms/dbmi/park/yanmei/MosaicForecast/resources/allrepeats_forindel.GRCh37.bed
+umap: /n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw
+segdup: /n/data1/hms/dbmi/park/yanmei/resources/SegDup_and_clustered.GRCh37.bed
+
