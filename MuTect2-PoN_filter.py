@@ -50,7 +50,7 @@ for line in file:
 		alt_count=int(INFOs[1].split(',')[1])
 		depth=ref_count+alt_count
 		if not re.search('str_contraction', filters) and not re.search('t_lod_fstar', filters) and not re.search('triallelic_site', filters) and not re.search('panel_of_normals', filters) and not re.search('multiallelic',filters):
-			if re.search(":0|1:", line):
+			if re.search(":0|1:", line) or re.search(":1|0:", line):
 				if AF>=0.02 and AF<0.4 and alt_count>=2:
 					print(chr,pos-1,pos,ref,alt,sample,depth, AF, file=fo,sep="\t")
 			elif not re.search(":0|1:", line):
