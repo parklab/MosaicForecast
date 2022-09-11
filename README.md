@@ -361,7 +361,7 @@ A list of extrapolated genotypes based on Phasing, Readlevel features and orthog
 ## Contact:
 If you have any questions please contact us:
 
-Yanmei Dou: yanmei_dou@hms.harvard.edu, douyanmei@gmail.com  
+Yanmei Dou: douyanmei@westlake.edu.cn, douyanmei@gmail.com  
 Peter J Park: peter_park@hms.harvard.edu
 
 
