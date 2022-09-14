@@ -1,13 +1,13 @@
 ##GATK: v4.1.0.0
 #https://groups.google.com/forum/#!topic/snakemake/e0XNmXqL7Bg
 import socket
-shell.prefix("module load gcc; module load java; module load vcftools; source /n/data1/hms/dbmi/park/yanmei/anaconda3/etc/profile.d/conda.sh; conda activate MF; ")
+shell.prefix("module load gcc; module load java; module load vcftools; source /path/to/anaconda3/etc/profile.d/conda.sh; conda activate MF; ")
 
 PON_IDs, = glob_wildcards("bam_links_PON/{id}.bam")
 intervals, = glob_wildcards("intervals/{num}.intervals.list")
 case_IDs, = glob_wildcards("bam_links_case/{sample}.bam")
 depth="100x"
-#python split_line.py /n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta.fai 55000000 intervals/	
+#python split_line.py /path/to/resources/human_g1k_v37_decoy.fasta.fai 55000000 intervals/	
 
 # a pseudo-rule that collects the target files
 rule all:
@@ -21,10 +21,10 @@ rule all:
 	
 rule scatter_MT2_PON:
 	input:
-		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		fa="/path/to/resources/human_g1k_v37_decoy.fasta",
 		interval="intervals/{num}.intervals.list",
 		bam="bam_links_PON/{id}.bam",
-		germline_resource="/n/data1/hms/dbmi/park/yanmei/resources/af-only-gnomad.raw.sites.b37.vcf.gz"
+		germline_resource="/path/to/resources/af-only-gnomad.raw.sites.b37.vcf.gz"
 	output:
 		"pon/{id}_{num}_pon.vcf.gz"
 	shell:
@@ -53,10 +53,10 @@ rule combine_PONs:
 
 rule MT2:
 	input:
-		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
+		fa="/path/to/resources/human_g1k_v37_decoy.fasta",
 		bam="bam_links_case/{sample}.bam",
 		interval="intervals/{num}.intervals.list",
-		germline_resource="/n/data1/hms/dbmi/park/yanmei/resources/af-only-gnomad.raw.sites.b37.vcf.gz",
+		germline_resource="/path/to/resources/af-only-gnomad.raw.sites.b37.vcf.gz",
 		PON="pon2/PON_{num}_pon.vcf.gz"
 	output:
 		"vcfs/{sample}_{num}.MT2PON_snvs_indels.vcf.gz"
@@ -92,7 +92,7 @@ rule GATK4_filter:
 	input:
 		vcf="vcfs_combined/{sample}_MT2pon.vcf.gz",
 		tbi="vcfs_combined/{sample}_MT2pon.vcf.gz.tbi",
-		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta"
+		fa="/path/to/resources/human_g1k_v37_decoy.fasta"
 	output:
 		"vcfs_combined/{sample}_MT2pon.filtered.vcf.gz"
 	shell:
@@ -105,13 +105,13 @@ rule MT2_initial_filter:
 	output:
 		"MF/{sample}.mt2pon.AF0.02.bed"
 	shell:
-		"cat <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v PON|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>=4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.03 && $8<0.4'\''|grep -v \"0|1\") <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v PON|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>=4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.02 && $8<0.4'\''|grep \"0|1\")|cut -f 1-4,6-8|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$3,$4,\"{wildcards.sample}\",$5,$6,$7}}'\'' >{output}"
+		"cat <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v PON|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>=4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.03 && $8<0.4'\''|grep -v \"1|0\"|grep -v \"0|1\") <(zcat {input}|grep -v '\''^#'\''|grep -v panel|grep -v PON|grep -v str_contraction|grep -v multiallelic|grep -v t_lod|gawk '\''{{match($0,/;POPAF=([0-9\.\-e]+);/,arr); if(arr[1]!~/-/ && arr[1]>=4){{print $0}}}}'\''|cut -f1,2,4,5,10|sed '\''s/:/\t/g'\''|sed '\''s/,/\t/g'\''|awk '\''$8>=0.02 && $8<0.4'\''|grep -E \"0\\|1|1\\0\")|cut -f 1-4,6-8|awk '\''{{OFS=\"\\t\";print $1,$2-1,$2,$3,$4,\"{wildcards.sample}\",$5,$6,$7}}'\'' >{output}"
 
 
 rule repeat_filter:
 	input:
 		file1="MF/{sample}.mt2pon.AF0.02.bed",
-		file2="/n/data1/hms/dbmi/park/yanmei/resources/SegDup_and_clustered.GRCh37.bed"
+		file2="/path/to/resources/SegDup_and_clustered.GRCh37.bed"
 	output:
 		"MF/{sample}.mt2pon.AF0.02.noSegDup.bed"
 	shell:
@@ -132,7 +132,7 @@ rule annovar_MAF:
 		protected("MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered"),
 		protected("MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped")
 	shell:
-		"annotate_variation.pl -filter -buildver hg19 -dbtype gnomad_genome {input} /n/data1/hms/dbmi/park/yanmei/tools/annovar/humandb/ --outfile MF/{wildcards.sample}.mt2pon.AF0.02.ANNOVAR.list"
+		"annotate_variation.pl -filter -buildver hg19 -dbtype gnomad_genome {input} /path/to/tools/annovar/humandb/ --outfile MF/{wildcards.sample}.mt2pon.AF0.02.ANNOVAR.list"
 	
 rule MAF0_extraction_SNV:
 	input:
@@ -147,7 +147,7 @@ rule MAF0_extraction_INS:
 	input:
 		file1="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered",
 		file2="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped",
-		file3="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/resources/allrepeats_forindel.GRCh37.bed"
+		file3="/path/to/MosaicForecast/resources/allrepeats_forindel.GRCh37.bed"
 	output:
 		"MF/{sample}.MAF0.INS.bed"
 	shell:
@@ -157,7 +157,7 @@ rule MAF0_extraction_DEL:
 	input:
 		file1="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_filtered",
 		file2="MF/{sample}.mt2pon.AF0.02.ANNOVAR.list.hg19_gnomad_genome_dropped",
-		file3="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/resources/allrepeats_forindel.GRCh37.bed"
+		file3="/path/to/MosaicForecast/resources/allrepeats_forindel.GRCh37.bed"
 	output:
 		"MF/{sample}.MAF0.DEL.bed"
 	shell:
@@ -167,42 +167,42 @@ rule MAF0_extraction_DEL:
 rule feature_extraction_SNV:
 	input:
 		file1="MF/{sample}.MAF0.SNV.bed",
-		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
-		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+		file2="/path/to/resources/human_g1k_v37_decoy.fasta",
+		file3="/path/to/resources/hg19/k24.umap.wg.bw"
 	output:
 		"MF/{sample}.SNV.features"
 	shell:
-		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
+		"python /path/to/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
 
 rule feature_extraction_INS:
 	input:
 		file1="MF/{sample}.MAF0.INS.bed",
-		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
-		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+		file2="/path/to/resources/human_g1k_v37_decoy.fasta",
+		file3="/path/to/resources/hg19/k24.umap.wg.bw"
 	output:
 		"MF/{sample}.INS.features"
 	shell:
-		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
+		"python /path/to/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
 
 rule feature_extraction_DEL:
 	input:
 		file1="MF/{sample}.MAF0.DEL.bed",
-		file2="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
-		file3="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+		file2="/path/to/resources/human_g1k_v37_decoy.fasta",
+		file3="/path/to/resources/hg19/k24.umap.wg.bw"
 	output:
 		"MF/{sample}.DEL.features"
 	shell:
-		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
+		"python /path/to/MosaicForecast/ReadLevel_Features_extraction.py {input.file1} {output} bam_links_case/ {input.file2} {input.file3} 4 bam"
 
 
 rule Prediction_SNV:
 	input:
 		file1="MF/{sample}.SNV.features",
-		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
+		file2="/path/to/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
 	output:
 		"MF/{sample}.{cov}.SNV.predictions"
 	shell:
-		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+		"Rscript /path/to/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
 rule gather_all_features_SNV:
 	input:
@@ -231,29 +231,29 @@ rule gather_all_features_DEL:
 rule Prediction_allSNVs:
 	input:
 		file1="MF_allsites/allsites.SNV.features",
-		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
+		file2="/path/to/MosaicForecast/models_trained/{cov}RFmodel_addRMSK_Refine.rds"
 	output:
 		"MF_allsites/allsites.SNV.{cov}.predictions"
 	shell:
-		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+		"Rscript /path/to/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
 rule Prediction_allINSs:
 	input:
 		file1="MF_allsites/allsites.INS.features",
-		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/insertions_250x.RF.rds"
+		file2="/path/to/MosaicForecast/models_trained/insertions_250x.RF.rds"
 	output:
 		"MF_allsites/allsites.INS.predictions"
 	shell:
-		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+		"Rscript /path/to/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
 rule Prediction_allDELs:
 	input:
 		file1="MF_allsites/allsites.DEL.features",
-		file2="/n/data1/hms/dbmi/park/yanmei/MosaicForecast/models_trained/deletions_250x.RF.rds"
+		file2="/path/to/MosaicForecast/models_trained/deletions_250x.RF.rds"
 	output:
 		"MF_allsites/allsites.DEL.predictions"
 	shell:
-		"Rscript /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
+		"Rscript /path/to/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
 
 rule MAF0_extraction_all:
@@ -268,11 +268,11 @@ rule MAF0_extraction_all:
 rule Phase:
 	input:
 		bed="MF/{sample}.MAF0.bed",
-		fa="/n/data1/hms/dbmi/park/yanmei/resources/human_g1k_v37_decoy.fasta",
-		umap="/n/data1/hms/dbmi/park/yanmei/resources/hg19/k24.umap.wg.bw"
+		fa="/path/to/resources/human_g1k_v37_decoy.fasta",
+		umap="/path/to/resources/hg19/k24.umap.wg.bw"
 	output:
 		dir=directory("MF_Phase/{sample}.phase")
 	shell:
-		"python /n/data1/hms/dbmi/park/yanmei/MosaicForecast/Phase.py bam_links_case {output.dir} {input.fa} {input.bed} 20 {input.umap} 4 bam"
+		"python /path/to/MosaicForecast/Phase.py bam_links_case {output.dir} {input.fa} {input.bed} 20 {input.umap} 4 bam"
 
 
