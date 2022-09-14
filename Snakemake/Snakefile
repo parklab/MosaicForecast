@@ -7,15 +7,16 @@ PON_IDs, = glob_wildcards("bam_links_PON/{id}.bam")
 intervals, = glob_wildcards("intervals/{num}.intervals.list")
 case_IDs, = glob_wildcards("bam_links_case/{sample}.bam")
 depth="100x"
+
 #python split_line.py /path/to/resources/human_g1k_v37_decoy.fasta.fai 55000000 intervals/	
 
 # a pseudo-rule that collects the target files
 rule all:
 	input:
 		expand("MF/{sample}.{cov}.SNV.predictions",sample=case_IDs, cov=depth),
-		expand("MF_allsites/allsites.SNV.{cov}.mapscore_filtered.predictions",cov=depth),
-		expand("MF_allsites/allsites.INS.mapscore_filtered.predictions"),
-		expand("MF_allsites/allsites.DEL.mapscore_filtered.predictions"),
+		expand("MF_allsites/allsites.SNV.{cov}.predictions",cov=depth),
+		expand("MF_allsites/allsites.INS.predictions"),
+		expand("MF_allsites/allsites.DEL.predictions"),
 		expand("MF_Phase/{sample}.phase",sample=case_IDs)
 	
 rule scatter_MT2_PON:
@@ -236,14 +237,6 @@ rule Prediction_allSNVs:
 	shell:
 		"Rscript /path/to/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
-rule Filter_mappability0_allSNVs:
-	input:
-		"MF_allsites/allsites.SNV.{cov}.predictions"
-	output:
-		"MF_allsites/allsites.SNV.{cov}.mapscore_filtered.predictions"
-	shell:
-		"cat {input}|awk '\''$3>0'\'' > {output}"
-
 
 rule Prediction_allINSs:
 	input:
@@ -255,14 +248,6 @@ rule Prediction_allINSs:
 		"Rscript /path/to/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
 
-rule Filter_mappability0_allINSs:
-	input:
-		"MF_allsites/allsites.INS.predictions"
-	output:
-		"MF_allsites/allsites.INS.mapscore_filtered.predictions"
-	shell:
-		"cat {input}|awk '\''$3>0'\'' > {output}"
-
 rule Prediction_allDELs:
 	input:
 		file1="MF_allsites/allsites.DEL.features",
@@ -272,13 +257,6 @@ rule Prediction_allDELs:
 	shell:
 		"Rscript /path/to/MosaicForecast/Prediction.R {input.file1} {input.file2} Refine {output}"
 
-rule Filter_mappability0_allDELs:
-	input:
-		"MF_allsites/allsites.DEL.predictions"
-	output:
-		"MF_allsites/allsites.DEL.mapscore_filtered.predictions"
-	shell:
-		"cat {input}|awk '\''$3>0'\'' > {output}"
 
 rule MAF0_extraction_all:
 	input:
