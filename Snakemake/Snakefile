@@ -63,14 +63,22 @@ rule MT2:
 	shell:
 		"gatk Mutect2 -R {input.fa} -I {input.bam} -tumor {wildcards.sample} --germline-resource {input.germline_resource} --pon {input.PON} -L {input.interval} --interval-padding 100 -O {output}"
 
+rule GATK4_filter:
+	input:
+		vcf="vcfs/{sample}_{num}.MT2PON_snvs_indels.vcf.gz",
+		fa="/path/to/resources/human_g1k_v37_decoy.fasta"
+	output:
+		"vcfs/{sample}_{num}_MT2pon.snvs_indels.filtered.vcf.gz"
+	shell:
+		"gatk FilterMutectCalls -R {input.fa} -V {input.vcf} -O {output}"
 
 rule tumor_args:
 	input:
-		expand("vcfs/{sample}_{num}.MT2PON_snvs_indels.vcf.gz",sample=case_IDs,num=intervals)
+		expand("vcfs/{sample}_{num}.MT2PON.snvs_indels.filtered.vcf.gz",sample=case_IDs,num=intervals)
 	output:
 		"vcfs/{sample}.args"
 	shell:
-		"ls vcfs/{wildcards.sample}_*.MT2PON_snvs_indels.vcf.gz > {output}"
+		"ls vcfs/{wildcards.sample}_*.MT2PON.snvs_indels.filtered.vcf.gz > {output}"
 
 rule vcf_concat:
 	input:
@@ -88,19 +96,10 @@ rule vcf_index:
 	shell:
 		"tabix -p vcf {input}"
 
-rule GATK4_filter:
-	input:
-		vcf="vcfs_combined/{sample}_MT2pon.vcf.gz",
-		tbi="vcfs_combined/{sample}_MT2pon.vcf.gz.tbi",
-		fa="/path/to/resources/human_g1k_v37_decoy.fasta"
-	output:
-		"vcfs_combined/{sample}_MT2pon.filtered.vcf.gz"
-	shell:
-		"gatk FilterMutectCalls -R {input.fa} -V {input.vcf} -O {output}"
 
 rule MT2_initial_filter:
 	input:
-		"vcfs_combined/{sample}_MT2pon.filtered.vcf.gz"
+		"vcfs_combined/{sample}_MT2pon.vcf.gz"
 		
 	output:
 		"MF/{sample}.mt2pon.AF0.02.bed"
