@@ -68,17 +68,17 @@ rule GATK4_filter:
 		vcf="vcfs/{sample}_{num}.MT2PON_snvs_indels.vcf.gz",
 		fa="/path/to/resources/human_g1k_v37_decoy.fasta"
 	output:
-		"vcfs/{sample}_{num}_MT2pon.snvs_indels.filtered.vcf.gz"
+		"vcfs/{sample}_{num}.MT2pon.snvs_indels.filtered.vcf.gz"
 	shell:
 		"gatk FilterMutectCalls -R {input.fa} -V {input.vcf} -O {output}"
 
 rule tumor_args:
 	input:
-		expand("vcfs/{sample}_{num}.MT2PON.snvs_indels.filtered.vcf.gz",sample=case_IDs,num=intervals)
+		expand("vcfs/{sample}_{num}.MT2pon.snvs_indels.filtered.vcf.gz",sample=case_IDs,num=intervals)
 	output:
 		"vcfs/{sample}.args"
 	shell:
-		"ls vcfs/{wildcards.sample}_*.MT2PON.snvs_indels.filtered.vcf.gz > {output}"
+		"ls vcfs/{wildcards.sample}_*.MT2pon.snvs_indels.filtered.vcf.gz > {output}"
 
 rule vcf_concat:
 	input:
