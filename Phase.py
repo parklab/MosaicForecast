@@ -2,6 +2,7 @@
 import os
 import sys
 import uuid
+import numpy as np
 program=sys.argv[0]
 arguments=sys.argv[1:]
 count=len(arguments)
