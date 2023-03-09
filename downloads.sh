@@ -27,4 +27,4 @@ wget https://bismap.hoffmanlab.org/raw/hg19.umap.tar.gz
 tar -zxvf hg19.umap.tar.gz  
 cd hg19  
 fetchChromSizes hg19 > hg19.chrom.sizes  
-wigToBigWig <(zcat k24.umap.wg.gz) hg19.chrom.sizes k24.umap.wg.bw  
+wigToBigWig zcat k24.umap.wg.gz hg19.chrom.sizes k24.umap.wg.bw  
