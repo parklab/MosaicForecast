@@ -98,32 +98,25 @@ wigToBigWig <(zcat k24.umap.wg.gz) hg38.chrom.sizes k24.umap.wg.bw
 #### Regions to filter out:
 * GRCh37/hg19: 
 
-Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
+Segmental Duplication regions and regions enriched for SNVs with >=3 haploptypes (should be removed before calling all kinds of mosaics):  
 ```
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/genomicSuperDups.txt.gz
+wget https://github.com/parklab/MosaicForecast/blob/master/resources/SegDup_and_clustered.GRCh37.bed
 ```
-Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
+
+Regions for indels (simple repeats included, should be removed before calling mosaic INDELS):  
 ```
-wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh37.bed
-```
-Simple repeats (should be removed before calling mosaic INDELS):  
-```
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz
+wget https://github.com/parklab/MosaicForecast/blob/master/resources/allrepeats_forindel.GRCh37.bed 
 ```
 * GRCh38/hg38 (please note that our model is trained under GRCh37 and the file "predictedhap3ormore_cluster.GRCh38.bed" is simply a liftover from the GRCh37 file above, hence could be un-optimized for GRCh38):  
 
-Segmental Duplication regions (should be removed before calling all kinds of mosaics):  
+Segmental Duplication regions and regions enriched for SNVs with >=3 haploptypes (should be removed before calling all kinds of mosaics):
 ```
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/genomicSuperDups.txt.gz
-```
-Regions enriched for SNVs with >=3 haplotypes (should be removed before calling all kinds of mosaics):  
-```
-wget https://raw.githubusercontent.com/parklab/MosaicForecast/master/resources/predictedhap3ormore_cluster.GRCh38.bed
+wget https://github.com/parklab/MosaicForecast/blob/master/resources/SegDup_and_clustered.GRCh38.bed
 ```
 
-Simple repeats (should be removed before calling mosaic INDELS):  
+Regions for indels (should be removed before calling mosaic INDELS):  
 ```
-wget http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/simpleRepeat.txt.gz
+wget https://github.com/parklab/MosaicForecast/blob/master/resources/allrepeats_forindel.GRCh38.bed
 ```
 #### Population allele frequency
 * gnomAD datasets (recommend to remove variants with population MAF>0.001%):  
